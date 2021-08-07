@@ -52,12 +52,8 @@ const LoginPage = ({redirectTo}) => {
 
 	const history_ = useHistory();
 
-	const setUser = user => {
-		globalDispatch({type: "UPDATE_USER", user});
-	}
-
-	const setProject = project => {
-		globalDispatch({type: "UPDATE_PROJECT", project});
+	const setUserAndProject = (user, project) => {
+		globalDispatch({type: "PATCH", patch: {user, project}});
 	}
 
 	const startSession = (user, project, token) => {
@@ -66,9 +62,14 @@ const LoginPage = ({redirectTo}) => {
 		// esablish websocket connection
 		socket.connect(settings.WEBSOCKET_HOST, {token: token}, false);
 		// save user and project in context
-		setUser(user);
-		if (project !== undefined)
-			setProject(project);
+
+		setUserAndProject(user, project);
+		// setUser(user);
+
+		// debugger;
+
+		// if (project !== undefined)
+		// 	setProject(project);
 	}
 
 	const redirectOnSuccess = () => {
@@ -76,6 +77,8 @@ const LoginPage = ({redirectTo}) => {
 		if (typeof redirectTo === "string") {
 			url = redirectTo;
 		}
+
+		console.log(global);
 
 		history_.push(url);
 	}
@@ -94,7 +97,7 @@ const LoginPage = ({redirectTo}) => {
 			Helper.http.request(userLoginApiUrl, "POST", null, body, true)
 			.then(response => {
 				startSession(response.user, response.user.activeProject, response.token);
-				redirectOnSuccess();
+				//redirectOnSuccess();
 			})
 			.catch(e => console.error(e));
 			
@@ -110,7 +113,7 @@ const LoginPage = ({redirectTo}) => {
 			try {
 				const response =  await Helper.http.request(userTokenValidateApiUrl, "GET", token, null, true);
 				startSession(response, response.activeProject, token);
-				redirectOnSuccess();
+				//redirectOnSuccess();
 			} catch (e) {
 				localStorage.removeItem("token");
 				console.error(e);
@@ -121,6 +124,12 @@ const LoginPage = ({redirectTo}) => {
 	useEffect(() => {
 		authWithLocalToken();
 	}, [])
+
+	useEffect(() => {
+		if (global.user !== null && global.project !== null) {
+			redirectOnSuccess();
+		}
+	}, [global.user, global.project]);
 
 
 	const updateFieldValue = (field, value) => {

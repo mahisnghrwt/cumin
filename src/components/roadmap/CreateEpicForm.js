@@ -21,7 +21,7 @@ const CreateEpicForm = (props) => {
 	const [state, dispatch] = useReducer(reducer, {log: null, errors: {}, values: {title: "", row: 1}});
 	const [global, globalDispatch] = useContext(Global);
 
-	const createEpic = async (e) => {
+	const createEpic = (e) => {
 		const url = settings.API_ROOT + "/project/" + global.project.id + "/epic";
 		const token = localStorage.getItem("token");
 
@@ -33,13 +33,9 @@ const CreateEpicForm = (props) => {
 		createEpicReq.startDate = today;
 		createEpicReq.endDate = add(today, {days: 1});
 
-
-		try {
-			const epicCreated = await Helper.http.request(url, "POST", token, createEpicReq, true);
-			console.log(epicCreated);
-		} catch (e) {
-			console.error(e);
-		}
+		Helper.http.request(url, "POST", token, createEpicReq, true)
+		.then(epicCreated => console.log(epicCreated))
+		.catch(e => console.error(e));
 	}
 
 	return (
@@ -60,7 +56,7 @@ const CreateEpicForm = (props) => {
 						<label>Row: </label>
 						<input 
 							type="text" 
-							onChange={e => dispatch({type: "UPDATE_FORM_FIELD", field: "row", value: e.target.value})} 
+							onChange={e => dispatch({type: "UPDATE_FORM_FIELD", field: "row", value: parseInt(e.target.value)})} 
 							value={state.values.row}
 						/>
 						{state.errors.row !== undefined && <span class="form-item-error">{state.errors.row}</span>}

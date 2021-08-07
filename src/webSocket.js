@@ -45,6 +45,7 @@ class Socket {
 
 		if (typeof this.listeners[data.eventName] === "undefined") {
 			console.error("Not listening to websocket event: " + data.eventName);
+			return;
 		}
 
 		Object.values(this.listeners[data.eventName]).forEach(func => {

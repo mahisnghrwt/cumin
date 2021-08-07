@@ -18,12 +18,19 @@ const reducer = (state, action) => {
 		case "UPDATE_PROJECT":
 			return {
 				...state,
-				project: action.project
+				project: {
+					...action.project
+				}
 			}
 		case "UPDATE_USER":
 			return {
 				...state,
 				user: action.user
+			}
+		case "PATCH": 
+			return {
+				...state,
+				...action.patch
 			}
 	}
 };
@@ -49,8 +56,6 @@ function App() {
 		return () => {
 			socket.removeListener(SOCKET_EVENT.INVITATION_RECEIVED);
 			socket.removeListener(SOCKET_EVENT.NEW_USER_JOINED);
-
-			// socket.close();
 		}
 	}, []);
 
@@ -65,17 +70,17 @@ function App() {
 						<Route path="/register" exact>
 							<RegisterPage />
 						</Route>
-						<ProtectedRoute path="/backlog">
+						<ProtectedRoute path="/roadmap" exact>
+							<RoadmapPage />
+						</ProtectedRoute>
+						<ProtectedRoute path="/backlog" exact>
 							<BacklogPage />
 						</ProtectedRoute>
-						<ProtectedRoute path="/logout">
+						<ProtectedRoute path="/logout" exact>
 							<Logout />
 						</ProtectedRoute>
 						<ProtectedRoute path="/board" exact>
 							<BoardPage />
-						</ProtectedRoute>
-						<ProtectedRoute path="/roadmap" exact>
-							<RoadmapPage />
 						</ProtectedRoute>
 						<ProtectedRoute path="/">
 							<DashboardPage>

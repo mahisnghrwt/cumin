@@ -4,7 +4,7 @@ import Global from "../GlobalContext";
 import { useContext } from "react";
 
 export const ProtectedRoute = ({children, ...rest}) => {
-	const [global, __globalDispatch] = useContext(Global);
+	const [global, globalDispatch] = useContext(Global);
 	var hasUser = global.user != null || global.user != undefined;
 
 	return (

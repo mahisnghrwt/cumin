@@ -262,3 +262,11 @@ button {
 	width: 100%;
 	height: 5rem;
 }
+
+
+/* ======================Placeholder======================================= */
+.canvas-wrapper {
+	width: 100%;
+	overflow-x: scroll;
+	height: 500px;
+}
