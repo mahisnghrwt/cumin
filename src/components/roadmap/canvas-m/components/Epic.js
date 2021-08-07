@@ -27,58 +27,64 @@ const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData,
 	}
 
 	const epicDragStartHandler = (e) => {
-		dragData.current = {
-			epicId: id,
-			type: DRAG_EVENTS.moveEpic
-		}
-
+		e.stopPropagation();
 		e.dataTransfer.setDragImage(new Image(), 0, 0);
+
+		dragData.current.epicId = id;
+
+		debugger;
+
+		switch(e.target.className) {
+			case "epic-resize-left-handle":
+				dragData.current.face = EPIC_FACE.START;
+				dragData.current.type = "RESIZE_EPIC";
+				break;
+			case "epic-resize-right-handle":
+				dragData.current.face = EPIC_FACE.END;
+				dragData.current.type = "RESIZE_EPIC";
+				break;
+			case "epic":
+				dragData.current.type = DRAG_EVENTS.moveEpic;
+				break;
+			case "epic-left-tip":
+				dragData.current.type = "DRAW_PATH";
+				createPath(id, PATH_ENDPOINT.HEAD);
+				break;
+			case "epic-right-tip":
+				dragData.current.type = "DRAW_PATH";
+				createPath(id, PATH_ENDPOINT.TAIL);
+				break;
+		}
 	}
 
 	const epicDragEndHandler = (e) => {
-		// dragData.current = {};
-		ApiCalls.patchEpicDuration({startDate, endDate, id}, projectId, localStorage.getItem("token"));
-		dragData.current = {};
-	}
-
-	const resizerDragStartHandler = (e, face) => {
 		e.stopPropagation();
-		e.dataTransfer.setDragImage(new Image(), 0, 0)
-		dragData.current = {
-			epicId: id,
-			type: "RESIZE_EPIC",
-			face
-		}
-	}
 
-	const resizerDragEndHandler = (e) => {
-		e.stopPropagation();
-		ApiCalls.patchEpicDuration({startDate, endDate, id}, projectId, localStorage.getItem("token"));
-		dragData.current = {};
-	}
-
-	const tipDragStartHandler = (e, rawFace) => {
-		e.stopPropagation();
-		e.dataTransfer.setDragImage(new Image(), 0, 0);
-		dragData.current = {
-			type: "DRAW_PATH"
+		switch(e.target.className) {
+			case "epic-resize-left-handle":
+				ApiCalls.patchEpicDuration({startDate, endDate, id}, projectId, localStorage.getItem("token"));
+				break;
+			case "epic-resize-right-handle":
+				ApiCalls.patchEpicDuration({startDate, endDate, id}, projectId, localStorage.getItem("token"));
+				break;
+			case "epic":
+				ApiCalls.patchEpicDuration({startDate, endDate, id}, projectId, localStorage.getItem("token"));
+				break;
+			case "epic-right-tip":
+				notifyPathEnd(undefined);
+				break;
+			case "epic-left-tip":
+				notifyPathEnd(undefined);
+				break;
 		}
 
-		createPath(id, rawFace);
+		dragData.current = {};
 	}
 
 	const epicDropHandler = (e) => {
 		e.preventDefault();
 		if (dragData.current.type !== "DRAW_PATH") return;
 		dragData.current.rawId = id;
-	}
-
-	const tipDragEndHandler = (e) => {
-		e.preventDefault();
-		if (e.target.className !== "epic" && e.target.className !== "interactive-layer") {
-			notifyPathEnd(undefined);
-		}
-		dragData.current = {};
 	}
 
 	return (
@@ -100,28 +106,18 @@ const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData,
 		>
 			<div 
 				className="epic-left-tip"
-				draggable
-				onDragStart={e => tipDragStartHandler(e, PATH_ENDPOINT.HEAD)}
-				onDrag={e => e.stopPropagation()}
-				onDragEnd={tipDragEndHandler} />
+				draggable />
 			<div 
-				className="epic-resize-left-handle" 
-				style={resizeHandleCssDimensions} 
+				className="epic-resize-left-handle"
 				draggable 
-				onDragStart={e => resizerDragStartHandler(e, EPIC_FACE.START)} 
-				onDragEnd={resizerDragEndHandler} />
+				style={resizeHandleCssDimensions} />
 			<div 
 				className="epic-resize-right-handle" 
-				style={resizeHandleCssDimensions} 
-				draggable 
-				onDragStart={e => resizerDragStartHandler(e, EPIC_FACE.END)} 
-				onDragEnd={resizerDragEndHandler} />
+				draggable
+				style={resizeHandleCssDimensions} />
 			<div 
 				className="epic-right-tip" 
-				draggable
-				onDragStart={e => tipDragStartHandler(e, PATH_ENDPOINT.TAIL)}
-				onDrag={e => e.stopPropagation()}
-				onDragEnd={tipDragEndHandler} />
+				draggable />
 		</div>
 	)
 }
