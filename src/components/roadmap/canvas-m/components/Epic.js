@@ -1,10 +1,11 @@
 import {differenceInDays} from "date-fns";
 import {gridToPixelBasedPos__} from "../canvasHelper";
 import { BASE_NODE_DIMENSIONS, EPIC_FACE, PATH_ENDPOINT, DRAG_EVENTS } from "../canvasEnums";
+import ApiCalls from "../ApiCalls";
 
 
 
-const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData, notifyPathEnd}) => {
+const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData, notifyPathEnd, projectId}) => {
 	/**
 	 * Calculates position in pixels relative to canvas, references intermediateState if between an event, like resizing epic.
 	 * @returns {{x: number, y: number}}
@@ -36,6 +37,8 @@ const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData,
 
 	const epicDragEndHandler = (e) => {
 		// dragData.current = {};
+		ApiCalls.patchEpicDuration({startDate, endDate, id}, projectId, localStorage.getItem("token"));
+		dragData.current = {};
 	}
 
 	const resizerDragStartHandler = (e, face) => {
@@ -50,6 +53,7 @@ const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData,
 
 	const resizerDragEndHandler = (e) => {
 		e.stopPropagation();
+		ApiCalls.patchEpicDuration({startDate, endDate, id}, projectId, localStorage.getItem("token"));
 		dragData.current = {};
 	}
 
@@ -65,7 +69,6 @@ const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData,
 
 	const epicDropHandler = (e) => {
 		e.preventDefault();
-
 		if (dragData.current.type !== "DRAW_PATH") return;
 		dragData.current.rawId = id;
 	}

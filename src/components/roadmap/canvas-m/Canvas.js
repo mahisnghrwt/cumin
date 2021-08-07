@@ -28,6 +28,7 @@ import {ISSUE_STATUS_TO_ENUM, SOCKET_EVENT} from "../../../enums";
 import Helper from "../../../Helper";
 import settings from "../../../settings";
 import Global from "../../../GlobalContext";
+import ApiCalls from "./ApiCalls";
 
 const COMPONENT_ID = "CANVAS";
 
@@ -384,6 +385,7 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 		e.preventDefault();
 		e.stopPropagation();
 
+		// these are the only valid drop target, because we can only calculate position relative to interactive-layer for them
 		if (e.target.className !== "epic" && e.target.className !== "interactive-layer") {
 			return;
 		}
@@ -419,15 +421,31 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 		e.preventDefault();
 		e.stopPropagation();
 
-		if (e.target.className !== EPIC_CLASS_NAME && e.target.className !== INTERACTIVE_LAYER_CLASS_NAME) {
+		// console.log(e);
+
+		// console.log("--->" + e.target.className);
+
+		console.log("drag data type: " + dragData.current.type);
+
+		if (dragData.current.type === undefined)
 			return;
-		}
+
+		// only valid drop target
+		// if (e.target.className !== EPIC_CLASS_NAME && e.target.parentElement.className !== EPIC_CLASS_NAME) {
+		// 	console.log(e.target.parentElement.className + " > " + e.target.className);
+		// 	return;
+		// }
+
+		// console.log("Successful Drop!");
 
 		switch(dragData.current.type) {
 			case "DRAW_PATH":
 				finaliseIntermediatePath(dragData.current.rawId);
 				break;
 			case DRAG_EVENTS.moveEpic: 
+				// const epicId = dragData.current.epicId;
+				// ApiCalls.patchEpicDuration(state.epics[epicId], global.project.id, localStorage.getItem("token"));
+				// dragData.current = {};
 				// make update call over API
 				// 
 			break;
@@ -442,6 +460,21 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 		const epic_ = epicPreprocessing(epic);
 
 		dispatch({type: "ADD_EPIC", epic: epic_});
+	}
+
+	const epicUpdatedOverSocket = epics => {
+		if (Array.isArray(epics) === false) {
+			console.error("Updated epic must be sent as an array!");
+			return;
+		}
+		if (epics[1].row >= state.canvas.row) {
+			dispatch({type: "UPDATE_CANVAS", patch: {rows: epic.row}});
+		}
+
+		const epic = epicPreprocessing(epics[1]);
+
+		// dispatch epic update
+		dispatch({type: "UPDATE_EPIC", id: epic.id, patch: epic});
 	}
 
 	const getMaxRow = (epics) => {
@@ -498,9 +531,11 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 		// load all the paths
 
 		webSocket.addListener(SOCKET_EVENT.EPIC_CREATED, COMPONENT_ID, epicCreatedOverSocket);
+		webSocket.addListener(SOCKET_EVENT.EPIC_UPDATED, COMPONENT_ID, epicUpdatedOverSocket);
 
 		return () => {
 			webSocket.removeListener(SOCKET_EVENT.EPIC_CREATED, COMPONENT_ID);
+			webSocket.removeListener(SOCKET_EVENT.EPIC_UPDATED, COMPONENT_ID);
 		}
 
 		// add all the socket listeners

@@ -1,3 +1,4 @@
+
 /**
  * Converts the grid based position into pixel based position (canvas)
  * @param {{x: number, y: number}} gridPos 
@@ -48,3 +49,4 @@ export const generatePathD = (head, tail, controlPoint) => {
 
 	return `M${head.x} ${head.y} C${controlPoint1.x} ${controlPoint1.y} ${controlPoint2.x} ${controlPoint2.y} ${tail.x} ${tail.y}`;
 }
+
