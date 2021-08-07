@@ -1,0 +1,264 @@
+@import url('https://fonts.googleapis.com/css2?family=Mukta&display=swap');
+
+:root {
+	--default-width: 600px;
+	--border-color: #dfe4ea;
+	--danger-red: #e74c3c;
+	--success-green: #27ae60;
+	--slate-grey: #34495e;
+}
+
+/* ============================================================================ */
+
+.bg-green {
+	background-color: var(--success-green);
+}
+
+.bg-red {
+	background-color: var(--danger-red);
+}
+
+/* ============================================================================ */
+
+
+body, #root {
+	margin: 0;
+	padding: 0;
+	font-family: 'Mukta', sans-serif;
+}
+
+.navbar {
+	height: fit-content;
+	background-color: #2f3542;
+	width: 100%;
+	position: fixed;
+	top: 0;
+	position: relative;
+}
+
+.left-nav-item-group {
+	display: inline-block;
+}
+
+.right-nav-item-group {
+	float: right;
+}
+
+.nav-link {
+	text-decoration: none;
+	color: white;
+	margin: 0.5rem 0;
+	padding: 0 0.5rem;
+	/* display: inline-block; */
+}
+
+.nav-link:hover {
+	background-color: #57606f;
+}
+
+.active-nav-link {
+	text-decoration: underline;
+}
+
+/* ============================================================================ */
+
+.content {
+	width: 60%;
+	position: relative;
+	left: 10%;
+}
+
+/* ============================================================================ */
+
+.right-sidebar {
+	position: fixed;
+	box-sizing: border-box;
+	margin: 1rem;
+	top: 1.5rem;
+	bottom: 0;
+	overflow-y: scroll;
+	right: 0;
+	width: var(--default-width);
+	border: 1px solid var(--border-color);
+	padding: 0 1rem;
+
+}
+
+.right-sidebar-close-button {
+	position: relative;
+	float: right;
+	margin-right: 1rem;
+}
+
+/* ============================================================================ */
+
+.list {
+	display: flex;
+	flex-direction: column;
+	width: var(--default-width);
+	height: fit-content;
+}
+
+.list-header {
+	width: 100%;
+	padding: 0rem 1rem;
+	margin: 0;
+	border: 1px solid #dfe4ea;
+	box-sizing: border-box;
+}
+
+.list-title {
+	display: inline-block;
+	font: 1rem;
+	font-weight: bold;
+
+}
+
+.list-header-detail {
+	display: flex;
+	flex-direction: column;
+}
+
+.list-item {
+	width: 100%;
+	height: 1.5rem;
+	margin: 0;
+	padding: 0 1rem;
+	border: 1px solid #dfe4ea;
+	border-top: 0;
+	box-sizing: border-box;
+}
+
+
+.list-item:first-child {
+	/* Just to fix border overlapping, does not have any better idea :/ */
+	border-top: 1px solid #dfe4ea;
+}
+
+
+.list-item:hover {
+	background-color: #dfe4ea;
+}
+
+/* ======================LIST ITEM EXTENSIONS======================================= */
+
+.list-item-sublabel {
+	position: relative;
+	left: 1rem;
+	font-style: italic;
+	font-size: 0.75rem;
+}
+
+.list-item-buttons {
+	float: right;
+	display: flex;
+	flex-direction: row;
+}
+
+.list-item-buttons > a {
+	margin: 0 0.5rem;
+}
+
+/* ======================FORM======================================= */
+form {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+}
+
+.form-row {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.form-item {
+	display: flex;
+	flex-direction: column;
+	margin: 0 1rem 1rem 0;
+}
+
+.form-item > label, .form-item-error {
+	font-size: 0.75rem;
+	font-style: italic;
+	text-transform: uppercase;
+}
+
+.form-item > input, select {
+	padding: 0.5rem 1rem;
+	font-size: 0.9rem;
+	border: 1px solid #dfe4ea;
+
+}
+
+.form-item-error, .form-item-alert {
+	font-size: 0.75rem;
+	font-style: italic;
+	text-transform: uppercase;
+	width: 100%;
+	word-wrap: break-word;
+	padding: 0 0.75rem;
+	color: white;
+	font-style: normal;
+	font-weight: bold;
+	box-sizing: border-box;
+}
+
+.form-item-error {
+	background-color: var(--danger-red);
+}
+
+button {
+	width: fit-content;
+	height: fit-content;
+	padding: 0.5rem 2rem;
+	font-size: 1rem;
+	border-radius: 2px;
+	background-color: #27ae60;
+	color: white;
+	border: 0;
+	/* box-sizing: boir-box; */
+	box-sizing: border-box;
+	margin: 0 1rem 1rem 0;
+}
+
+.x-sm {
+	width: calc(var(--default-width) / 4);
+}
+
+.sm {
+	width: calc(var(--default-width) / 3);
+}
+
+.md {
+	width: calc(var(--default-width) / 2);
+}
+
+/* ======================ALERT-M======================================= */
+.alert-m {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0 1rem;
+	color: white;
+	height: fit-content;
+}
+
+/* ======================ALERT BAR======================================= */
+.alert-bar {
+	width: 100%;
+	padding: 0.25rem;
+	height: fit-content;
+}
+
+/* ======================Placeholder======================================= */
+
+.placeholder {
+	background-color: var(--slate-grey);
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 5rem;
+}
