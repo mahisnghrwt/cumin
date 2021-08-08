@@ -31,6 +31,7 @@ import Global from "../../../GlobalContext";
 import ApiCalls from "./ApiCalls";
 import {epicPreprocessing, generateGridlinesCss, shouldExtendCanvas, gridToDate} from "./canvasHelper";
 import reducer from "./canvasReducer";
+import useEpicResizer from "./useEpicResizer";
 
 const COMPONENT_ID = "CANVAS";
 
@@ -102,11 +103,6 @@ const createEpic = (pos, refDate, canvasSize, grids) => {
 	return epic;
 }
 
-
-
-
-
-
 const Canvas = ({increaseCanvasSizeBy, canDropEpic}) => {
 	const [global, globalDispatch] = useContext(Global);
 	const [state, dispatch] = useReducer(reducer, {epics: {}, paths: {}, intermediate: {}, canvas: {
@@ -139,8 +135,8 @@ const Canvas = ({increaseCanvasSizeBy, canDropEpic}) => {
 
 		const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
 
-		const epic = createEpic(pos, state.canvas.startDate, canvasSize, numOfUnits);
-
+		let epic = createEpic(pos, state.canvas.startDate, canvasSize, numOfUnits);
+		epic.color = "#f1c40f";
 		if (epic == null)
 			return;
 
@@ -284,22 +280,24 @@ const Canvas = ({increaseCanvasSizeBy, canDropEpic}) => {
 	}
 
 
-	const resizeEpic = (epicId, face, targetDate) => {
-		const epic = state.epics[epicId];
+	// const resizeEpic = (epicId, face, targetDate) => {
+	// 	const epic = state.epics[epicId];
 
-		if (targetDate.isEqual(epic.startDate) || targetDate.isEqual(epic.endDate)) {
-			return;
-		}
+	// 	if (targetDate.isEqual(epic.startDate) || targetDate.isEqual(epic.endDate)) {
+	// 		return;
+	// 	}
 
-		if (shouldExtendCanvas(targetDate, state.canvas.endDate)) {
-			increaseCanvasSizeBy(1);
-		}
+	// 	if (shouldExtendCanvas(targetDate, state.canvas.endDate)) {
+	// 		increaseCanvasSizeBy(1);
+	// 	}
 
-		dispatch({type: "UPDATE_EPIC", id: epic.id, patch: {
-			startDate: face === EPIC_FACE.START ? targetDate : epic.startDate,
-			endDate: face === EPIC_FACE.END ? targetDate : epic.endDate
-		}})
-	}
+	// 	dispatch({type: "UPDATE_EPIC", id: epic.id, patch: {
+	// 		startDate: face === EPIC_FACE.START ? targetDate : epic.startDate,
+	// 		endDate: face === EPIC_FACE.END ? targetDate : epic.endDate
+	// 	}})
+	// }
+
+	const resizeEpic = useEpicResizer(state, dispatch);
 
 	const dragOver = (e) => {
 		console.log("Drag over! interacative-layer");
@@ -330,7 +328,7 @@ const Canvas = ({increaseCanvasSizeBy, canDropEpic}) => {
 				moveEpic(dragData.current.epicId, targetDate);
 				break;
 			case "RESIZE_EPIC":
-				resizeEpic(dragData.current.epicId, dragData.current.face, targetDate);
+				resizeEpic.current(dragData.current.epicId, dragData.current.face, targetDate);
 				break;
 			// default:
 			// 	throw new Error(`Unknown drag event type: ${dragData.current.type}`);
