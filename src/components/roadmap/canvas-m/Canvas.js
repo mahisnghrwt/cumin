@@ -18,7 +18,7 @@ import Epic from "./components/Epic";
 import HorizontalScale from "./components/HorizontalScale";
 import VerticalScale from "./components/VerticalScale";
 import { differenceInDays } from "date-fns/esm";
-import { add } from "date-fns";
+import { add, startOfMinute } from "date-fns";
 import {pixelToGridBasedPos__} from "./canvasHelper";
 import Path from "./components/Path";
 import Vector2 from "./classes/Vector2"
@@ -29,6 +29,8 @@ import Helper from "../../../Helper";
 import settings from "../../../settings";
 import Global from "../../../GlobalContext";
 import ApiCalls from "./ApiCalls";
+import {epicPreprocessing, generateGridlinesCss, shouldExtendCanvas, gridToDate} from "./canvasHelper";
+import reducer from "./canvasReducer";
 
 const COMPONENT_ID = "CANVAS";
 
@@ -58,126 +60,9 @@ Date.prototype.isEqual = function(rhs) {
 }
 
 /**
- * Use it to check if a "date" is extending over canvas endDate.
- * @param {*} refDate 
- * @param {*} canvasEndDate 
- * @returns 
- */
-const shouldExtendCanvas = (refDate, canvasEndDate) => {
-	const threshold = 1;
-	
-	if (differenceInDays(canvasEndDate, refDate) <= threshold)
-		return true;
-
-	return false;
-}
-
-const generateGridlinesCss = (nodeDimensions, gridlineWidth, gridlineColor)  => {
-	const verticalGirdlinesCss = `repeating-linear-gradient(
-	to right, 
-	${gridlineColor} 0 1px,
-	transparent 1px ${nodeDimensions.width - gridlineWidth}px, 
-	${gridlineColor} ${nodeDimensions.width - gridlineWidth}px ${nodeDimensions.width}px)`;
-
-	const horizontalGridlinesCss = `repeating-linear-gradient(
-	to bottom, 
-	${gridlineColor} 0 1px,
-	transparent 1px ${nodeDimensions.height - 1}px, 
-	${gridlineColor} ${nodeDimensions.height - 1}px ${nodeDimensions.height}px)`;
-
-	return horizontalGridlinesCss + ", " + verticalGirdlinesCss;
-}
-
-const _reducer = (state, action) => {
-	switch(action.type) {
-		case "PATCH": {
-			let state_ = {...state};
-			Object.keys(action.patch).map(key => {
-				state_[key] = {
-					...action.patch[key]
-				}
-			})
-			return state_
-		}
-		case "ADD_EPIC":
-			return {
-				...state,
-				epics: {
-					...state.epics,
-					[action.epic.id]: {...action.epic}
-				}
-			}
-		case "UPDATE_EPIC":
-			const targetEpic = state.epics[action.id];
-			if (targetEpic === undefined)
-				return state;
-			const patchedEpic = {
-				...targetEpic, ...action.patch
-			}
-			return {
-				...state,
-				epics: {
-					...state.epics,
-					[action.id]: patchedEpic
-				}
-			}
-		case "CREATE_INTERMEDIATE_PATH":
-			return {
-				...state,
-				intermediate: {
-					...state.intermediate,
-					path: {
-						...action.path
-					}
-				}
-			}
-		case "PATCH_INTERMEDIATE_PATH":
-			return {
-				...state,
-				intermediate: {
-					...state.intermediate,
-					path: {
-						...state.intermediate.path,
-						[state.intermediate.path.rawEndpoint]: {
-							...action.patch
-						}
-					}
-				}
-			}
-		case "REMOVE_INTERMEDIATE_PATH":
-			return {
-				...state,
-				intermediate: { }
-			}
-
-		case "CREATE_NEW_PATH":
-			return {
-				...state,
-				intermediate: {},
-				paths: {
-					...state.paths,
-					[action.path.id]: {
-						...action.path
-					}
-				}
-			}
-		case "UPDATE_CANVAS":
-			return {
-				...state,
-				canvas: {
-					...state.canvas,
-					...action.patch
-				}
-			}
-		default:
-			throw new Error(`Unknown case: ${action.type}`);
-	}
-}
-
-/**
  * NOTE - Must be wrapped in try-catch block, incase argument is not synthetic event.
  */
-const epicEventPosToCanvas = (e) => {
+ const epicEventPosToCanvas = (e) => {
 	if (e.target.className !== EPIC_CLASS_NAME) {
 		return null;
 	}
@@ -192,16 +77,6 @@ const epicEventPosToCanvas = (e) => {
 	pos.y += e.target.offsetTop;
 
 	return pos;
-}
-
-const gridToDate = (date, offset) => {
-	if (!(date instanceof Date))
-		return null;
-
-	if (typeof offset !== "number")
-		return null;
-
-	return add(date, {days: offset});
 }
 
 const createEpic = (pos, refDate, canvasSize, grids) => {
@@ -228,9 +103,13 @@ const createEpic = (pos, refDate, canvasSize, grids) => {
 }
 
 
-const Canvas = ({increaseCanvasSizeBy}) => {
+
+
+
+
+const Canvas = ({increaseCanvasSizeBy, canDropEpic}) => {
 	const [global, globalDispatch] = useContext(Global);
-	const [state, dispatch] = useReducer(_reducer, {epics: {}, paths: {}, intermediate: {}, canvas: {
+	const [state, dispatch] = useReducer(reducer, {epics: {}, paths: {}, intermediate: {}, canvas: {
 		startDate: new Date(),
 		endDate: add(new Date(), {days: CANVAS_DEFAULT_LENGTH}),
 		rows: CANVAS_DEFAULT_ROWS
@@ -249,6 +128,8 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 	// rename to cutomDragEvent
 	const dragData = useRef({type: ""});
 
+	const usedRows = useRef(new Set());
+
 	const interactiveLayerDoubleClickHandler = (e) => {
 		e.preventDefault();
 
@@ -264,6 +145,45 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 			return;
 
 		dispatch({type: "ADD_EPIC", epic});
+	}
+
+	const interactiveLayerMouseMoveHandler = e => {
+		console.log("Mouse move! interacative-layer");
+
+		// e.preventDefault();
+
+		// we can only project epic-placeholder on empty space
+		if (e.target.className !== INTERACTIVE_LAYER_CLASS_NAME)
+			return;
+
+		const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
+		const gridPos = pixelToGridBasedPos__(pos, canvasSize, numOfUnits);
+
+		// check if the targetted row is available
+		if (usedRows.current.has(gridPos.y)) {
+			console.log("this row is occupied " + gridPos.y);
+			return;
+		}
+
+		let epic = createEpic(pos, state.canvas.startDate, canvasSize, numOfUnits);
+		epic.color = "#c7ecee";
+
+		if (epic === null)
+			return;
+
+		if (canDropEpic.current === false)
+			return;
+
+		dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic});
+	}
+
+	const interactiveLayerMouseLeaveHandler = e => {
+		e.preventDefault();
+
+		// delete the epic preveiew
+		if (state.intermediate.epic !== undefined) {
+			dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic: null});
+		}
 	}
 
 	const createIntermediatePath = (originEpicId, rawEndpoint) => {
@@ -382,6 +302,7 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 	}
 
 	const dragOver = (e) => {
+		console.log("Drag over! interacative-layer");
 		e.preventDefault();
 		e.stopPropagation();
 
@@ -421,33 +342,14 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 		e.preventDefault();
 		e.stopPropagation();
 
-		// console.log(e);
-
-		// console.log("--->" + e.target.className);
-
-		console.log("drag data type: " + dragData.current.type);
-
 		if (dragData.current.type === undefined)
 			return;
-
-		// only valid drop target
-		// if (e.target.className !== EPIC_CLASS_NAME && e.target.parentElement.className !== EPIC_CLASS_NAME) {
-		// 	console.log(e.target.parentElement.className + " > " + e.target.className);
-		// 	return;
-		// }
-
-		// console.log("Successful Drop!");
 
 		switch(dragData.current.type) {
 			case "DRAW_PATH":
 				finaliseIntermediatePath(dragData.current.rawId);
 				break;
 			case DRAG_EVENTS.moveEpic: 
-				// const epicId = dragData.current.epicId;
-				// ApiCalls.patchEpicDuration(state.epics[epicId], global.project.id, localStorage.getItem("token"));
-				// dragData.current = {};
-				// make update call over API
-				// 
 			break;
 		}
 	}	
@@ -458,6 +360,8 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 		}
 
 		const epic_ = epicPreprocessing(epic);
+
+		usedRows.current.add(epic_.row);
 
 		dispatch({type: "ADD_EPIC", epic: epic_});
 	}
@@ -486,13 +390,7 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 		return row;
 	}
 
-	const epicPreprocessing = (epic) => {
-		let epic_ = {...epic };
-		epic_.startDate = new Date(epic.startDate);
-		epic_.endDate = new Date(epic.endDate);
-		epic_.color = EPIC_DEFAULT_COLOR;
-		return epic_;
-	}
+	
 
 	useEffect(() => {
 		let statePatch = {};
@@ -509,12 +407,12 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 				console.error(e);
 			}
 
-
 			if (statePatch.epics === undefined)
 				return;
 
 			Object.keys(statePatch.epics).forEach(key => {
 				statePatch.epics[key] = epicPreprocessing(statePatch.epics[key]);
+				usedRows.current.add(statePatch.epics[key].row);
 			})
 
 			const maxRow = getMaxRow(statePatch.epics);
@@ -584,7 +482,23 @@ const Canvas = ({increaseCanvasSizeBy}) => {
 					onDragOver={dragOver}
 					onDrop={drop}
 					onDoubleClick={interactiveLayerDoubleClickHandler}
+					// onMouseMove={interactiveLayerMouseMoveHandler}
+					// onMouseLeave={interactiveLayerMouseLeaveHandler}
+					mouse
 				>
+					{state.intermediate.epic !== undefined && (
+						<Epic 
+						key={state.intermediate.epic.id}
+						{...state.intermediate.epic}
+						canvas={{
+							dimensions: {...canvasSize},
+							startDate: state.canvas.startDate,
+							endDate: state.canvas.endDate,
+							grid: {
+								...numOfUnits
+							}
+						}} />
+					)}
 					{Object.values(state.epics).map((x) => {
 						return <Epic 
 							key={x.id}

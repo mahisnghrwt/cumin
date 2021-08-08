@@ -33,3 +33,8 @@ export const ISSUE_STATUS_TO_ENUM = (normalStr) => {
 	})
 	return result;
 }
+
+export const ALERT_TYPE = {
+	danger: "bg-red",
+	success: "bg-green"
+}

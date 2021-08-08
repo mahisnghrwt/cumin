@@ -6,10 +6,6 @@ import ApiCalls from "../ApiCalls";
 
 
 const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData, notifyPathEnd, projectId}) => {
-	/**
-	 * Calculates position in pixels relative to canvas, references intermediateState if between an event, like resizing epic.
-	 * @returns {{x: number, y: number}}
-	 */
 	const calcPos = () => {
 		return gridToPixelBasedPos__({
 			x: differenceInDays(startDate, canvas.startDate),
@@ -31,8 +27,6 @@ const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData,
 		e.dataTransfer.setDragImage(new Image(), 0, 0);
 
 		dragData.current.epicId = id;
-
-		debugger;
 
 		switch(e.target.className) {
 			case "epic-resize-left-handle":
