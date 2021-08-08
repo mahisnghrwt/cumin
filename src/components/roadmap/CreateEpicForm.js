@@ -17,7 +17,7 @@ const reducer = (state, action) => {
 	}
 }
 
-const CreateEpicForm = ({canDropEpic}) => {
+const CreateEpicForm = (props) => {
 	const [state, dispatch] = useReducer(reducer, {log: null, errors: {}, values: {title: "", row: 1}});
 	const [global, globalDispatch] = useContext(Global);
 
@@ -65,7 +65,6 @@ const CreateEpicForm = ({canDropEpic}) => {
 				
 				<div className="form-row">
 					<button onClick={createEpic}>Create</button>
-					<button onClick={() => { canDropEpic.current = !canDropEpic.current; console.log(canDropEpic.current)}}>Place Epic</button>
 				</div>
 				<div className="form-row">
 					{state.log !== null && <div className={"form-item-alert " + state.log.type}>{state.log.message}</div>}

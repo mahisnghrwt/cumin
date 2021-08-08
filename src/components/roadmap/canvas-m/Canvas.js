@@ -35,8 +35,7 @@ import useEpicResizer from "./useEpicResizer";
 
 const COMPONENT_ID = "CANVAS";
 
-const CANVAS_DEFAULT_LENGTH = 60;
-const CANVAS_DEFAULT_ROWS = 0;
+
 
 const EPIC_DEFAULT_COLOR = "#7ed6df";
 
@@ -103,13 +102,13 @@ const createEpic = (pos, refDate, canvasSize, grids) => {
 	return epic;
 }
 
-const Canvas = ({increaseCanvasSizeBy, canDropEpic}) => {
+const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 	const [global, globalDispatch] = useContext(Global);
-	const [state, dispatch] = useReducer(reducer, {epics: {}, paths: {}, intermediate: {}, canvas: {
-		startDate: new Date(),
-		endDate: add(new Date(), {days: CANVAS_DEFAULT_LENGTH}),
-		rows: CANVAS_DEFAULT_ROWS
-	}});
+	// const [state, dispatch] = useReducer(reducer, {epics: {}, paths: {}, intermediate: {}, canvas: {
+	// 	startDate: new Date(),
+	// 	endDate: add(new Date(), {days: CANVAS_DEFAULT_LENGTH}),
+	// 	rows: CANVAS_DEFAULT_ROWS
+	// }});
 
 	const numOfUnits = {
 		x: differenceInDays(state.canvas.endDate, state.canvas.startDate),
@@ -141,45 +140,6 @@ const Canvas = ({increaseCanvasSizeBy, canDropEpic}) => {
 			return;
 
 		dispatch({type: "ADD_EPIC", epic});
-	}
-
-	const interactiveLayerMouseMoveHandler = e => {
-		console.log("Mouse move! interacative-layer");
-
-		// e.preventDefault();
-
-		// we can only project epic-placeholder on empty space
-		if (e.target.className !== INTERACTIVE_LAYER_CLASS_NAME)
-			return;
-
-		const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
-		const gridPos = pixelToGridBasedPos__(pos, canvasSize, numOfUnits);
-
-		// check if the targetted row is available
-		if (usedRows.current.has(gridPos.y)) {
-			console.log("this row is occupied " + gridPos.y);
-			return;
-		}
-
-		let epic = createEpic(pos, state.canvas.startDate, canvasSize, numOfUnits);
-		epic.color = "#c7ecee";
-
-		if (epic === null)
-			return;
-
-		if (canDropEpic.current === false)
-			return;
-
-		dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic});
-	}
-
-	const interactiveLayerMouseLeaveHandler = e => {
-		e.preventDefault();
-
-		// delete the epic preveiew
-		if (state.intermediate.epic !== undefined) {
-			dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic: null});
-		}
 	}
 
 	const createIntermediatePath = (originEpicId, rawEndpoint) => {
@@ -225,7 +185,6 @@ const Canvas = ({increaseCanvasSizeBy, canDropEpic}) => {
 			dispatch({type: "REMOVE_INTERMEDIATE_PATH"});
 			return;
 		}
-
 
 		const rawEpicKey = state.intermediate.path.rawEndpoint === PATH_ENDPOINT.HEAD ? "from" : "to";
 		const originEpicKey = rawEpicKey === "from" ? "to" : "from";
@@ -365,6 +324,8 @@ const Canvas = ({increaseCanvasSizeBy, canDropEpic}) => {
 	}
 
 	const epicUpdatedOverSocket = epics => {
+		debugger;
+
 		if (Array.isArray(epics) === false) {
 			console.error("Updated epic must be sent as an array!");
 			return;
