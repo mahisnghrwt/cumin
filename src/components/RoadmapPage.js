@@ -28,13 +28,17 @@ const RoadmapPage = () => {
 		setAlert_({message: messageJsx, type});
 	}
 
+	const clearIntermediateEpic = () => {
+		dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic: null});
+	}
+
 	return (
 		<>
 			<NavBar loggedIn={true} activePage={ACTIVE_PAGE} extraItems={[]} />
 			{alert !== null && <AlertBar messageJsx={alert.message} alertType={alert.type} />}
 			<div className="content">
 				<div className="right-sidebar">
-					<CreateEpicForm />
+					<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediate.epic} clearIntermediateEpic={clearIntermediateEpic} />
 				</div>
 				<h1>Roadmap</h1>
 				<div className="canvas-wrapper">

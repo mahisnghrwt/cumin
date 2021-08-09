@@ -1,4 +1,4 @@
-import { useContext, useReducer } from "react";
+import { useContext, useEffect, useReducer, useRef } from "react";
 import Global from "../../GlobalContext";
 import Helper from "../../Helper";
 import settings from "../../settings";
@@ -17,26 +17,81 @@ const reducer = (state, action) => {
 	}
 }
 
-const CreateEpicForm = (props) => {
-	const [state, dispatch] = useReducer(reducer, {log: null, errors: {}, values: {title: "", row: 1}});
+
+const dateToInputString = (date) => {
+	let m = date.getMonth().toString();
+	let d = date.getDate().toString();
+  
+	if (m.length < 2)
+	  m = "0" + m;
+  
+	if (d.length < 2)
+	  d = "0" + d;
+	return `${date.getFullYear()}-${m}-${d}`
+  }
+
+const DateRow = ({startDate, endDate}) => {
+	if (!(startDate instanceof Date) || !(endDate instanceof Date))
+		return null;
+
+	return (
+		<div className="form-row">
+			<div className="form-item sm">
+				<label>Start date: </label>
+				<input 
+					type="date" 
+					// onChange={e => dispatch({type: "UPDATE_FORM_FIELD", field: "title", value: e.target.value})} 
+					value={dateToInputString(startDate)}
+					disabled
+				/>
+				{/* {state.errors.title !== undefined && <span class="form-item-error">{state.errors.title}</span>} */}
+			</div>
+			<div className="form-item sm">
+				<label>End date: </label>
+				<input 
+					type="date" 
+					// onChange={e => dispatch({type: "UPDATE_FORM_FIELD", field: "row", value: parseInt(e.target.value)})} 
+					value={dateToInputString(endDate)}
+					disabled
+				/>
+				{/* {state.errors.row !== undefined && <span class="form-item-error">{state.errors.row}</span>} */}
+			</div>
+		</div>
+	)
+}
+
+const CreateEpicForm = ({intermediateEpic, setAlert, clearIntermediateEpic}) => {
+	const [state, dispatch] = useReducer(reducer, {log: null, errors: {}, values: {title: "", row: 1, startDate: new Date().toDateString(), endDate: new Date().toDateString()}});
 	const [global, globalDispatch] = useContext(Global);
+
+	const submitButtonRef = useRef(null);
 
 	const createEpic = (e) => {
 		const url = settings.API_ROOT + "/project/" + global.project.id + "/epic";
 		const token = localStorage.getItem("token");
 
 		let createEpicReq = {
-			...state.values
+			title: state.values.title,
+			startDate: intermediateEpic.startDate,
+			endDate: intermediateEpic.endDate,
+			row: intermediateEpic.row
 		};
 
-		const today = new Date();
-		createEpicReq.startDate = today;
-		createEpicReq.endDate = add(today, {days: 1});
-
 		Helper.http.request(url, "POST", token, createEpicReq, true)
-		.then(epicCreated => console.log(epicCreated))
+		.then(epicCreated => {
+			clearIntermediateEpic();
+		})
 		.catch(e => console.error(e));
 	}
+
+	useEffect(() => {
+		if (intermediateEpic === undefined) {
+			submitButtonRef.current.disabled = true;
+		}
+		else {
+			submitButtonRef.current.disabled = false;
+		}
+	}, [intermediateEpic])
 
 	return (
 		<>
@@ -55,16 +110,19 @@ const CreateEpicForm = (props) => {
 					<div className="form-item sm">
 						<label>Row: </label>
 						<input 
-							type="text" 
-							onChange={e => dispatch({type: "UPDATE_FORM_FIELD", field: "row", value: parseInt(e.target.value)})} 
-							value={state.values.row}
+							type="number" 
+							// onChange={e => dispatch({type: "UPDATE_FORM_FIELD", field: "row", value: parseInt(e.target.value)})} 
+							value={intermediateEpic === undefined ? 0 : intermediateEpic.row}
+							disabled
 						/>
 						{state.errors.row !== undefined && <span class="form-item-error">{state.errors.row}</span>}
 					</div>
 				</div>
 				
+				{intermediateEpic !== undefined && <DateRow startDate={intermediateEpic.startDate} endDate={intermediateEpic.endDate} />}
+				
 				<div className="form-row">
-					<button onClick={createEpic}>Create</button>
+					<button ref={submitButtonRef} onClick={createEpic}>Create</button>
 				</div>
 				<div className="form-row">
 					{state.log !== null && <div className={"form-item-alert " + state.log.type}>{state.log.message}</div>}

@@ -20,8 +20,11 @@
 .vertical-scale {
 	display: flex;
 	flex-direction: column;
+	position: sticky;
+	left: 0;
 	/* // border-bottom: 0.1px red solid; */
-
+	background-color: white;
+	z-index: 2;
 }
 
 .vertical-scale div {
@@ -36,6 +39,10 @@
 	display: flex;
 	flex-direction: row;
 	width: fit-content;
+	position: sticky;
+	top: 0;
+	background-color: white;
+	z-index: 2;
 }
 
 .horizontal-scale div span{

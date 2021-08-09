@@ -223,6 +223,10 @@ button {
 	margin: 0 1rem 1rem 0;
 }
 
+button:disabled {
+	opacity: 0.5;
+}
+
 .x-sm {
 	width: calc(var(--default-width) / 4);
 }
@@ -268,5 +272,5 @@ button {
 .canvas-wrapper {
 	width: 100%;
 	overflow-x: scroll;
-	height: 500px;
+	height: 100%;
 }

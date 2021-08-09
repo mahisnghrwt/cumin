@@ -54,6 +54,9 @@ const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData,
 	const epicDragEndHandler = (e) => {
 		e.stopPropagation();
 
+		if (id === "intermediate")
+			return;
+
 		switch(e.target.className) {
 			case "epic-resize-left-handle":
 				ApiCalls.patchEpicDuration({startDate, endDate, id}, projectId, localStorage.getItem("token"));

@@ -96,7 +96,7 @@ const createEpic = (pos, refDate, canvasSize, grids) => {
 		startDate,
 		endDate,
 		row: gridPos.y,
-		id: getId__()
+		id: "intermediate"
 	}
 
 	return epic;
@@ -139,7 +139,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		if (epic == null)
 			return;
 
-		dispatch({type: "ADD_EPIC", epic});
+		dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic});
 	}
 
 	const createIntermediatePath = (originEpicId, rawEndpoint) => {
@@ -221,7 +221,15 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 	}
 
 	const moveEpic = (epicId, targetDate) => {
-		const epic = state.epics[epicId];
+		let epic = null;
+		if (epicId === "intermediate")
+			epic = state.intermediate.epic;
+		else
+			epic = state.epics[epicId];
+
+
+		if (epic === null || epic === undefined)
+			return;
 
 		if (targetDate.isEqual(epic.startDate)) {
 			return;
@@ -235,7 +243,11 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 			increaseCanvasSizeBy(1);
 		}
 
-		dispatch({type: "UPDATE_EPIC", id: epicId, patch: {startDate: targetDate, endDate: newEndDate}})
+		let action = {type: "UPDATE_EPIC", id: epicId, patch: {startDate: targetDate, endDate: newEndDate}};
+		if (epicId === "intermediate") {
+			action = {type: "UPDATE_INTERMEDIATE_EPIC", epic: {startDate: targetDate, endDate: newEndDate}};
+		}
+		dispatch(action)
 	}
 
 
@@ -319,6 +331,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		const epic_ = epicPreprocessing(epic);
 
 		usedRows.current.add(epic_.row);
+		increaseCanvasRowsIfEpicOverflow(epic);
 
 		dispatch({type: "ADD_EPIC", epic: epic_});
 	}
@@ -349,7 +362,11 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		return row;
 	}
 
-	
+	const increaseCanvasRowsIfEpicOverflow = (epic) => {
+		if (epic.row > state.canvas.row) {
+			dispatch({type: "UPDATE_CANVAS", patch: {rows: epic.row + 1}});
+		}
+	}
 
 	useEffect(() => {
 		let statePatch = {};
@@ -405,13 +422,13 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 	return (
 		<div className="canvas-with-scale" style={{position: "relative"}}>
 			<HorizontalScale 
-				style={{height: HORIZONTAL_SCALE_HEIGHT, position: "relative", left: `${VERTICAL_SCALE_WIDTH}px`}} 
+				style={{height: HORIZONTAL_SCALE_HEIGHT, position: "sticky", left: `${VERTICAL_SCALE_WIDTH}px`}} 
 				startDate={state.canvas.startDate} 
 				endDate={state.canvas.endDate} 
 				baseNodeDimensions={BASE_NODE_DIMENSIONS} 
 				unit={SCALE_UNIT.month}
 			/>
-			<VerticalScale style={{width: VERTICAL_SCALE_WIDTH}} labels={["label 1", "label 2", "label 3"]} unit={BASE_NODE_DIMENSIONS} />
+			<VerticalScale style={{width: VERTICAL_SCALE_WIDTH, position: "sticky"}} labels={["label 1", "label 2", "label 3"]} unit={BASE_NODE_DIMENSIONS} />
 			<div 
 				className="canvas-layer" 
 				id="canvas-layer"
@@ -448,6 +465,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 					{state.intermediate.epic !== undefined && (
 						<Epic 
 						key={state.intermediate.epic.id}
+						dragData={dragData}
 						{...state.intermediate.epic}
 						canvas={{
 							dimensions: {...canvasSize},

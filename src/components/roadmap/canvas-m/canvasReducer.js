@@ -100,6 +100,7 @@ const reducer = (state, action) => {
 				intermediate: {
 					...state.intermediate,
 					epic: {
+						...state.intermediate.epic,
 						...action.epic
 					}
 				}
