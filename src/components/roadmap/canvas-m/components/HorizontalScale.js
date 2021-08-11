@@ -13,44 +13,6 @@ const reducer__ = (labels, action) => {
 	}
 }
 
-/**
- * 
- * @param {Date} startDate 
- * @param {Date} endDate 
- * @param {string} unit 
- * @param {{height: number, width: number}} baseNodeDimensions
- */
-const makeLabels__ = (startDate, endDate, unit, baseNodeDimensions) => {
-	let labels = [];
-
-	let l = new Date(startDate);
-	let endReached = false;
-	while(!endReached) {
-		let temp = getNextDate__(l, unit);
-		let r;
-		if (temp < endDate) {
-			r = temp;
-		}
-		else  {
-			r = endDate;
-		}
-
-		let d = differenceInDays(r, l) + 1;
-
-
-		// let cumulative = labels.length > 0 ? labels[labels.length - 1].width : 0;
-		labels.push({value: l.toDateString(), width: (d * baseNodeDimensions.width)})
-		
-		if (differenceInDays(endDate, r) === 0) {
-			endReached = true;
-		}
-
-		l = add(r, {days: 1});
-	}
-
-	return labels;
-}
-
 const getDateString = date => {
 	return Helper.dateToInputString(date);
 }
@@ -60,8 +22,6 @@ const makeLabels = (startDate, endDate, unit, baseNodeDimensions) => {
 
 	let prevDate = null;
 	let endReached = false;
-
-	debugger;
 
 	while(!endReached) {
 		let currentDate = prevDate === null ? new Date(startDate) : getNextDate__(prevDate, unit);
@@ -100,6 +60,10 @@ const getNextDate__ = (date, unit) => {
 			break;
 		case SCALE_UNIT.month:
 			nextDate = endOfMonth(date);
+			break;
+		case SCALE_UNIT.day:
+			// console.log("Hello")
+			nextDate = date;
 			break;
 		default:
 			throw new Error(`Unknown case ${unit}`);

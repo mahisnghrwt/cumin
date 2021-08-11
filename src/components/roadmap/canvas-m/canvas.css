@@ -22,15 +22,19 @@
 	flex-direction: column;
 	position: sticky;
 	left: 0;
-	/* // border-bottom: 0.1px red solid; */
 	background-color: white;
 	z-index: 2;
+	box-sizing: border-box;
+	padding-right: 0.25rem;
 }
 
-.vertical-scale div {
+.vertical-scale-label {
 	display: flex;
-	flex-direction: column;
-	justify-content: center;
+	flex-direction: row;
+	justify-content: flex-end;
+	align-items: center;
+	font-weight: bold;
+	font-size: 0.75rem;
 }
 
 

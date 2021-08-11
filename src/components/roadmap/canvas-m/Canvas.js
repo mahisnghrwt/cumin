@@ -421,9 +421,9 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 				startDate={state.canvas.startDate} 
 				endDate={state.canvas.endDate} 
 				baseNodeDimensions={BASE_NODE_DIMENSIONS} 
-				unit={SCALE_UNIT.week}
+				unit={SCALE_UNIT.day}
 			/>
-			<VerticalScale style={{width: VERTICAL_SCALE_WIDTH, position: "sticky"}} labels={["label 1", "label 2", "label 3"]} unit={BASE_NODE_DIMENSIONS} />
+			<VerticalScale style={{width: VERTICAL_SCALE_WIDTH, position: "sticky"}} labels={Object.values(state.epics).map(x => x.title)} unit={BASE_NODE_DIMENSIONS} />
 			<div 
 				className="canvas-layer" 
 				id="canvas-layer"

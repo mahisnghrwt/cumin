@@ -81,7 +81,7 @@ body, #root {
 	width: var(--default-width);
 	border: 1px solid var(--border-color);
 	padding: 0 1rem;
-
+	z-index: 3;
 }
 
 .right-sidebar-close-button {
