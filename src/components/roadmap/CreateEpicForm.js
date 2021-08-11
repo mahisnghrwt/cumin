@@ -18,17 +18,17 @@ const reducer = (state, action) => {
 }
 
 
-const dateToInputString = (date) => {
-	let m = date.getMonth().toString();
-	let d = date.getDate().toString();
+// const dateToInputString = (date) => {
+// 	let m = date.getMonth().toString();
+// 	let d = date.getDate().toString();
   
-	if (m.length < 2)
-	  m = "0" + m;
+// 	if (m.length < 2)
+// 	  m = "0" + m;
   
-	if (d.length < 2)
-	  d = "0" + d;
-	return `${date.getFullYear()}-${m}-${d}`
-  }
+// 	if (d.length < 2)
+// 	  d = "0" + d;
+// 	return `${date.getFullYear()}-${m}-${d}`
+//   }
 
 const DateRow = ({startDate, endDate}) => {
 	if (!(startDate instanceof Date) || !(endDate instanceof Date))
@@ -41,7 +41,7 @@ const DateRow = ({startDate, endDate}) => {
 				<input 
 					type="date" 
 					// onChange={e => dispatch({type: "UPDATE_FORM_FIELD", field: "title", value: e.target.value})} 
-					value={dateToInputString(startDate)}
+					value={Helper.dateToInputString(startDate)}
 					disabled
 				/>
 				{/* {state.errors.title !== undefined && <span class="form-item-error">{state.errors.title}</span>} */}
@@ -51,7 +51,7 @@ const DateRow = ({startDate, endDate}) => {
 				<input 
 					type="date" 
 					// onChange={e => dispatch({type: "UPDATE_FORM_FIELD", field: "row", value: parseInt(e.target.value)})} 
-					value={dateToInputString(endDate)}
+					value={Helper.dateToInputString(endDate)}
 					disabled
 				/>
 				{/* {state.errors.row !== undefined && <span class="form-item-error">{state.errors.row}</span>} */}

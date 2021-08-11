@@ -35,7 +35,6 @@
 
 
 .horizontal-scale {
-	/* border: 1px red solid; */
 	display: flex;
 	flex-direction: row;
 	width: fit-content;
@@ -43,17 +42,18 @@
 	top: 0;
 	background-color: white;
 	z-index: 2;
+
 }
 
-/* .horizontal-scale div {
-	display: inline-block;
-} */
-
-.horizontal-scale div span{
+.horizontal-scale-label {
+	width: fit-content;
 	font-size: 0.75rem;
-	/* display: inline-block;
-	transform: rotate(-35deg);
-	position: absolute; */
+	display: inline-block;
+	transform-origin: left;
+	transform: rotate(-45deg);
+	position: absolute;
+	white-space: nowrap;
+	bottom: 0;
 }
 
 .epic-left-tip, .epic-right-tip {

@@ -42,7 +42,7 @@ const EPIC_DEFAULT_COLOR = "#7ed6df";
 const GRIDLINE_COLOR = "#bdc3c7";
 const GRIDLINE_SIZE_IN_PX = 1;
 const VERTICAL_SCALE_WIDTH = 100;
-const HORIZONTAL_SCALE_HEIGHT = 20;
+const HORIZONTAL_SCALE_HEIGHT = 60;
 
 const INTERACTIVE_LAYER_CLASS_NAME = "interactive-layer";
 const EPIC_CLASS_NAME = "epic";

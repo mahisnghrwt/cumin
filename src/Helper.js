@@ -98,7 +98,18 @@ const Helper = {
 		}
 	},
 	http: http,
-	css: css
+	css: css,
+	dateToInputString: (date) => {
+		let m = date.getMonth().toString();
+		let d = date.getDate().toString();
+	  
+		if (m.length < 2)
+		  m = "0" + m;
+	  
+		if (d.length < 2)
+		  d = "0" + d;
+		return `${date.getFullYear()}-${m}-${d}`
+	  }
 }
 
 
