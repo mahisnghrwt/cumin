@@ -64,15 +64,13 @@ export const epicPreprocessing = (epic) => {
 export const generateGridlinesCss = (nodeDimensions, gridlineWidth, gridlineColor)  => {
 	const verticalGirdlinesCss = `repeating-linear-gradient(
 	to right, 
-	${gridlineColor} 0 1px,
-	transparent 1px ${nodeDimensions.width - gridlineWidth}px, 
-	${gridlineColor} ${nodeDimensions.width - gridlineWidth}px ${nodeDimensions.width}px)`;
+	transparent 0 ${nodeDimensions.width - 1}px,
+	${gridlineColor} ${nodeDimensions.width -1}px ${nodeDimensions.width}px)`;
 
 	const horizontalGridlinesCss = `repeating-linear-gradient(
 	to bottom, 
-	${gridlineColor} 0 1px,
-	transparent 1px ${nodeDimensions.height - 1}px, 
-	${gridlineColor} ${nodeDimensions.height - 1}px ${nodeDimensions.height}px)`;
+	transparent 0 ${nodeDimensions.height - 1}px, 
+	${gridlineColor} ${nodeDimensions.height + -1}px ${nodeDimensions.height}px)`;
 
 	return horizontalGridlinesCss + ", " + verticalGirdlinesCss;
 }

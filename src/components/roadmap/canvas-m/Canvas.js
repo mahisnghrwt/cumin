@@ -104,11 +104,6 @@ const createEpic = (pos, refDate, canvasSize, grids) => {
 
 const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 	const [global, globalDispatch] = useContext(Global);
-	// const [state, dispatch] = useReducer(reducer, {epics: {}, paths: {}, intermediate: {}, canvas: {
-	// 	startDate: new Date(),
-	// 	endDate: add(new Date(), {days: CANVAS_DEFAULT_LENGTH}),
-	// 	rows: CANVAS_DEFAULT_ROWS
-	// }});
 
 	const numOfUnits = {
 		x: differenceInDays(state.canvas.endDate, state.canvas.startDate),
@@ -426,7 +421,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 				startDate={state.canvas.startDate} 
 				endDate={state.canvas.endDate} 
 				baseNodeDimensions={BASE_NODE_DIMENSIONS} 
-				unit={SCALE_UNIT.month}
+				unit={SCALE_UNIT.week}
 			/>
 			<VerticalScale style={{width: VERTICAL_SCALE_WIDTH, position: "sticky"}} labels={["label 1", "label 2", "label 3"]} unit={BASE_NODE_DIMENSIONS} />
 			<div 

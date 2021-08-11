@@ -1,6 +1,7 @@
 #canvas-layer {
-	border: 1px solid red;
 	position: relative;
+	border: 1px solid lightgrey;
+	box-sizing: border-box;
 }
 
 #interactive-layer {
@@ -9,7 +10,6 @@
 	position: absolute;
 	top: 0;
 	left: 0;
-	border:1px solid blue;
 }
 
 #svg-layer {
@@ -35,7 +35,7 @@
 
 
 .horizontal-scale {
-	border: 1px red solid;
+	/* border: 1px red solid; */
 	display: flex;
 	flex-direction: row;
 	width: fit-content;
@@ -45,24 +45,31 @@
 	z-index: 2;
 }
 
+/* .horizontal-scale div {
+	display: inline-block;
+} */
+
 .horizontal-scale div span{
 	font-size: 0.75rem;
+	/* display: inline-block;
+	transform: rotate(-35deg);
+	position: absolute; */
 }
 
 .epic-left-tip, .epic-right-tip {
 	position: absolute;
-	left: -0.25rem;
-	top: 50%;
+	left: -0.5rem;
+	top: calc(50% - 0.25rem);
 	width: 0.5rem;
 	height: 0.5rem;
 	border-radius: 50%;
 	background-color: #ff7979;
-	opacity: 0.5;
+	opacity: 0.7;
 }
 
 .epic-right-tip {
 	left: auto;
-	right: -0.25rem;
+	right: -0.5rem;
 }
 
 .epic-left-tip:hover, .epic-right-tip:hover {
@@ -75,7 +82,7 @@
 	position: absolute;
 	left: 0;
 	top: 0;
-	opacity: 0.5;
+	opacity: 0.7;
 }	
 
 .epic-resize-right-handle {

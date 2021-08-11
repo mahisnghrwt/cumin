@@ -272,5 +272,5 @@ button:disabled {
 .canvas-wrapper {
 	width: 100%;
 	overflow-x: scroll;
-	height: 100%;
+	height: 700px;
 }

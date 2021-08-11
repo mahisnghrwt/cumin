@@ -35,7 +35,10 @@ const makeLabels__ = (startDate, endDate, unit, baseNodeDimensions) => {
 		}
 
 		let d = differenceInDays(r, l) + 1;
-		labels.push({value: l.toDateString(), width: d * baseNodeDimensions.width})
+
+
+		// let cumulative = labels.length > 0 ? labels[labels.length - 1].width : 0;
+		labels.push({value: l.toDateString(), width: (d * baseNodeDimensions.width)})
 		
 		if (differenceInDays(endDate, r) === 0) {
 			endReached = true;
@@ -49,12 +52,12 @@ const makeLabels__ = (startDate, endDate, unit, baseNodeDimensions) => {
 
 const getNextDate__ = (date, unit) => {
 	switch(unit) {
-		case SCALE_UNIT.week: {
-			return nextSunday(date)
-		}
-		case SCALE_UNIT.month: {
+		case SCALE_UNIT.week:
+			return nextSunday(date);
+		case SCALE_UNIT.month:
 			return endOfMonth(date);
-		}
+		case SCALE_UNIT.day:
+			return add(date, {days: 1});
 		default:
 			throw new Error(`Unknown case ${unit}`);
 	}

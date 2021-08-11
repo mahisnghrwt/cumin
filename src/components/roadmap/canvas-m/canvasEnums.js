@@ -5,7 +5,8 @@ export const BASE_NODE_DIMENSIONS = {
 
 export const SCALE_UNIT = {
 	week: "week",
-	month: "month"
+	month: "month",
+	day: "day"
 }
 
 export const EPIC_FACE = {
