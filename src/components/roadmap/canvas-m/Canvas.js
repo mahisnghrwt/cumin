@@ -23,7 +23,7 @@ import useAddRowsToFitEpic from "./hooks/useAddRowsToFitEpic";
 
 const COMPONENT_ID = "CANVAS";
 
-const DEFAULT_ROWS = 5;
+const DEFAULT_ROWS = 7;
 const DEFAULT_ROADMAP_DURATION = 100;
 
 const EPIC_DEFAULT_COLOR = "#7ed6df";
@@ -437,7 +437,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 				/>
 			</div>
 			<div className="canvas-with-scale-row">
-				<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(state.epics)} unit={BASE_NODE_DIMENSIONS} />
+				<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(state.epics)} unit={BASE_NODE_DIMENSIONS} rows={state.canvas.rows} />
 				<div 
 					className="canvas-layer" 
 					id="canvas-layer"
