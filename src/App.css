@@ -239,6 +239,11 @@ button:disabled {
 	width: calc(var(--default-width) / 2);
 }
 
+.x-sm-2 {
+	font-size: 0.85rem;
+	padding: 0.25rem 0.5rem;
+	margin: 0 0.5rem;
+}
 /* ======================ALERT-M======================================= */
 .alert-m {
 	width: 100%;
@@ -268,7 +273,7 @@ button:disabled {
 }
 
 
-/* ======================Placeholder======================================= */
+/* ======================Roadmap======================================= */
 .canvas-wrapper {
 	width: fit-content;
 	max-width: 100%;
@@ -283,4 +288,12 @@ button:disabled {
 	left: 1rem;
 	position: relative;
 	width: 75%;
+}
+
+.canvas-toolbar {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	border: 1px solid lightgrey;
+	padding: 0.25rem;
 }

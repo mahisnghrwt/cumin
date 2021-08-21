@@ -100,7 +100,8 @@ const Helper = {
 	http: http,
 	css: css,
 	dateToInputString: (date) => {
-		let m = date.getMonth().toString();
+		// Date.getMonth() returns 0 indexed month.
+		let m = (date.getMonth() + 1).toString();
 		let d = date.getDate().toString();
 	  
 		if (m.length < 2)

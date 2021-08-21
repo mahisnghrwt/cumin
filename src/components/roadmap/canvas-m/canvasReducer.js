@@ -79,6 +79,15 @@ const reducer = (state, action) => {
 					...action.patch
 				}
 			}
+		case "ADD_ROWS_TO_CANVAS":
+			// action.rows = number of rows to add
+			return {
+				...state,
+				canvas: {
+					...state.canvas,
+					rows: state.canvas.rows + action.rows
+				}
+			}
 		case "UPDATE_INTERMEDIATE_EPIC":
 			if (action.epic === null) {
 				let state_ = {

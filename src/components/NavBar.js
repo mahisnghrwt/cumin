@@ -49,7 +49,7 @@ const NavBar = ({loggedIn, activePage, extraItems}) => {
 		}
 	}
 
-	const itemsWithExtra = [].concat((typeof extraItems === "object" && Array.isArray(extraItems) ? extraItems : []), items_)
+	const itemsWithExtra = [].concat((Array.isArray(extraItems) ? extraItems : []), items_)
 	const sortedItems = sortAndFilter([].concat(itemsWithExtra, ));
 
 	return (
