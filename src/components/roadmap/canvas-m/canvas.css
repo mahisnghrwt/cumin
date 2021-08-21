@@ -1,3 +1,7 @@
+.canvas-with-scale {
+	width: max-content;
+}
+
 #canvas-layer {
 	position: relative;
 	border: 1px solid lightgrey;
@@ -26,6 +30,7 @@
 	z-index: 2;
 	box-sizing: border-box;
 	padding-right: 0.25rem;
+	flex-wrap: nowrap;
 }
 
 .vertical-scale-label {
@@ -37,25 +42,30 @@
 	font-size: 0.75rem;
 }
 
+.vertical-scale-label.placeholder-label {
+	font-weight: normal;
+	color: grey;
+}
+
 
 .horizontal-scale {
 	display: flex;
 	flex-direction: row;
-	width: fit-content;
+	flex-wrap: nowrap;
 	position: sticky;
 	top: 0;
 	background-color: white;
 	z-index: 2;
-
+	align-items: flex-end;
 }
 
 .horizontal-scale-label {
 	width: fit-content;
 	font-size: 0.75rem;
-	display: inline-block;
+	display: block;
 	transform-origin: left;
 	transform: rotate(-45deg);
-	position: absolute;
+	position: relative;
 	white-space: nowrap;
 	bottom: 0;
 }

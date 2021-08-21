@@ -1,4 +1,4 @@
-import {differenceInDays, add} from "date-fns"
+import {differenceInDays, add, max} from "date-fns"
 
 /**
  * Converts the grid based position into pixel based position (canvas)
@@ -59,6 +59,21 @@ export const epicPreprocessing = (epic) => {
 	epic_.endDate = new Date(epic.endDate);
 	epic_.color = EPIC_DEFAULT_COLOR;
 	return epic_;
+}
+
+export const getStartEndDates = (dates, epic) => {
+	// dates[0] == startDate
+	// dates[1] == endDate
+	let newDates = [];
+
+	newDates.push(differenceInDays(dates[0], epic.startDate) > 0 ? epic.startDate : dates[0]);
+	newDates.push(differenceInDays(epic.endDate, dates[1]) > 0 ? epic.endDate : dates[1]);
+
+	return newDates;
+}
+
+export const getLastRow = (rows, epic) => {
+	return Math.max(rows, epic.row + 1);
 }
 
 export const generateGridlinesCss = (nodeDimensions, gridlineWidth, gridlineColor)  => {

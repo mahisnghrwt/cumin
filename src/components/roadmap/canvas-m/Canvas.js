@@ -1,16 +1,3 @@
-/*
- *	Custom Drag Events
- * 	==================
- *
- * 	Draggable Element
- *	----------------- 
- * 	OnDragStart => Pass drag data.
- * 
- * 	Droppable Element
- * 	-----------------
- * 	OnDrop => Clear drag data.
- */
-
 import { useContext, useEffect, useReducer, useRef } from "react";
 import "./canvas.css";
 import { BASE_NODE_DIMENSIONS, EPIC_FACE, PATH_ENDPOINT, SCALE_UNIT, DRAG_EVENTS } from "./canvasEnums";
@@ -19,7 +6,7 @@ import HorizontalScale from "./components/HorizontalScale";
 import VerticalScale from "./components/VerticalScale";
 import { differenceInDays } from "date-fns/esm";
 import { add, startOfMinute } from "date-fns";
-import {pixelToGridBasedPos__} from "./canvasHelper";
+import {getLastRow, getStartEndDates, pixelToGridBasedPos__} from "./canvasHelper";
 import Path from "./components/Path";
 import Vector2 from "./classes/Vector2"
 import Placeholder from "../../Placeholder";
@@ -32,10 +19,12 @@ import ApiCalls from "./ApiCalls";
 import {epicPreprocessing, generateGridlinesCss, shouldExtendCanvas, gridToDate} from "./canvasHelper";
 import reducer from "./canvasReducer";
 import useEpicResizer from "./useEpicResizer";
+import useAddRowsToFitEpic from "./hooks/useAddRowsToFitEpic";
 
 const COMPONENT_ID = "CANVAS";
 
-
+const DEFAULT_ROWS = 5;
+const DEFAULT_ROADMAP_DURATION = 30;
 
 const EPIC_DEFAULT_COLOR = "#7ed6df";
 
@@ -59,6 +48,13 @@ Date.prototype.isEqual = function(rhs) {
 	return (this.getFullYear() === rhs.getFullYear() && this.getMonth() === rhs.getMonth()) && this.getDate() === rhs.getDate();
 }
 
+Date.prototype.earlierThan = function(rhs) {
+	return ((this.getFullYear() < rhs.getFullYear() || this.getMonth() < rhs.getMonth()) || this.getDate() < rhs.getDate());
+}
+
+Date.prototype.laterThan = function(rhs) {
+	return ((this.getFullYear() > rhs.getFullYear() || this.getMonth() > rhs.getMonth()) || this.getDate() > rhs.getDate());
+}
 /**
  * NOTE - Must be wrapped in try-catch block, incase argument is not synthetic event.
  */
@@ -319,15 +315,16 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 	}	
 
 	const epicCreatedOverSocket = (epic) => {
-		if (epic.row >= state.canvas.rows) {
-			dispatch({type: "UPDATE_CANVAS", patch: {rows: epic.row}});
-		}
 
 		const epic_ = epicPreprocessing(epic);
+		debugger;
 
 		usedRows.current.add(epic_.row);
-		increaseCanvasRowsIfEpicOverflow(epic);
 
+		addRowsToFitEpic.current(epic_);
+		
+		extendCanvasToFitEpic(epic_);
+		
 		dispatch({type: "ADD_EPIC", epic: epic_});
 	}
 
@@ -338,39 +335,38 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 			console.error("Updated epic must be sent as an array!");
 			return;
 		}
-		if (epics[1].row >= state.canvas.row) {
-			dispatch({type: "UPDATE_CANVAS", patch: {rows: epic.row}});
-		}
+
+		// no validation of row, since epic's row cannot be updated over socket
 
 		const epic = epicPreprocessing(epics[1]);
+		extendCanvasToFitEpic(epic);
 
-		// dispatch epic update
 		dispatch({type: "UPDATE_EPIC", id: epic.id, patch: epic});
 	}
 
-	const getMaxRow = (epics) => {
-		let row = -1;
-		Object.values(epics).forEach(epic => {
-			row = Math.max(row, epic.row);
-		})
+	const addRowsToFitEpic = useAddRowsToFitEpic(state, dispatch);
 
-		return row;
-	}
-
-	const increaseCanvasRowsIfEpicOverflow = (epic) => {
-		if (epic.row > state.canvas.row) {
-			dispatch({type: "UPDATE_CANVAS", patch: {rows: epic.row + 1}});
+	const extendCanvasToFitEpic = (epic) => {
+		if (epic.startDate.laterThan(state.canvas.startDate) && epic.endDate.earlierThan(state.canvas.endDate)) {
+			return;
 		}
+
+		const patchedRoadmapDuration = getStartEndDates([state.canvas.startDate, state.canvas.endDate], epic);
+
+		dispatch({type: "UPDATE_CANVAS", patch: {startDate: patchedRoadmapDuration[0], endDate: patchedRoadmapDuration[1]}});
 	}
 
 	useEffect(() => {
 		let statePatch = {};
 		const token = localStorage.getItem("token");
 
-		console.log(global);
-		const getEpicUrl = settings.API_ROOT + "/project/" + global.project.id + "/epic";
 
 		(async () => {
+			let lastRow = DEFAULT_ROWS;
+			let roadmapDuration = [new Date(), add(new Date(), {days: DEFAULT_ROADMAP_DURATION})];
+
+			const getEpicUrl = settings.API_ROOT + "/project/" + global.project.id + "/epic";
+			
 			try {
 				const epics = await Helper.http.request(getEpicUrl, "GET", token, null, true);
 				statePatch.epics = {...epics};
@@ -382,14 +378,24 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 				return;
 
 			Object.keys(statePatch.epics).forEach(key => {
+				// some preprocessing for our React components (e.g. string date to Date)
 				statePatch.epics[key] = epicPreprocessing(statePatch.epics[key]);
+
+				// get the last row for roadmap
+				lastRow = getLastRow(lastRow, statePatch.epics[key]);
+				
+				// determine roadmap duration
+				roadmapDuration = getStartEndDates(roadmapDuration, statePatch.epics[key]);
+
+				// mark the rows as used
 				usedRows.current.add(statePatch.epics[key].row);
 			})
 
-			const maxRow = getMaxRow(statePatch.epics);
-			if (maxRow >= state.canvas.rows) {
-				dispatch({type: "UPDATE_CANVAS", patch: {rows: maxRow + 1}});
-			};
+			dispatch({type: "UPDATE_CANVAS", patch: {
+				rows: lastRow, 
+				startDate: roadmapDuration[0], 
+				endDate: roadmapDuration[1]
+			}});
 
 			dispatch({type: "PATCH", patch: statePatch});
 
@@ -410,20 +416,20 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		// add all the socket listeners
 	}, []);
 
-	if (Object.values(state.epics).length === 0) {
-		return  <Placeholder><span style={{color: "white"}}>&#128528; Create an epic to start working on Roadmap.</span></Placeholder>
-	}
+	// if (Object.values(state.epics).length === 0) {
+	// 	return  <Placeholder><span style={{color: "white"}}>&#128528; Create an epic to start working on Roadmap.</span></Placeholder>
+	// }
 
 	return (
 		<div className="canvas-with-scale" style={{position: "relative"}}>
-			<HorizontalScale 
-				style={{height: HORIZONTAL_SCALE_HEIGHT, position: "sticky", left: `${VERTICAL_SCALE_WIDTH}px`}} 
+			{/* <HorizontalScale 
+				style={{height: HORIZONTAL_SCALE_HEIGHT, marginLeft: `${VERTICAL_SCALE_WIDTH}px`}} 
 				startDate={state.canvas.startDate} 
 				endDate={state.canvas.endDate} 
 				baseNodeDimensions={BASE_NODE_DIMENSIONS} 
 				unit={SCALE_UNIT.day}
-			/>
-			<VerticalScale style={{width: VERTICAL_SCALE_WIDTH, position: "sticky"}} labels={Object.values(state.epics).map(x => x.title)} unit={BASE_NODE_DIMENSIONS} />
+			/> */}
+			<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(state.epics)} unit={BASE_NODE_DIMENSIONS} />
 			<div 
 				className="canvas-layer" 
 				id="canvas-layer"

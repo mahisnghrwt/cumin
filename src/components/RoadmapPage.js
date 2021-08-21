@@ -36,7 +36,7 @@ const RoadmapPage = () => {
 		<>
 			<NavBar loggedIn={true} activePage={ACTIVE_PAGE} extraItems={[]} />
 			{alert !== null && <AlertBar messageJsx={alert.message} alertType={alert.type} />}
-			<div className="content">
+			<div className="roadmap-container">
 				<div className="right-sidebar">
 					<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediate.epic} clearIntermediateEpic={clearIntermediateEpic} />
 				</div>

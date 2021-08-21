@@ -270,7 +270,17 @@ button:disabled {
 
 /* ======================Placeholder======================================= */
 .canvas-wrapper {
-	width: 100%;
-	overflow-x: scroll;
-	height: 700px;
+	width: fit-content;
+	max-width: 100%;
+	overflow: auto;
+	height: fit-content;
+	max-height: 90vh;
+	padding: 1rem 0;
+	background-color: white;
+}
+
+.roadmap-container {
+	left: 1rem;
+	position: relative;
+	width: 75%;
 }

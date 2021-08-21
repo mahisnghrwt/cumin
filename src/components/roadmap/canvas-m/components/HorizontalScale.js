@@ -62,7 +62,6 @@ const getNextDate__ = (date, unit) => {
 			nextDate = endOfMonth(date);
 			break;
 		case SCALE_UNIT.day:
-			// console.log("Hello")
 			nextDate = date;
 			break;
 		default:
@@ -81,11 +80,13 @@ const HorizontalScale = ({startDate, endDate, unit, style, baseNodeDimensions}) 
 
 	}, [startDate, endDate, unit])
 
+	const width = differenceInDays(endDate, startDate) * baseNodeDimensions.width;
+
 	return (
 		// Make sure the horizontal scale can enclose the labels even when diagonal
-		<div className="horizontal-scale" style={{...style}}>
+		<div className="horizontal-scale" style={{...style, width}}>
 			{labels.map(x => {
-				return <span className="horizontal-scale-label" key={x.label} style={{left: x.posX}}>
+				return <span className="horizontal-scale-label" key={x.label} style={{width: baseNodeDimensions.width}}>
 					{x.label}
 				</span>
 			})}
