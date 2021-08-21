@@ -24,14 +24,14 @@ import useAddRowsToFitEpic from "./hooks/useAddRowsToFitEpic";
 const COMPONENT_ID = "CANVAS";
 
 const DEFAULT_ROWS = 5;
-const DEFAULT_ROADMAP_DURATION = 30;
+const DEFAULT_ROADMAP_DURATION = 100;
 
 const EPIC_DEFAULT_COLOR = "#7ed6df";
 
 const GRIDLINE_COLOR = "#bdc3c7";
 const GRIDLINE_SIZE_IN_PX = 1;
-const VERTICAL_SCALE_WIDTH = 100;
-const HORIZONTAL_SCALE_HEIGHT = 60;
+const VERTICAL_SCALE_WIDTH = "100px";
+const HORIZONTAL_SCALE_HEIGHT = "60px";
 
 const INTERACTIVE_LAYER_CLASS_NAME = "interactive-layer";
 const EPIC_CLASS_NAME = "epic";
@@ -422,68 +422,60 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 
 	return (
 		<div className="canvas-with-scale" style={{position: "relative"}}>
-			{/* <HorizontalScale 
-				style={{height: HORIZONTAL_SCALE_HEIGHT, marginLeft: `${VERTICAL_SCALE_WIDTH}px`}} 
-				startDate={state.canvas.startDate} 
-				endDate={state.canvas.endDate} 
-				baseNodeDimensions={BASE_NODE_DIMENSIONS} 
-				unit={SCALE_UNIT.day}
-			/> */}
-			<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(state.epics)} unit={BASE_NODE_DIMENSIONS} />
-			<div 
-				className="canvas-layer" 
-				id="canvas-layer"
-				style={{
-					...canvasSize,
-					position: "absolute",
-					left: `${VERTICAL_SCALE_WIDTH}px`,
-					top: `${HORIZONTAL_SCALE_HEIGHT}px`,
-					backgroundImage: generateGridlinesCss(BASE_NODE_DIMENSIONS, GRIDLINE_SIZE_IN_PX, GRIDLINE_COLOR)
-				}}>
-
-				{/* Svg Layer */}
-				<svg id="svg-layer">
-					{Object.values(state.paths).map(x => {
-						return <Path 
-							canvas={{startDate: state.canvas.startDate}}
-							from={state.epics[x.from]}
-							to={state.epics[x.to]}
-							id={id} />
-					})}
-					{state.intermediate.path !== undefined && <Path path={state.intermediate.path} canvas={{startDate: state.canvas.startDate}} />}
-				</svg>
-
+			<div className="canvas-with-scale-row">
+				<div className="canvas-with-scale-origin"
+					style={{
+						height: HORIZONTAL_SCALE_HEIGHT,
+						width: VERTICAL_SCALE_WIDTH
+					}} />
+				<HorizontalScale 
+					style={{height: HORIZONTAL_SCALE_HEIGHT}} 
+					startDate={state.canvas.startDate} 
+					endDate={state.canvas.endDate} 
+					baseNodeDimensions={BASE_NODE_DIMENSIONS} 
+					unit={SCALE_UNIT.day}
+				/>
+			</div>
+			<div className="canvas-with-scale-row">
+				<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(state.epics)} unit={BASE_NODE_DIMENSIONS} />
 				<div 
-					id="interactive-layer"
-					className="interactive-layer"
-					onDragOver={dragOver}
-					onDrop={drop}
-					onDoubleClick={interactiveLayerDoubleClickHandler}
-					// onMouseMove={interactiveLayerMouseMoveHandler}
-					// onMouseLeave={interactiveLayerMouseLeaveHandler}
-					mouse
-				>
-					{state.intermediate.epic !== undefined && (
-						<Epic 
-						key={state.intermediate.epic.id}
-						dragData={dragData}
-						{...state.intermediate.epic}
-						canvas={{
-							dimensions: {...canvasSize},
-							startDate: state.canvas.startDate,
-							endDate: state.canvas.endDate,
-							grid: {
-								...numOfUnits
-							}
-						}} />
-					)}
-					{Object.values(state.epics).map((x) => {
-						return <Epic 
-							key={x.id}
-							createPath={createIntermediatePath}
-							notifyPathEnd={finaliseIntermediatePath}
+					className="canvas-layer" 
+					id="canvas-layer"
+					style={{
+						...canvasSize,
+						// position: "absolute",
+						// left: VERTICAL_SCALE_WIDTH,
+						// top: HORIZONTAL_SCALE_HEIGHT,
+						backgroundImage: generateGridlinesCss(BASE_NODE_DIMENSIONS, GRIDLINE_SIZE_IN_PX, GRIDLINE_COLOR)
+					}}>
+
+					{/* Svg Layer */}
+					<svg id="svg-layer">
+						{Object.values(state.paths).map(x => {
+							return <Path 
+								canvas={{startDate: state.canvas.startDate}}
+								from={state.epics[x.from]}
+								to={state.epics[x.to]}
+								id={id} />
+						})}
+						{state.intermediate.path !== undefined && <Path path={state.intermediate.path} canvas={{startDate: state.canvas.startDate}} />}
+					</svg>
+
+					<div 
+						id="interactive-layer"
+						className="interactive-layer"
+						onDragOver={dragOver}
+						onDrop={drop}
+						onDoubleClick={interactiveLayerDoubleClickHandler}
+						// onMouseMove={interactiveLayerMouseMoveHandler}
+						// onMouseLeave={interactiveLayerMouseLeaveHandler}
+						mouse
+					>
+						{state.intermediate.epic !== undefined && (
+							<Epic 
+							key={state.intermediate.epic.id}
 							dragData={dragData}
-							{...x}
+							{...state.intermediate.epic}
 							canvas={{
 								dimensions: {...canvasSize},
 								startDate: state.canvas.startDate,
@@ -492,9 +484,27 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 									...numOfUnits
 								}
 							}} />
-					})}
+						)}
+						{Object.values(state.epics).map((x) => {
+							return <Epic 
+								key={x.id}
+								createPath={createIntermediatePath}
+								notifyPathEnd={finaliseIntermediatePath}
+								dragData={dragData}
+								{...x}
+								canvas={{
+									dimensions: {...canvasSize},
+									startDate: state.canvas.startDate,
+									endDate: state.canvas.endDate,
+									grid: {
+										...numOfUnits
+									}
+								}} />
+						})}
+					</div>
 				</div>
 			</div>
+			
 		</div>
   );
 }

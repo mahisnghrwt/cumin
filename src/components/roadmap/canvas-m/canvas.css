@@ -1,5 +1,14 @@
 .canvas-with-scale {
-	width: max-content;
+	width: fit-content;
+	height: fit-content;
+	display: flex;
+	flex-direction: column;
+}
+
+.canvas-with-scale-row {
+	display: flex;
+	flex-direction: row;
+	margin-right: 100px;
 }
 
 #canvas-layer {
@@ -25,7 +34,7 @@
 	display: flex;
 	flex-direction: column;
 	position: sticky;
-	left: 0;
+	/* left: 0; */
 	background-color: white;
 	z-index: 2;
 	box-sizing: border-box;
