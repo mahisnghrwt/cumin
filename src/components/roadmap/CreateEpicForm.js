@@ -17,19 +17,6 @@ const reducer = (state, action) => {
 	}
 }
 
-
-// const dateToInputString = (date) => {
-// 	let m = date.getMonth().toString();
-// 	let d = date.getDate().toString();
-  
-// 	if (m.length < 2)
-// 	  m = "0" + m;
-  
-// 	if (d.length < 2)
-// 	  d = "0" + d;
-// 	return `${date.getFullYear()}-${m}-${d}`
-//   }
-
 const DateRow = ({startDate, endDate}) => {
 	if (!(startDate instanceof Date) || !(endDate instanceof Date))
 		return null;
@@ -123,6 +110,7 @@ const CreateEpicForm = ({intermediateEpic, setAlert, clearIntermediateEpic}) => 
 				
 				<div className="form-row">
 					<button ref={submitButtonRef} onClick={createEpic}>Create</button>
+					{intermediateEpic !== undefined && <button className="bg-red" onClick={clearIntermediateEpic}>Cancel</button>}
 				</div>
 				<div className="form-row">
 					{state.log !== null && <div className={"form-item-alert " + state.log.type}>{state.log.message}</div>}

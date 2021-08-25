@@ -27,7 +27,7 @@ const makeLabels = (startDate, endDate, unit, baseNodeDimensions) => {
 		let currentDate = prevDate === null ? new Date(startDate) : getNextDate__(prevDate, unit);
 
 		// if the current date is greater than the end date of canvas 
-		if (differenceInDays(currentDate, endDate) >= 0) {
+		if (differenceInDays(currentDate, endDate) >= -1) {
 			// dont run the next loop iteration
 			endReached = true;
 			currentDate = sub(endDate, {days: 1});

@@ -26,7 +26,7 @@ const COMPONENT_ID = "CANVAS";
 const DEFAULT_ROWS = 7;
 const DEFAULT_ROADMAP_DURATION = 100;
 
-const EPIC_DEFAULT_COLOR = "#7ed6df";
+const EPIC_DEFAULT_COLOR = "#f1c40f";
 
 const GRIDLINE_COLOR = "#bdc3c7";
 const GRIDLINE_SIZE_IN_PX = 1;
@@ -131,6 +131,13 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 			return;
 
 		dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic});
+	}
+
+	const interactiveLayerClickHandler = (e) => {
+		if (state.canvas.selectedEpicId === undefined)
+			return;
+
+		dispatch({type: "UPDATE_CANVAS", patch: {selectedEpicId: undefined}});
 	}
 
 	const createIntermediatePath = (originEpicId, rawEndpoint) => {
@@ -356,6 +363,10 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		dispatch({type: "UPDATE_CANVAS", patch: {startDate: patchedRoadmapDuration[0], endDate: patchedRoadmapDuration[1]}});
 	}
 
+	const epicClickHandler = (id) => {
+		dispatch({type: "UPDATE_CANVAS", patch: {selectedEpicId: id}});
+	}
+
 	useEffect(() => {
 		let statePatch = {};
 		const token = localStorage.getItem("token");
@@ -467,6 +478,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 						onDragOver={dragOver}
 						onDrop={drop}
 						onDoubleClick={interactiveLayerDoubleClickHandler}
+						onClick={interactiveLayerClickHandler}
 						// onMouseMove={interactiveLayerMouseMoveHandler}
 						// onMouseLeave={interactiveLayerMouseLeaveHandler}
 						mouse
@@ -490,7 +502,9 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 								key={x.id}
 								createPath={createIntermediatePath}
 								notifyPathEnd={finaliseIntermediatePath}
+								reportClick={epicClickHandler}
 								dragData={dragData}
+								isSelected={state.canvas.selectedEpicId === x.id ? true : false}
 								{...x}
 								canvas={{
 									dimensions: {...canvasSize},
