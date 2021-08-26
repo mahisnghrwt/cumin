@@ -17,16 +17,15 @@ import LogItem from "../form/LogItem";
 const CreateIssueForm = () => {
 	const [global, globalDispatch] = useContext(Global);
 
-	const createIssue = async (formState) => {
+	const createIssue = async (formValues) => {
 		const URL = settings.API_ROOT + "/project/" + global.project.id + "/issue";
 		const token = localStorage.getItem("token");
 
 		let issue = {projectId: global.project.id, reporterId: global.user.id};
 		
-		Object.keys(formState).map(field => {
-			if (field !== "__LOG__")
-				issue[field] = formState[field].value;
-		})
+		issue = {
+			...formValues
+		}
 
 		try {
 			const result = await Helper.http.request(URL, "POST", token, issue, true);

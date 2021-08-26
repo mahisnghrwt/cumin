@@ -3,12 +3,17 @@ import { useCallback, useEffect, useReducer, useState } from "react";
 import FormContext from "./FormContext";
 import formErrorType from "./formErrorType";
 
+/**
+ * @param fields [...fieldKey] or {fieldKey: defaultValue}
+ */
 const fieldsToState = fields => {
 	let state = {__LOG__: null};
+	let hasDefaultValues = fields !== null && Array.isArray(fields) === false;
+	let fieldKeys = hasDefaultValues ? Object.keys(fields) : fields;
 
-	fields.map(field => {
+	fieldKeys.map(field => {
 		state[field] = {
-			value: "",
+			value: hasDefaultValues ? fields[field] : "",
 			error: null
 		}
 	})

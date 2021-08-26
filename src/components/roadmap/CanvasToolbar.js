@@ -1,18 +1,10 @@
 /**
- * @param buttons - [object] where object = {label: string ~ button label, action: function ~ button action}
+ * @desc Right now, children are expected to be buttons. "x-sm-2" class for perfect small button.
  */
-const CanvasToolbar = ({buttons}) => {
+const CanvasToolbar = ({children}) => {
 	return (
 		<div className="canvas-toolbar">
-			{buttons.map(button => {
-				return (
-					<button 
-					className="x-sm-2"
-					onClick={button.action}>
-						{button.label}
-					</button>
-				);
-			})}
+			{children}
 		</div>
 	);
 }

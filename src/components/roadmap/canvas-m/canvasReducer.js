@@ -1,3 +1,5 @@
+import { startOfMinute } from "date-fns";
+
 const reducer = (state, action) => {
 	switch(action.type) {
 		case "PATCH": {
@@ -31,6 +33,20 @@ const reducer = (state, action) => {
 					[action.id]: patchedEpic
 				}
 			}
+		case "DELETE_EPIC":
+			const epics = {
+				...state.epics
+			}
+
+			delete epics[action.id];
+			debugger;
+			return {
+				...state,
+				epics: {
+					...epics
+				}
+			}
+
 		case "CREATE_INTERMEDIATE_PATH":
 			return {
 				...state,

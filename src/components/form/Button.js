@@ -12,8 +12,15 @@ const Button = ({kKey, label, onClick: submit, doesSubmit = false, ...rest}) => 
 				return;
 		}
 
+
+		let formValues = {};
+		Object.keys(formState).map(field => {
+			if (field !== "__LOG__")
+				formValues[field] = formState[field].value;
+		})
+
 		// perform action
-		submit(formState)
+		submit(formValues)
 		.then(message => {
 			const actions = [
 				{

@@ -13,7 +13,7 @@ const items_ = [
 ];
 
 
-const NavBar = ({loggedIn, activePage, extraItems}) => {
+const NavBar = ({loggedIn, activePage, extraItems = []}) => {
 	const history_ = useHistory();
 	const sortAndFilter = items => {
 		let left = [];

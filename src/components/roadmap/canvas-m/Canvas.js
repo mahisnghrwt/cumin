@@ -8,7 +8,6 @@ import { differenceInDays } from "date-fns/esm";
 import { add, startOfMinute } from "date-fns";
 import {getLastRow, getStartEndDates, pixelToGridBasedPos__} from "./canvasHelper";
 import Path from "./components/Path";
-import Vector2 from "./classes/Vector2"
 import Placeholder from "../../Placeholder";
 import webSocket from "../../../webSocket"
 import {ISSUE_STATUS_TO_ENUM, SOCKET_EVENT} from "../../../enums";
@@ -67,7 +66,7 @@ Date.prototype.laterThan = function(rhs) {
 		throw new Error("Epic element must be inside interactive-layer element!");
 	}
 
-	const pos = new Vector2(e.target.offsetX, e.target.offsetY);
+	const pos = {x: e.target.offsetX, y: e.target.offsetY};
 
 	pos.x += e.target.offsetLeft;
 	pos.y += e.target.offsetTop;
@@ -351,6 +350,11 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		dispatch({type: "UPDATE_EPIC", id: epic.id, patch: epic});
 	}
 
+	const epicDeletedOverSocket = epic => {
+		debugger;
+		dispatch({type: "DELETE_EPIC", id: epic.id});
+	}
+
 	const addRowsToFitEpic = useAddRowsToFitEpic(state, dispatch);
 
 	const extendCanvasToFitEpic = (epic) => {
@@ -418,18 +422,17 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 
 		webSocket.addListener(SOCKET_EVENT.EPIC_CREATED, COMPONENT_ID, epicCreatedOverSocket);
 		webSocket.addListener(SOCKET_EVENT.EPIC_UPDATED, COMPONENT_ID, epicUpdatedOverSocket);
+		webSocket.addListener(SOCKET_EVENT.EPIC_DELETED, COMPONENT_ID, epicDeletedOverSocket);
 
 		return () => {
 			webSocket.removeListener(SOCKET_EVENT.EPIC_CREATED, COMPONENT_ID);
 			webSocket.removeListener(SOCKET_EVENT.EPIC_UPDATED, COMPONENT_ID);
+			webSocket.removeListener(SOCKET_EVENT.EPIC_DELETED, COMPONENT_ID);
+
 		}
 
 		// add all the socket listeners
 	}, []);
-
-	// if (Object.values(state.epics).length === 0) {
-	// 	return  <Placeholder><span style={{color: "white"}}>&#128528; Create an epic to start working on Roadmap.</span></Placeholder>
-	// }
 
 	return (
 		<div className="canvas-with-scale" style={{position: "relative"}}>
@@ -454,9 +457,6 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 					id="canvas-layer"
 					style={{
 						...canvasSize,
-						// position: "absolute",
-						// left: VERTICAL_SCALE_WIDTH,
-						// top: HORIZONTAL_SCALE_HEIGHT,
 						backgroundImage: generateGridlinesCss(BASE_NODE_DIMENSIONS, GRIDLINE_SIZE_IN_PX, GRIDLINE_COLOR)
 					}}>
 

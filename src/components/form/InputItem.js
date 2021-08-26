@@ -3,9 +3,7 @@ import FormContext from "./FormContext";
 import FormItem from "./FormItem";
 import formErrorType from "./formErrorType";
 
-const InputItem = ({kKey: key, label, size, validator, ...rest}) => {
-
-	debugger;
+const InputItem = ({kKey: key, label, size, validator = null, ...rest}) => {
 	const {formState, setFormState} = useContext(FormContext);
 	const {[key]: {value}} = formState;
 
