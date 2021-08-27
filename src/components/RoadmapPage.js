@@ -11,6 +11,8 @@ import Helper from "../Helper";
 import settings from "../settings";
 import Global from "../GlobalContext";
 import CreateIssueForm from "./issue/CreateIssueForm";
+import Sidebar from "./sidebar/Sidebar"
+import SidebarTabContent from "./sidebar/SidebarTabContent";
 
 const ACTIVE_PAGE = "Roadmap";
 
@@ -60,16 +62,23 @@ const RoadmapPage = () => {
 		}
 	}
 
+	const sidebarTabs = {
+		default: "Default",
+		editEpic: "Edit Epic"
+	}
+
 	return (
 		<>
 			<NavBar loggedIn={true} activePage={ACTIVE_PAGE} />
 			{alert !== null && <AlertBar messageJsx={alert.message} alertType={alert.type} />}
 			<div className="roadmap-container">
-				<div className="right-sidebar">
-					<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediate.epic} clearIntermediateEpic={clearIntermediateEpic} />
-					{isEpicSelected && <EditEpicForm epic={state.epics[state.canvas.selectedEpicId]} />}
-					{isEpicSelected && <CreateIssueForm />}
-				</div>
+				<Sidebar tabs={sidebarTabs} defaultTab="default">
+					<SidebarTabContent kKey="default">
+						<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediate.epic} clearIntermediateEpic={clearIntermediateEpic} />
+						{isEpicSelected && <EditEpicForm epic={state.epics[state.canvas.selectedEpicId]} />}
+						{isEpicSelected && <CreateIssueForm />}
+					</SidebarTabContent>
+				</Sidebar>
 				<h1>Roadmap</h1>
 				<CanvasToolbar>
 					<button onClick={addCanvasRow} className="x-sm-2">+ Add Row</button>

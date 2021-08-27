@@ -41,51 +41,14 @@ const CreateIssueForm = ({formHidden = false}) => {
 
 	const formFields = ["title", "type", "description"];
 
-
-	// const ToggleButton = () => {
-	// 	const toggle = e => {
-	// 		e.preventDefault();
-	// 		toggleForm();
-	// 	}
-
-	// 	return (
-	// 		<span><a href="" onClick={toggle}>{!formVisible ? "[+]" : "[-]"}</a></span>
-	// 	)
-	// }
-
-	// return (
-	// 	<>
-	// 	<h3>Create Issue <ToggleButton /></h3>
-
-	// 	{formVisible && <Form formFields={formFields}>
-	// 		<div className="form-row">
-	// 			<InputItem kKey="title" type={formInputType.TEXT} label="Title" size={formItemSize.SMALL} required />
-	// 			<SelectItem kKey="type" label="Type" size={formItemSize.SMALL} required>
-	// 				<option value="">Select</option>
-	// 				{ISSUE_TYPES.map(x => <option value={x}>{x}</option>)}
-	// 			</SelectItem>
-	// 		</div>
-	// 		<div className="form-row">
-	// 			<InputItem kKey="description" type={formInputType.TEXT} label="Description" size={formItemSize.SMALL} />
-	// 		</div>
-	// 		<div className="form-row">
-	// 			<Button kKey="create" label="Create" doesSubmit={true} onClick={createIssue} />
-	// 		</div>
-	// 		<div className="form-row">
-	// 			<LogItem />
-	// 		</div> 
-	// 	</Form>}
-	// 	</>
-	// );
-
-	// return null;
-
 	return (
 		<ToggleContainer enabled={false}>
 			<ToggleHeader>
+				<span>
+					<ToggleButton on={true}>[+]</ToggleButton>
+					<ToggleButton on={false}>[-]</ToggleButton>
+				</span>
 				<h3>Create Issue</h3>
-				<ToggleButton on={true}>[+]</ToggleButton>
-				<ToggleButton on={false}>[-]</ToggleButton>
 			</ToggleHeader>
 			<ToggleBody>
 				<Form formFields={formFields}>

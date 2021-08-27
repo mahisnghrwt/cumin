@@ -1,46 +1,63 @@
-import React, { useContext, useReducer, useRef, useState } from "react";
+import React, { useContext } from "react";
 import Global from "../../GlobalContext";
 import settings from "../../settings";
 import Helper from "../../Helper";
+import ToggleContainer from "../toggleContainer/ToggleContainer";
+import ToggleHeader from "../toggleContainer/ToggleHeader";
+import ToggleButton from "../toggleContainer/ToggleButton";
+import ToggleBody from "../toggleContainer/ToggleBody";
+import Form from "../form/Form";
+import InputItem from "../form/InputItem";
+import formItemSize from "../form/formItemSize";
+import Button from "../form/Button";
 
 const CreateSprintForm = (props) => {
-	const [state, setState] = useState({title: ""});
-	const [global, globalDispatch] = useContext(Global);
+	const [global,,] = useContext(Global);
 
-	const createSprint = async (e) => {
-		const POST_SPRINT_URL = settings.API_ROOT + "/project/" + global.project.id + "/sprint";
+	const createSprint = async (formValues) => {
+		const POST_SPRINT_URL = `${settings.API_ROOT}/project/${global.project.id}/sprint`;
 		const token = localStorage.getItem("token");
-		const sprint = {...state, projectId: global.project.id};
+		const sprint = {...formValues, projectId: global.project.id};
 		try {
 			await Helper.http.request(POST_SPRINT_URL, "POST", token, sprint, false);
-			// clear the input field
-			setState({title: ""});
 		} catch (e) {
 			console.error(e);
 		}
 	}
 
-	if (typeof global.project === "undefined" || global.project.id === undefined) {
+	if (global.project === undefined || global.project.id === undefined) {
 		return (
-			<pre>
-				PLEASE SELECT A PROJECT TO CREATE SPRINT
-			</pre>
+			<pre>You must select a Project to work on.</pre>
 		)
 	}
 
+	const formFields = ["title"];
+
+	const titleValidator = title => {
+		if (title.length < 1)
+			return "Title cannot be empty."
+
+		return null;
+	}
+
 	return (
-		<>
-			<h3>Create Sprint</h3>
-			<form onSubmit={e => e.preventDefault()}>
-				<div className="form-row">
-					<div className="form-item sm">
-						<label>Sprint title: </label>
-						<input type="text" value={state.title} onChange={e => setState({title: e.target.value})} />
+		<ToggleContainer enabled={false}>
+			<ToggleHeader>
+				<span>
+					<ToggleButton on={true}>[+]</ToggleButton>
+					<ToggleButton on={false}>[-]</ToggleButton>
+				</span>
+				<h3>Create Sprint</h3>
+			</ToggleHeader>
+			<ToggleBody>
+				<Form formFields={formFields}>
+					<div className="form-row" style={{alignItems: "flex-end"}}>
+						<InputItem kKey="title" label="Title" size={formItemSize.SMALL} validator={titleValidator} />
+						<Button kKey="create" label="Create" doesSubmit={true} onClick={createSprint} />
 					</div>
-					<button className="x-sm" onClick={createSprint}>Create</button>	
-				</div>
-			</form>
-		</>
+				</Form>
+			</ToggleBody>
+		</ToggleContainer>
 	);
 }
 

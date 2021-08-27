@@ -80,7 +80,7 @@ body, #root {
 	right: 0;
 	width: var(--default-width);
 	border: 1px solid var(--border-color);
-	padding: 0 1rem;
+	/* padding: 0 1rem; */
 	z-index: 3;
 }
 
