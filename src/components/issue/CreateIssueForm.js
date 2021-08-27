@@ -3,19 +3,21 @@ import {ISSUE_TYPES} from "../../enums";
 import Global from "../../GlobalContext";
 import Helper from "../../Helper";
 import settings from "../../settings";
-import FieldConstraint from "../classes/FieldConstraint";
 import formInputType from "../form/formInputType";
-import FormItem from "../form/FormItem";
 import formItemSize from "../form/formItemSize";
-import FormContext from "../form/FormContext";
 import Form from "../form/Form";
 import Button from "../form/Button";
 import InputItem from "../form/InputItem";
 import SelectItem from "../form/SelectItem";
 import LogItem from "../form/LogItem";
+import ToggleContainer from "../toggleContainer/ToggleContainer";
+import ToggleBody from "../toggleContainer/ToggleBody";
+import ToggleHeader from "../toggleContainer/ToggleHeader";
+import ToggleButton from "../toggleContainer/ToggleButton";
 
-const CreateIssueForm = () => {
-	const [global, globalDispatch] = useContext(Global);
+
+const CreateIssueForm = ({formHidden = false}) => {
+	const [global,,] = useContext(Global);
 
 	const createIssue = async (formValues) => {
 		const URL = settings.API_ROOT + "/project/" + global.project.id + "/issue";
@@ -35,30 +37,78 @@ const CreateIssueForm = () => {
 		}
 	}
 
+
+
 	const formFields = ["title", "type", "description"];
 
+
+	// const ToggleButton = () => {
+	// 	const toggle = e => {
+	// 		e.preventDefault();
+	// 		toggleForm();
+	// 	}
+
+	// 	return (
+	// 		<span><a href="" onClick={toggle}>{!formVisible ? "[+]" : "[-]"}</a></span>
+	// 	)
+	// }
+
+	// return (
+	// 	<>
+	// 	<h3>Create Issue <ToggleButton /></h3>
+
+	// 	{formVisible && <Form formFields={formFields}>
+	// 		<div className="form-row">
+	// 			<InputItem kKey="title" type={formInputType.TEXT} label="Title" size={formItemSize.SMALL} required />
+	// 			<SelectItem kKey="type" label="Type" size={formItemSize.SMALL} required>
+	// 				<option value="">Select</option>
+	// 				{ISSUE_TYPES.map(x => <option value={x}>{x}</option>)}
+	// 			</SelectItem>
+	// 		</div>
+	// 		<div className="form-row">
+	// 			<InputItem kKey="description" type={formInputType.TEXT} label="Description" size={formItemSize.SMALL} />
+	// 		</div>
+	// 		<div className="form-row">
+	// 			<Button kKey="create" label="Create" doesSubmit={true} onClick={createIssue} />
+	// 		</div>
+	// 		<div className="form-row">
+	// 			<LogItem />
+	// 		</div> 
+	// 	</Form>}
+	// 	</>
+	// );
+
+	// return null;
+
 	return (
-		<>
-		<Form formFields={formFields}>
-			<div className="form-row">
-				<InputItem kKey="title" type={formInputType.TEXT} label="Title" size={formItemSize.SMALL} required />
-				<SelectItem kKey="type" label="Type" size={formItemSize.SMALL} required>
-					<option value="">Select</option>
-					{ISSUE_TYPES.map(x => <option value={x}>{x}</option>)}
-				</SelectItem>
-			</div>
-			<div className="form-row">
-				<InputItem kKey="description" type={formInputType.TEXT} label="Description" size={formItemSize.SMALL} />
-			</div>
-			<div className="form-row">
-				<Button kKey="create" label="Create" doesSubmit={true} onClick={createIssue} />
-			</div>
-			<div className="form-row">
-				<LogItem />
-			</div> 
-		</Form>
-		</>
-	);
+		<ToggleContainer enabled={false}>
+			<ToggleHeader>
+				<h3>Create Issue</h3>
+				<ToggleButton on={true}>[+]</ToggleButton>
+				<ToggleButton on={false}>[-]</ToggleButton>
+			</ToggleHeader>
+			<ToggleBody>
+				<Form formFields={formFields}>
+					<div className="form-row">
+						<InputItem kKey="title" type={formInputType.TEXT} label="Title" size={formItemSize.SMALL} required />
+						<SelectItem kKey="type" label="Type" size={formItemSize.SMALL} required>
+							<option value="">Select</option>
+							{ISSUE_TYPES.map(x => <option value={x}>{x}</option>)}
+						</SelectItem>
+					</div>
+					<div className="form-row">
+						<InputItem kKey="description" type={formInputType.TEXT} label="Description" size={formItemSize.SMALL} />
+					</div>
+					<div className="form-row">
+						<Button kKey="create" label="Create" doesSubmit={true} onClick={createIssue} />
+					</div>
+					<div className="form-row">
+						<LogItem />
+					</div> 
+				</Form>
+			</ToggleBody>
+		</ToggleContainer>
+	)
 };
 
 export default CreateIssueForm;

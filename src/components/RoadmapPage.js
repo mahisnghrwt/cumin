@@ -10,6 +10,7 @@ import EditEpicForm from "./roadmap/EditEpicForm";
 import Helper from "../Helper";
 import settings from "../settings";
 import Global from "../GlobalContext";
+import CreateIssueForm from "./issue/CreateIssueForm";
 
 const ACTIVE_PAGE = "Roadmap";
 
@@ -24,6 +25,8 @@ const RoadmapPage = () => {
 		endDate: add(new Date(), {days: CANVAS_DEFAULT_LENGTH}),
 		rows: CANVAS_DEFAULT_ROWS
 	}});
+
+	const isEpicSelected = state.canvas.selectedEpicId !== undefined && state.epics[state.canvas.selectedEpicId] !== undefined;
 
 	const setAlert = (messageJsx, type) => {
 		if (messageJsx === null) {
@@ -64,7 +67,8 @@ const RoadmapPage = () => {
 			<div className="roadmap-container">
 				<div className="right-sidebar">
 					<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediate.epic} clearIntermediateEpic={clearIntermediateEpic} />
-					{state.canvas.selectedEpicId !== undefined && <EditEpicForm epic={state.epics[state.canvas.selectedEpicId]} />}
+					{isEpicSelected && <EditEpicForm epic={state.epics[state.canvas.selectedEpicId]} />}
+					{isEpicSelected && <CreateIssueForm />}
 				</div>
 				<h1>Roadmap</h1>
 				<CanvasToolbar>
