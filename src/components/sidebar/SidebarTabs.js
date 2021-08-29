@@ -13,10 +13,10 @@ const SidebarTabs = ({tabs, switchTab}) => {
 
 	return (
 		<div className="sidebar-tabs">
-			{Object.keys(tabs).map(tabKey => {
+			{Object.values(tabs).map(tabKey => {
 				return (
 					<button onClick={e => switchTab(tabKey)} className={sidebarState.activeTab === tabKey ? "active" : ""} >
-						{tabs[tabKey]}
+						{tabKey}
 					</button>
 				);
 			})}

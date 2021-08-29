@@ -6,6 +6,10 @@ import Button from "../form/Button";
 import settings from "../../settings"
 import { useContext } from "react";
 import Global from "../../GlobalContext";
+import ToggleContainer from "../toggleContainer/ToggleContainer";
+import ToggleHeader from "../toggleContainer/ToggleHeader";
+import ToggleButton from "../toggleContainer/ToggleButton";
+import ToggleBody from "../toggleContainer/ToggleBody";
 
 const EditEpicForm = ({epic}) => {
 	const [global,,] = useContext(Global);
@@ -35,21 +39,29 @@ const EditEpicForm = ({epic}) => {
 	}
 
 	return (
-		<>
-			<h3>Edit Epic</h3>
-			<Form formFields={formFields}>
-				<div className="form-row">
-					<InputItem kKey="id" label="Id" size={formItemSize.SMALL} disabled={true} required={true} />
-					<InputItem kKey="title" label="Title" size={formItemSize.SMALL} required={true} />
-					<InputItem kKey="startDate" label="Start date" size={formItemSize.SMALL} required={true} type="date" />
-					<InputItem kKey="endDate" label="End date" size={formItemSize.SMALL} required={true} type="date" />
-					<InputItem kKey="row" label="Row" size={formItemSize.SMALL} disabled={true} required={true} />
-				</div>
-				<div className="form-row">
-					<Button kKey="save" label="Save Changes" onClick={saveChanges} doesSubmit={true} />
-				</div>
-			</Form>
-		</>
+		<ToggleContainer enabled={false}>
+			<ToggleHeader>
+				<span>
+					<ToggleButton on={true}>[+]</ToggleButton>
+					<ToggleButton on={false}>[-]</ToggleButton>
+				</span>
+				<h3>Edit Epic</h3>
+			</ToggleHeader>
+			<ToggleBody>
+				<Form formFields={formFields}>
+					<div className="form-row">
+						<InputItem kKey="id" label="Id" size={formItemSize.SMALL} disabled={true} required={true} />
+						<InputItem kKey="title" label="Title" size={formItemSize.SMALL} required={true} />
+						<InputItem kKey="startDate" label="Start date" size={formItemSize.SMALL} required={true} type="date" />
+						<InputItem kKey="endDate" label="End date" size={formItemSize.SMALL} required={true} type="date" />
+						<InputItem kKey="row" label="Row" size={formItemSize.SMALL} disabled={true} required={true} />
+					</div>
+					<div className="form-row">
+						<Button kKey="save" label="Save Changes" onClick={saveChanges} doesSubmit={true} />
+					</div>
+				</Form>
+			</ToggleBody>
+		</ToggleContainer>
 	)
 }
 

@@ -37,8 +37,6 @@ const CreateIssueForm = ({formHidden = false}) => {
 		}
 	}
 
-
-
 	const formFields = ["title", "type", "description"];
 
 	return (

@@ -48,14 +48,6 @@ const Sprint = ({sprint, dropIssuePropagate}) => {
 
 	return (
 		<>
-			{/* <h3>
-				{sprint.title} <a href="" onClick={deleteSprint}>Delete</a>  
-				{
-					sprint.active !== undefined 
-					? "Active"
-					: <a href="" onClick={activateSprint}>Activate</a> 
-				}
-			</h3> */}
 			<div className="list"
 				onDragOver={ev => ev.preventDefault()}
 				onDrop={dropIssue}

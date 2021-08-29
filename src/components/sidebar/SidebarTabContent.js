@@ -2,6 +2,7 @@ import { useContext } from "react";
 import sidebarContext from "./sidebarContext";
 
 const SidebarTabContent = ({kKey, children}) => {
+
 	const [sidebarState,,] = useContext(sidebarContext);
 
 	if (sidebarState.activeTab !== kKey) return null;
