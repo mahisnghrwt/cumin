@@ -31,3 +31,14 @@ const Sidebar = ({tabs, defaultTab = null, children, ...restProps}) => {
 }
 
 export default Sidebar;
+
+/**
+ * What is a sidebar?
+ * sidebar -> tabs
+ * tab -> key, title, children/content, f() close tab
+ * 
+ * API
+ * Add tabs
+ * Remove tabs
+ * Switch tab
+ */

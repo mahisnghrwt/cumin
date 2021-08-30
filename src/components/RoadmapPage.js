@@ -19,7 +19,11 @@ import EditIssueForm from "./issue/EditIssueForm";
 
 const ACTIVE_PAGE = "Roadmap";
 const CANVAS_DEFAULT_LENGTH = 60;
-const CANVAS_DEFAULT_ROWS = 0;
+const CANVAS_DEFAULT_ROWS = 0; 
+
+const sidebarReducer = (state, action) => {
+
+}
 
 const RoadmapPage = () => {
 	const [global,,] = useContext(Global);
@@ -30,6 +34,7 @@ const RoadmapPage = () => {
 		rows: CANVAS_DEFAULT_ROWS
 	}});
 	const [issue, setIssue] = useState(null);
+	const [sidebarState, setSidebarState] = useReducer(sidebarReducer, []);
 
 	const isEpicSelected = state.canvas.selectedEpicId !== undefined && state.epics[state.canvas.selectedEpicId] !== undefined;
 

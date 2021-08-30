@@ -1,6 +1,4 @@
 import { useContext } from "react";
-import { unstable_continueExecution } from "scheduler";
-import NavBar from "../NavBar";
 import sidebarContext from "./sidebarContext";
 
 /**

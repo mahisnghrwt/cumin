@@ -160,30 +160,16 @@ const EditIssueForm = ({issue}) => {
 	useEffect(() => {
 		// fetch list of sprints
 		// fetch list of issue
-
-		(async () => {
+		void async function () {
 			try {
-				const sprints_ = await fetchSprints();
-				const epics_ = await fetchEpics();
-				const sprints = Object.values(sprints_);
-				const epics = Object.values(epics_);
-				debugger;
+				const sprints = Object.values(await fetchSprints());
+				const epics = Object.values(await fetchEpics());
 				dispatch({type: "NEW", state: {sprints, epics}});
 			} catch (e) {
 				console.error(e);
 			}
-
-		})()
-
-		// Promise.all([fetchSprints, fetchEpics])
-		// .then(values => {
-		// 	debugger;
-		// 	dispatch({type: "NEW", state: {sprints: values[0], epics: values[1]}});
-		// })
-		// .catch(e => console.error(e));
+		}()
 	}, [])
-
-	console.log(state.sprints);
 
 	return (
 		<div className="edit-issue-form">
