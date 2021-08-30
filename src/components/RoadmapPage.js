@@ -16,6 +16,7 @@ import SidebarTabContent from "./sidebar/SidebarTabContent";
 import IssueItemDetailed from "./issueItem/IssueItemDetailed";
 import IssueItemList from "./issueItem/IssueItemList";
 import EditIssueForm from "./issue/EditIssueForm";
+import SidebarWrapper  from "./sidebar/SidebarWrapper";
 
 const ACTIVE_PAGE = "Roadmap";
 const CANVAS_DEFAULT_LENGTH = 60;
@@ -33,8 +34,6 @@ const RoadmapPage = () => {
 		endDate: add(new Date(), {days: CANVAS_DEFAULT_LENGTH}),
 		rows: CANVAS_DEFAULT_ROWS
 	}});
-	const [issue, setIssue] = useState(null);
-	const [sidebarState, setSidebarState] = useReducer(sidebarReducer, []);
 
 	const isEpicSelected = state.canvas.selectedEpicId !== undefined && state.epics[state.canvas.selectedEpicId] !== undefined;
 
@@ -80,17 +79,17 @@ const RoadmapPage = () => {
 			<NavBar loggedIn={true} activePage={ACTIVE_PAGE} />
 			{alert !== null && <AlertBar messageJsx={alert.message} alertType={alert.type} />}
 			<div className="roadmap-container">
-				<Sidebar tabs={sidebarTabs} defaultTab={sidebarTabs.default}>
-					<SidebarTabContent kKey={sidebarTabs.default}>
-						<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediate.epic} clearIntermediateEpic={clearIntermediateEpic} />
-						{isEpicSelected && <EditEpicForm epic={state.epics[state.canvas.selectedEpicId]} />}
-						{isEpicSelected && <CreateIssueForm />}
-						<IssueItemList selectedEpic={state.canvas.selectedEpicId} editIssue={setIssue} />
-					</SidebarTabContent>
-					<SidebarTabContent kKey={sidebarTabs.editEpic}>
-						{issue !== null && <EditIssueForm issue={issue} />}
-					</SidebarTabContent>
-				</Sidebar>
+				<SidebarWrapper>
+					<Sidebar>
+						<SidebarTabContent>
+							<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediate.epic} clearIntermediateEpic={clearIntermediateEpic} />
+							{isEpicSelected && <EditEpicForm epic={state.epics[state.canvas.selectedEpicId]} />}
+							{isEpicSelected && <CreateIssueForm />}
+							<IssueItemList selectedEpic={state.canvas.selectedEpicId} />
+						</SidebarTabContent>
+					</Sidebar>
+				</SidebarWrapper>
+				
 				<h1>Roadmap</h1>
 				<CanvasToolbar>
 					<button onClick={addCanvasRow} className="x-sm-2">+ Add Row</button>

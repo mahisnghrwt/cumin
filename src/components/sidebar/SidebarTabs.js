@@ -1,20 +1,15 @@
 import { useContext } from "react";
 import sidebarContext from "./sidebarContext";
 
-/**
- * @param {Object} tabs Representing key->title ||
- * key ~ "sidebar tab content" it is pointing to ||
- * title" ~ title for "tab nav"
- */
-const SidebarTabs = ({tabs, switchTab}) => {
-	const [sidebarState,,] = useContext(sidebarContext);
+const SidebarTabs = () => {
+	const {state: sidebarState, switchTab} = useContext(sidebarContext);
 
 	return (
 		<div className="sidebar-tabs">
-			{Object.values(tabs).map(tabKey => {
+			{Object.keys(sidebarState.tabs).map(tabKey => {
 				return (
 					<button onClick={e => switchTab(tabKey)} className={sidebarState.activeTab === tabKey ? "active" : ""} >
-						{tabKey}
+						{sidebarState.tabs[tabKey].title}
 					</button>
 				);
 			})}
