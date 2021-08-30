@@ -1,36 +1,11 @@
-## Pages
-- Board
-- Backlog
-	- Manage [Create | Update | Delete]
-		- Issue
-		- Sprint
-- Roadmap
-	- RoadmapCavas
-	- Manage [Create | Update | Delete]
-		- Epic
-		- Issue
-- Dashboard
-	- Manage
-		- Project
-- Friends(Section)
-	- Invite
-	- Invitation received
-
-
-## Project
-### Create
-| Updated over Socket 	|
-| --------------------	|
-| `false`				|
-
-Created project data can be used for other component.
-
-### Update
-| Updated over Socket 	|
-| --------------------	|
-| `true`				|
-
-### Delete
-| Updated over Socket 	|
-| --------------------	|
-| `true`				|
+# Cumin
+## Upcoming features
+- [ ] Indicate current day in Roadmap Canvas
+- [ ] Highlight current grid (row and current date) mouse is over.
+- [ ] Sync path between Epics
+- [ ] Color palette for Epics
+- [ ] Detect cycles in Roadmap
+	- [ ] Suggestions to resolve cycles
+- [ ] Show progress of Epic
+- [ ] Epic Page
+- [ ] Issue Page
