@@ -24,7 +24,6 @@ const Epic = ({id, startDate, endDate, color, row, canvas, createPath, dragData,
 	}
 
 	const epicClickHandler = (e) => {
-		debugger;
 		// e.preventDefault();
 		e.stopPropagation();
 		reportClick(id);

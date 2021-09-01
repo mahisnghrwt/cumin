@@ -23,3 +23,4 @@
 - [ ] Highlight path *on hover*.
 
 ## Bugs
+- [ ] Remove dragData, *child cannot update the prop even if it is a ref*

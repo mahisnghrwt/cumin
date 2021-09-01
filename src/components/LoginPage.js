@@ -5,6 +5,7 @@ import socket from '../webSocket';
 import settings from "../settings";
 import Global from '../GlobalContext';
 import { useHistory } from 'react-router-dom';
+import Loader from './loader/Loader';
 
 const userLoginApiUrl = settings.API_ROOT + "/auth/login";
 const userTokenValidateApiUrl = settings.API_ROOT + "/auth";
@@ -133,8 +134,6 @@ const LoginPage = ({redirectTo}) => {
 
 
 	const updateFieldValue = (field, value) => {
-		// fuck validation
-
 		dispatch({
 				type: "UPDATE_" + field.toUpperCase(),
 				value: value
