@@ -6,6 +6,7 @@ const VerticalScale = ({style, epics, unit, rows}) => {
 				className={isPlaceholder ? "vertical-scale-label placeholder-label" : "vertical-scale-label" }
 				style={{height: unit.height}}>
 					{label}
+					{/* <>&larr;</> */}
 			</div>
 		)
 	}

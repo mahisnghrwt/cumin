@@ -73,7 +73,8 @@ const getNextDate__ = (date, unit) => {
 }
 
 const highlightedLabelStyle = {
-	color: "#f39c12"
+	color: "#e67e22",
+	fontWeight: "bolder"
 }
 
 const HorizontalScale = ({startDate, endDate, unit, style, baseNodeDimensions, canvasRef, gridDimensions, canvasDimensions}) => {
