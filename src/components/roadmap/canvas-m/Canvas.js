@@ -19,6 +19,7 @@ import {epicPreprocessing, generateGridlinesCss, shouldExtendCanvas, gridToDate}
 import reducer from "./canvasReducer";
 import useEpicResizer from "./useEpicResizer";
 import useAddRowsToFitEpic from "./hooks/useAddRowsToFitEpic";
+import usePixelToGrid from "./hooks/usePixelToGrid";
 
 const COMPONENT_ID = "CANVAS";
 
@@ -110,6 +111,10 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		width: BASE_NODE_DIMENSIONS.width * numOfUnits.x
 	}
 
+	const pixelToGrid = usePixelToGrid(canvasSize, numOfUnits);
+	const interactiveLayerRef = useRef(null);
+	const mouseGridPos = useRef({x: -1, y: -1});
+
 	// rename to cutomDragEvent
 	const dragData = useRef({type: ""});
 
@@ -137,6 +142,17 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 			return;
 
 		dispatch({type: "UPDATE_CANVAS", patch: {selectedEpicId: undefined}});
+	}
+
+	const interactiveLayerMouseMoveHandler = e => {
+		if (e.target.className !== "interactive-layer") return;
+		const {nativeEvent: {offsetX, offsetY}} = e;
+		// console.log(offsetX, offsetY);
+		const pos = pixelToGrid.current({x: offsetX, y: offsetY});
+		if (pos.x !== mouseGridPos.current.x || pos.y !== mouseGridPos.current.y) {
+			mouseGridPos.current = { ...pos }
+			console.log(mouseGridPos.current);
+		}
 	}
 
 	const createIntermediatePath = (originEpicId, rawEndpoint) => {
@@ -448,6 +464,9 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 					endDate={state.canvas.endDate} 
 					baseNodeDimensions={BASE_NODE_DIMENSIONS} 
 					unit={SCALE_UNIT.day}
+					canvasDimensions={canvasSize}
+					gridDimensions={numOfUnits}
+					canvasRef={interactiveLayerRef}
 				/>
 			</div>
 			<div className="canvas-with-scale-row">
@@ -479,9 +498,11 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 						onDrop={drop}
 						onDoubleClick={interactiveLayerDoubleClickHandler}
 						onClick={interactiveLayerClickHandler}
+						ref={interactiveLayerRef}
 						// onMouseMove={interactiveLayerMouseMoveHandler}
+
 						// onMouseLeave={interactiveLayerMouseLeaveHandler}
-						mouse
+						// mouse
 					>
 						{state.intermediate.epic !== undefined && (
 							<Epic 
