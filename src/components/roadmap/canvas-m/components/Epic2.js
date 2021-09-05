@@ -18,10 +18,18 @@ const Epic2 = ({id, color, isSelected, width, pos, setMouseEventData, mouseDataT
 	const {selectEpic} = useContext(canvasContext);
 
 	const [state, dispatch] = useReducer(reducer, {dropMode: false});
+
+	const epicHeight = 20; //px
 	
 	const resizeHandleStyle = {
 		width: Math.min(parseInt(width / 5), BASE_NODE_DIMENSIONS.width / 5),
-		height: BASE_NODE_DIMENSIONS.height
+		height: epicHeight,
+		borderRadius: "5px"
+	}
+
+	const modifiedPos = {
+		x: pos.x,
+		y: pos.y + ((BASE_NODE_DIMENSIONS.height - epicHeight) / 2)
 	}
 
 	const epicClickHandler = (e) => {
@@ -102,9 +110,9 @@ const Epic2 = ({id, color, isSelected, width, pos, setMouseEventData, mouseDataT
 			onMouseLeave={epicMouseLeaveHandler}
 			style={{
 				position: "absolute",
-				left: pos.x,
-				top: pos.y,
-				height: BASE_NODE_DIMENSIONS.height,
+				left: modifiedPos.x + "px",
+				top: modifiedPos.y + "px",
+				height: epicHeight + "px",
 				width,
 				backgroundColor: isSelected ? EPIC_SELECTED_COLOR : color
 			}}	
