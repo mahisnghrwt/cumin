@@ -1,9 +1,7 @@
 import NavBar from "./NavBar";
 import CreateEpicForm from "./roadmap/CreateEpicForm";
-import Canvas from "./roadmap/canvas-m/Canvas";
 import { useState, useReducer, useContext } from "react";
 import AlertBar from "./AlertBar";
-import {add, startOfYesterday} from "date-fns"
 import CanvasToolbar from "./roadmap/CanvasToolbar";
 import EditEpicForm from "./roadmap/EditEpicForm";
 import Helper from "../Helper";
@@ -12,20 +10,11 @@ import Global from "../GlobalContext";
 import CreateIssueForm from "./issue/CreateIssueForm";
 import Sidebar from "./sidebar/Sidebar"
 import SidebarTabContent from "./sidebar/SidebarTabContent";
-import IssueItemDetailed from "./issueItem/IssueItemDetailed";
 import IssueItemList from "./issueItem/IssueItemList";
-import EditIssueForm from "./issue/EditIssueForm";
 import SidebarWrapper  from "./sidebar/SidebarWrapper";
-import Canvas2 from "./roadmap/canvas-m/Canvas2";
+import Canvas from "./roadmap/canvas-m/Canvas2";
 
 const ACTIVE_PAGE = "Roadmap";
-const CANVAS_DEFAULT_LENGTH = 60;
-const CANVAS_DEFAULT_ROWS = 0; 
-
-/**
- * state => selectedEpic
- * 			intermediateEpic
- */
 
 const reducer = (state, action) => {
 	switch(action.type) {
@@ -120,7 +109,7 @@ const RoadmapPage = () => {
 					<button onClick={deleteSelectedEpic} className="x-sm-2 bg-red" disabled={state.selectedEpic === null}>- Delete Epic</button>
 				</CanvasToolbar>
 				<div className="canvas-wrapper">
-					<Canvas2 roadmap={{setAlert, setIntermediateEpic, setSelectedEpic, selectedEpic: state.selectedEpic, intermediateEpic: state.intermediateEpic}} />
+					<Canvas roadmap={{setAlert, setIntermediateEpic, setSelectedEpic, selectedEpic: state.selectedEpic, intermediateEpic: state.intermediateEpic}} />
 				</div>
 			</div>
 		</>

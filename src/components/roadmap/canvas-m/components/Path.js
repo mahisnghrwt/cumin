@@ -23,7 +23,7 @@ const generatePathString__ = (from, to, c) => {
 	return `M${from.x} ${from.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${to.x} ${to.y}`;
 }
 
-const Path = ({id, from, to, path, canvas}) => {
+const Path = ({id, from, to, path, canvas, color="#34495e"}) => {
 
 	const makePath = (from, to) => {
 		const head = {
@@ -57,7 +57,7 @@ const Path = ({id, from, to, path, canvas}) => {
 	return (
 		<path d={pathD} 
 			key={id}
-			stroke="#34495e" 
+			stroke={color}
 			strokeWidth="2"
 			fill="transparent" />
 	)

@@ -1,4 +1,11 @@
-import { startOfMinute } from "date-fns";
+const mergePathPatches = (patches, state) => {
+	Object.keys(patches).forEach(pathId => {
+		state.paths[pathId] = {
+			...state.paths[pathId],
+			...patches[pathId]
+		}
+	})
+}
 
 const reducer = (state, action) => {
 	switch(action.type) {
@@ -77,7 +84,7 @@ const reducer = (state, action) => {
 			}
 
 		case "CREATE_NEW_PATH":
-			return {
+			const s = {
 				...state,
 				intermediate: {},
 				paths: {
@@ -87,6 +94,17 @@ const reducer = (state, action) => {
 					}
 				}
 			}
+
+			return s;
+		case "MERGE_PATH_PATCHES":
+			const nextState = {
+				...state,
+				paths: {
+					...state.paths
+				}
+			}
+			mergePathPatches(action.patch, nextState);
+			return nextState;
 		case "UPDATE_CANVAS":
 			return {
 				...state,

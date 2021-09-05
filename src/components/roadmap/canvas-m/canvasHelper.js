@@ -108,3 +108,116 @@ export const gridToDate = (date, offset) => {
 	return add(date, {days: offset});
 }
 
+const createGraph = (epics, paths) => {
+	let graph = {};
+	epics.forEach(epic => {
+		graph[epic] = {
+			id: parseInt(epic),
+			dependsOn: []
+		}
+	});
+
+	Object.values(paths).forEach(path => {
+		const dependency = {
+			viaPath: path.id,
+			id: path.from
+		};
+		graph[path.to] = {
+			...graph[path.to],
+			dependsOn: [...graph[path.to].dependsOn, dependency]
+		}
+	})
+
+	return graph;
+}
+
+const storeCycle = (cycle, cycles) => {
+	cycles.push([...cycle]);
+}
+
+const checkCycles = (node, arr, checked, cycles, graph) => {
+	const lastCheckResult = checked[node.id];
+	// if already checked, return the last result
+	if (lastCheckResult !== undefined)
+		return lastCheckResult;
+
+	// node must be part of the graph
+	if (graph[node.id] === undefined)
+		throw new Error("Node not present in the graph");
+
+	let clear = true;
+
+	// what does the node depends on?
+	graph[node.id].dependsOn.forEach(dependency => {
+		// either dependency is already checked or not.
+		if (checked[dependency.id] !== undefined) {
+			clear = clear && checked[dependency.id];
+		}
+		else {
+			// if dependecy is in the current stack "arr", that means there is a cycle
+			const isCycle = arr.some(n => n.id === dependency.id);
+			if (isCycle) {
+				// do something with the cycle
+				storeCycle([...arr, node, dependency], cycles);
+				clear = false;
+			}
+			else {
+				// recursively check cycle on the dependecy.
+				const c = checkCycles(dependency, [...arr, node], checked, cycles, graph);
+				clear = clear && c;
+			}
+		}
+	})
+
+	// mark the node as checked
+	checked[node.id] = clear;
+
+	// return the result;
+	return clear;
+}
+
+export const detectCycles = (epics, paths) => {
+	const graph = createGraph(Object.keys(epics), paths);
+
+	// 2d array, all the cycles
+	let cycles = [];
+
+	// object representing whether epic is blocked or not
+	// true => clean
+	// false => blocked
+	// undefined => not checked yet
+	let checked = {};
+	let stackArr = [];
+
+	Object.values(graph).forEach(node => {
+		if (checked[node.id] === undefined) {
+			checkCycles({id: node.id, viaPath: "root"}, stackArr, checked, cycles, graph);
+		}
+	})
+
+	return cycles;
+}
+
+export const createCyclePatch = cycles => {
+	let patch = {};
+	// colors to distinguish cycles
+	const colorPalette = ["#e67e22", "#d35400", "#e74c3c", "#c0392b"];
+	const cl = colorPalette.length;
+
+	let ci = 0;
+
+	cycles.forEach(cycle => {
+		cycle.forEach(node => {
+			const path = node.viaPath
+			if (path !== "root") {
+				patch[path] = {
+					color: colorPalette[ci]
+				}
+			}
+		})
+
+		ci = (ci + 1) % cl;
+	})
+
+	return patch;
+}

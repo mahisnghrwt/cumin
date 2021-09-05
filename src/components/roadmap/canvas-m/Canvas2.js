@@ -6,7 +6,7 @@ import HorizontalScale from "./components/HorizontalScale";
 import VerticalScale from "./components/VerticalScale";
 import { differenceInDays } from "date-fns/esm";
 import { add, differenceInCalendarDays, isWithinInterval } from "date-fns";
-import {gridToPixelBasedPos__, pathPreprocessing} from "./canvasHelper";
+import {createCyclePatch, detectCycles, gridToPixelBasedPos__, pathPreprocessing} from "./canvasHelper";
 import Path from "./components/Path";
 import webSocket from "../../../webSocket"
 import {SOCKET_EVENT} from "../../../enums";
@@ -42,7 +42,7 @@ const canvasReducer = (state, action) => {
 	}
 }
 
-const Canvas2 = ({roadmap}) => {
+const Canvas = ({roadmap}) => {
 	const [state, dispatch] = useReducer(reducer, {epics: {}, paths: {}, intermediate: {}});
 
 	const [canvas, dispatchCanvas] = useReducer(canvasReducer, {
@@ -255,6 +255,13 @@ const Canvas2 = ({roadmap}) => {
 		}
 	}
 
+	const detectAndMergeCycle = _ => {
+		const cycles = detectCycles(state.epics, state.paths);
+		const patch = createCyclePatch(cycles);
+
+		dispatch({type: "MERGE_PATH_PATCHES", patch});
+	}
+
 	const patchEpicDuration = async epicId => {
 		if (epicId === "intermediate") return;
 		
@@ -282,7 +289,6 @@ const Canvas2 = ({roadmap}) => {
 			return;
 		}
 		const epic = epicPreprocessing(epics[1]);
-		debugger;
 		extendCanvasToFitEpic(epic);
 		dispatch({type: "UPDATE_EPIC", id: epic.id, patch: epic});
 	}
@@ -292,8 +298,8 @@ const Canvas2 = ({roadmap}) => {
 	}
 
 	const pathCreatedOverSocket = path => {
-		debugger;
 		dispatch({type: "CREATE_NEW_PATH", path: pathPreprocessing(path)});
+		detectAndMergeCycle();
 	}
 
 	const pathDeletedOverSocket = path => {
@@ -333,8 +339,13 @@ const Canvas2 = ({roadmap}) => {
 					statePatch.paths[key] = pathPreprocessing(statePatch.paths[key]);
 				})
 			}
-			
+
 			dispatch({type: "PATCH", patch: statePatch});
+
+			// detect cycles and merge patch
+			const cycles = detectCycles(statePatch.epics, statePatch.paths);
+			const cyclePatch = createCyclePatch(cycles);
+			dispatch({type: "MERGE_PATH_PATCHES", patch: cyclePatch});
 
 		})()
 	}, []);
@@ -394,6 +405,8 @@ const Canvas2 = ({roadmap}) => {
 	// only render today marker, if today is within canvas interval.
 	const renderTodayMarker = isWithinInterval(new Date(), {start: canvas.startDate, end: canvas.endDate});
 
+
+
 	return (
 		<canvasContext.Provider value={{...canvas, selectEpic, canvasSize, gridSize}}>
 		<div className="canvas-with-scale" style={{position: "relative"}}>
@@ -432,6 +445,7 @@ const Canvas2 = ({roadmap}) => {
 								canvas={{startDate: canvas.startDate}}
 								from={state.epics[x.from]}
 								to={state.epics[x.to]}
+								color={x.color}
 								/>
 						})}
 						{state.intermediate.path !== undefined && <Path path={state.intermediate.path} canvas={{startDate: canvas.startDate}} />}
@@ -457,4 +471,4 @@ const Canvas2 = ({roadmap}) => {
   );
 }
 
-export default Canvas2;
+export default Canvas;
