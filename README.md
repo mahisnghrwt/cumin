@@ -1,4 +1,7 @@
 # Cumin
+![The San Juan Mountains are beautiful!](https://i.imgur.com/TZ9xQWd.jpeg "San Juan Mountains")
+
+
 ## Upcoming features
 - [ ] ~"Add row" button on last canvas row.~
 - [x] Sync path between Epics

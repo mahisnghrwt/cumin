@@ -223,12 +223,21 @@ button {
 	margin: 0 1rem 1rem 0;
 }
 
-.light-button {
+.light-button{
 	border: 1px solid white;
 	background-color: transparent;
 	font-size: 1em;
 	padding: 0.25em 1em;
 	margin: 0;
+}
+
+.light-button{
+	border-color: black;
+	color: black;
+	/* background-color: transparent;
+	font-size: 1em;
+	padding: 0.25em 1em;
+	margin: 0; */
 }
 
 button:disabled {
@@ -272,6 +281,13 @@ button:disabled {
 	flex-direction: row;
 	justify-content: space-between;
 	align-content: center;
+}
+
+.alert-bar.skeleton {
+	background-color: transparent;
+	border: 1px solid black;
+	color: black;
+	width: fit-content;
 }
 
 

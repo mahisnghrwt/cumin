@@ -20,6 +20,7 @@ import { EPIC_FACE } from "./canvasEnums";
 import InteractiveLayer from "./components/InteractiveLayer";
 import canvasContext from "./canvasContext";
 import VerticalLine from "./components/VerticalLine";
+import AlertBar from "../../AlertBar.js"
 
 const COMPONENT_ID = "CANVAS";
 const DEFAULT_ROWS = 7;
