@@ -41,6 +41,8 @@ const Path = ({id, from, to, path, canvas, color="#34495e"}) => {
 		}
 	}
 
+	const width = "2px";
+
 	const calcPathD = (path) => {
 		const p1 = gridToPixelBasedPos__(path.head, BASE_NODE_DIMENSIONS);
 		p1.y += BASE_NODE_DIMENSIONS.height / 2;
@@ -58,7 +60,7 @@ const Path = ({id, from, to, path, canvas, color="#34495e"}) => {
 		<path d={pathD} 
 			key={id}
 			stroke={color}
-			strokeWidth="2"
+			strokeWidth={width}
 			fill="transparent" />
 	)
 }

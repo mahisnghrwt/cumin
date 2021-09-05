@@ -1,7 +1,6 @@
 import { useContext, useEffect, useRef, useReducer, useCallback } from "react";
 import "./canvas.css";
 import { BASE_NODE_DIMENSIONS, PATH_ENDPOINT, SCALE_UNIT, DRAG_EVENTS, pathEndpoint } from "./canvasEnums";
-import Epic from "./components/Epic";
 import HorizontalScale from "./components/HorizontalScale";
 import VerticalScale from "./components/VerticalScale";
 import { differenceInDays } from "date-fns/esm";
