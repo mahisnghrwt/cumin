@@ -2,8 +2,8 @@
 ## Upcoming features
 - [ ] ~"Add row" button on last canvas row.~
 - [x] Sync path between Epics
-- [ ] Detect cycles in Roadmap
-	- [ ] Suggestions to resolve cycles
+- [x] Detect cycles in Roadmap
+	- ~[ ] Suggestions to resolve cycles~
 - [ ] Delete row
 	- *Add a delete button next to row label*
 - [ ] Show progress of Epic (Using progress bar)
