@@ -1,6 +1,7 @@
 # Cumin
 ## Upcoming features
-- [ ] Sync path between Epics
+- [ ] ~"Add row" button on last canvas row.~
+- [x] Sync path between Epics
 - [ ] Detect cycles in Roadmap
 	- [ ] Suggestions to resolve cycles
 - [ ] Delete row
@@ -15,12 +16,13 @@
 ## Upcoming QoL
 - [ ] Color palette for Epics
 - [ ] Disable form until submission-event finishes.
-- [ ] Indicate current day in Roadmap Canvas
+- [x] Indicate current day in Roadmap Canvas
 - [ ] Highlight current grid (row and current date) mouse is over.
 - [ ] Collapse empty rows in Roadmap.
 - [ ] Show key points about Epic *on hover*. 
 - [ ] Subhighlight indirectly blocked Epics.
 - [ ] Highlight path *on hover*.
+- [ ] Project selection in Navbar
 
 ## Bugs
-- [ ] Remove dragData, *child cannot update the prop even if it is a ref*
+- [x] Remove dragData, *child cannot update the prop even if it is a ref*

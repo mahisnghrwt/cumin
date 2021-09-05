@@ -99,18 +99,18 @@ const CreateEpicForm = ({intermediateEpic, setAlert, clearIntermediateEpic}) => 
 						<input 
 							type="number" 
 							// onChange={e => dispatch({type: "UPDATE_FORM_FIELD", field: "row", value: parseInt(e.target.value)})} 
-							value={intermediateEpic === undefined ? 0 : intermediateEpic.row}
+							value={!intermediateEpic ? 0 : intermediateEpic.row}
 							disabled
 						/>
 						{state.errors.row !== undefined && <span class="form-item-error">{state.errors.row}</span>}
 					</div>
 				</div>
 				
-				{intermediateEpic !== undefined && <DateRow startDate={intermediateEpic.startDate} endDate={intermediateEpic.endDate} />}
+				{intermediateEpic && <DateRow startDate={intermediateEpic.startDate} endDate={intermediateEpic.endDate} />}
 				
 				<div className="form-row">
 					<button ref={submitButtonRef} onClick={createEpic}>Create</button>
-					{intermediateEpic !== undefined && <button className="bg-red" onClick={clearIntermediateEpic}>Cancel</button>}
+					{intermediateEpic && <button className="bg-red" onClick={clearIntermediateEpic}>Cancel</button>}
 				</div>
 				<div className="form-row">
 					{state.log !== null && <div className={"form-item-alert " + state.log.type}>{state.log.message}</div>}

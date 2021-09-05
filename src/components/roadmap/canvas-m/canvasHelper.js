@@ -61,6 +61,18 @@ export const epicPreprocessing = (epic) => {
 	return epic_;
 }
 
+export const pathPreprocessing = path => {
+	const {fromEpicId, toEpicId, ...rest} = path;
+	const finalPath = {
+		...rest,
+		from: fromEpicId,
+		to: toEpicId
+	}
+
+	return finalPath;
+}
+
+
 export const getStartEndDates = (dates, epic) => {
 	// dates[0] == startDate
 	// dates[1] == endDate
@@ -70,10 +82,6 @@ export const getStartEndDates = (dates, epic) => {
 	newDates.push(differenceInDays(epic.endDate, dates[1]) > 0 ? epic.endDate : dates[1]);
 
 	return newDates;
-}
-
-export const getLastRow = (rows, epic) => {
-	return Math.max(rows, epic.row + 1);
 }
 
 export const generateGridlinesCss = (nodeDimensions, gridlineWidth, gridlineColor)  => {
@@ -88,18 +96,6 @@ export const generateGridlinesCss = (nodeDimensions, gridlineWidth, gridlineColo
 	${gridlineColor} ${nodeDimensions.height + -1}px ${nodeDimensions.height}px)`;
 
 	return horizontalGridlinesCss + ", " + verticalGirdlinesCss;
-}
-
-/**
- * Use it to check if a "date" is extending over canvas endDate.
- */
-export const shouldExtendCanvas = (refDate, canvasEndDate) => {
-	const threshold = 1;
-	
-	if (differenceInDays(canvasEndDate, refDate) <= threshold)
-		return true;
-
-	return false;
 }
 
 export const gridToDate = (date, offset) => {

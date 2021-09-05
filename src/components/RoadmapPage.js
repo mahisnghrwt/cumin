@@ -3,8 +3,7 @@ import CreateEpicForm from "./roadmap/CreateEpicForm";
 import Canvas from "./roadmap/canvas-m/Canvas";
 import { useState, useReducer, useContext } from "react";
 import AlertBar from "./AlertBar";
-import {add} from "date-fns"
-import reducer from "./roadmap/canvas-m/canvasReducer";
+import {add, startOfYesterday} from "date-fns"
 import CanvasToolbar from "./roadmap/CanvasToolbar";
 import EditEpicForm from "./roadmap/EditEpicForm";
 import Helper from "../Helper";
@@ -17,25 +16,47 @@ import IssueItemDetailed from "./issueItem/IssueItemDetailed";
 import IssueItemList from "./issueItem/IssueItemList";
 import EditIssueForm from "./issue/EditIssueForm";
 import SidebarWrapper  from "./sidebar/SidebarWrapper";
+import Canvas2 from "./roadmap/canvas-m/Canvas2";
 
 const ACTIVE_PAGE = "Roadmap";
 const CANVAS_DEFAULT_LENGTH = 60;
 const CANVAS_DEFAULT_ROWS = 0; 
 
-const sidebarReducer = (state, action) => {
+/**
+ * state => selectedEpic
+ * 			intermediateEpic
+ */
 
+const reducer = (state, action) => {
+	switch(action.type) {
+		case "updateIntermediateEpic":
+			return {
+				...state,
+				intermediateEpic: action.intermediateEpic
+			}
+		case "patchIntermediateEpic":
+			return {
+				...state,
+				intermediateEpic: {
+					...state.intermediateEpic,
+					...action.intermediateEpic
+				}
+			}
+		case "setSelectedEpic": {
+			return {
+				...state,
+				selectedEpic: action.selectedEpic
+			}
+		}
+	}
 }
 
 const RoadmapPage = () => {
 	const [global,,] = useContext(Global);
 	const [alert, setAlert_] = useState(null);
-	const [state, dispatch] = useReducer(reducer, {epics: {}, paths: {}, intermediate: {}, canvas: {
-		startDate: new Date(),
-		endDate: add(new Date(), {days: CANVAS_DEFAULT_LENGTH}),
-		rows: CANVAS_DEFAULT_ROWS
-	}});
+	const [state, dispatch] = useReducer(reducer, {selectedEpic: null, intermediateEpic: null});
 
-	const isEpicSelected = state.canvas.selectedEpicId !== undefined && state.epics[state.canvas.selectedEpicId] !== undefined;
+	const isEpicSelected = state.selectedEpic !== null;
 
 	const setAlert = (messageJsx, type) => {
 		if (messageJsx === null) {
@@ -47,17 +68,25 @@ const RoadmapPage = () => {
 	}
 
 	const clearIntermediateEpic = () => {
-		dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic: null});
+		dispatch({type: "updateIntermediateEpic", intermediateEpic: null});
 	}
 
-	const addCanvasRow = () => {
-		dispatch({type: "ADD_ROWS_TO_CANVAS", rows: 1});
+	const setIntermediateEpic = (epic, patch = false) => {
+		let action = {
+			intermediateEpic: epic
+		}
+		action.type = patch ? "patchIntermediateEpic" : "updateIntermediateEpic";
+
+		dispatch(action);
+	}
+
+	const setSelectedEpic = selectedEpic => {
+		dispatch({type: "setSelectedEpic", selectedEpic});
 	}
 
 	const deleteSelectedEpic = async () => {
-		const epicId = state.canvas.selectedEpicId;
-		if (epicId === undefined)
-			return;
+		if (state.selectedEpic === null || !state.selectedEpic.id) return;
+		const epicId = state.selectedEpic.id;
 
 		const token = localStorage.getItem("token");
 		const url = `${settings.API_ROOT}/project/${global.project.id}/epic/${epicId}`;
@@ -69,34 +98,29 @@ const RoadmapPage = () => {
 		}
 	}
 
-	const sidebarTabs = {
-		default: "Default",
-		editEpic: "Edit Epic"
-	}
-
 	return (
 		<>
 			<NavBar loggedIn={true} activePage={ACTIVE_PAGE} />
-			{alert !== null && <AlertBar messageJsx={alert.message} alertType={alert.type} />}
+			{alert && <AlertBar message={alert} />}
 			<div className="roadmap-container">
 				<SidebarWrapper>
 					<Sidebar>
 						<SidebarTabContent>
-							<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediate.epic} clearIntermediateEpic={clearIntermediateEpic} />
-							{isEpicSelected && <EditEpicForm epic={state.epics[state.canvas.selectedEpicId]} />}
+							<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediateEpic} clearIntermediateEpic={clearIntermediateEpic} />
+							{isEpicSelected && <EditEpicForm epic={state.selectedEpicId} />}
 							{isEpicSelected && <CreateIssueForm />}
-							<IssueItemList selectedEpic={state.canvas.selectedEpicId} />
+							{isEpicSelected && <IssueItemList selectedEpic={state.selectedEpic.id} />}
 						</SidebarTabContent>
 					</Sidebar>
 				</SidebarWrapper>
 				
 				<h1>Roadmap</h1>
 				<CanvasToolbar>
-					<button onClick={addCanvasRow} className="x-sm-2">+ Add Row</button>
-					<button onClick={deleteSelectedEpic} className="x-sm-2 bg-red" disabled={state.canvas.selectedEpicId === undefined}>- Delete Epic</button>
+					{/* <button onClick={addCanvasRow} className="x-sm-2">+ Add Row</button> */}
+					<button onClick={deleteSelectedEpic} className="x-sm-2 bg-red" disabled={state.selectedEpic === null}>- Delete Epic</button>
 				</CanvasToolbar>
 				<div className="canvas-wrapper">
-					<Canvas state={state} dispatch={dispatch} setAlert={setAlert} />
+					<Canvas2 roadmap={{setAlert, setIntermediateEpic, setSelectedEpic, selectedEpic: state.selectedEpic, intermediateEpic: state.intermediateEpic}} />
 				</div>
 			</div>
 		</>

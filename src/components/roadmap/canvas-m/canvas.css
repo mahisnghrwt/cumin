@@ -120,3 +120,7 @@
 	opacity: 1;
 	background-color: #f9ca24;
 }
+
+.vertical-line {
+	position: absolute;
+}

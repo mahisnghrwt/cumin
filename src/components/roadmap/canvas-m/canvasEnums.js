@@ -22,3 +22,14 @@ export const PATH_ENDPOINT = {
 export const DRAG_EVENTS = {
 	moveEpic: "moveEpic"
 }
+
+export const canvasEvent = {
+	DRAW_PATH: "drawPath",
+	MOVE_EPIC: "moveEpic",
+	RESIZE_EPIC: "resizeEpic"
+}
+
+export const pathEndpoint = {
+	HEAD: "head",
+	TAIL: "tail"
+}

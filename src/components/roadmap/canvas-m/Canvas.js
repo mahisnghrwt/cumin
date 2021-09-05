@@ -1,12 +1,12 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useReducer } from "react";
 import "./canvas.css";
 import { BASE_NODE_DIMENSIONS, PATH_ENDPOINT, SCALE_UNIT, DRAG_EVENTS } from "./canvasEnums";
 import Epic from "./components/Epic";
 import HorizontalScale from "./components/HorizontalScale";
 import VerticalScale from "./components/VerticalScale";
 import { differenceInDays } from "date-fns/esm";
-import { add } from "date-fns";
-import {getLastRow, getStartEndDates, pixelToGridBasedPos__} from "./canvasHelper";
+import { add, differenceInCalendarDays } from "date-fns";
+import {getStartEndDates, gridToPixelBasedPos__, pixelToGridBasedPos__} from "./canvasHelper";
 import Path from "./components/Path";
 import webSocket from "../../../webSocket"
 import {SOCKET_EVENT} from "../../../enums";
@@ -14,10 +14,11 @@ import Helper from "../../../Helper";
 import settings from "../../../settings";
 import Global from "../../../GlobalContext";
 import {epicPreprocessing, generateGridlinesCss, shouldExtendCanvas, gridToDate} from "./canvasHelper";
-import useEpicResizer from "./useEpicResizer";
-import useAddRowsToFitEpic from "./hooks/useAddRowsToFitEpic";
+// import useAddRowsToFitEpic from "./hooks/useAddRowsToFitEpic";
 import usePixelToGrid from "./hooks/usePixelToGrid";
 import useGetPosInCanvas from "./hooks/useGetPosInCanvas";
+import reducer from "./canvasReducer";
+import { EPIC_FACE } from "./canvasEnums";
 
 const COMPONENT_ID = "CANVAS";
 
@@ -30,68 +31,67 @@ const GRIDLINE_COLOR = "#bdc3c7";
 const GRIDLINE_SIZE_IN_PX = 1;
 const VERTICAL_SCALE_WIDTH = "100px";
 const HORIZONTAL_SCALE_HEIGHT = "60px";
+const INTERMEDIATE_EPIC_COLOR = "#f1c40f";
 
-const INTERACTIVE_LAYER_CLASS_NAME = "interactive-layer";
 
-let id = 1;
-const getId__ = () => {
-	return id++;
-}
+// const createEpic = (pos, refDate, canvasSize, grids) => {
+// 	// this can be dynamic, so we will store color in database as string ?!
 
-Date.prototype.isEqual = function(rhs) {
-	if (!(rhs instanceof Date))
-		return false;
+// 	const gridPos = pixelToGridBasedPos__(pos, canvasSize, grids);
 
-	return (this.getFullYear() === rhs.getFullYear() && this.getMonth() === rhs.getMonth()) && this.getDate() === rhs.getDate();
-}
+// 	const startDate = gridToDate(refDate, gridPos.x);
+// 	const endDate = gridToDate(refDate, gridPos.x + 1);
 
-Date.prototype.earlierThan = function(rhs) {
-	return ((this.getFullYear() < rhs.getFullYear() || this.getMonth() < rhs.getMonth()) || this.getDate() < rhs.getDate());
-}
+// 	if (startDate == null || endDate == null)
+// 		return null;
 
-Date.prototype.laterThan = function(rhs) {
-	return ((this.getFullYear() > rhs.getFullYear() || this.getMonth() > rhs.getMonth()) || this.getDate() > rhs.getDate());
-}
 
-const createEpic = (pos, refDate, canvasSize, grids) => {
-	// this can be dynamic, so we will store color in database as string ?!
+// 	const epic = {
+// 		color: EPIC_DEFAULT_COLOR,
+// 		startDate,
+// 		endDate,
+// 		row: gridPos.y,
+// 		id: "intermediate"
+// 	}
 
-	const gridPos = pixelToGridBasedPos__(pos, canvasSize, grids);
+// 	return epic;
+// }
 
-	const startDate = gridToDate(refDate, gridPos.x);
-	const endDate = gridToDate(refDate, gridPos.x + 1);
-
-	if (startDate == null || endDate == null)
-		return null;
-
+const createIntermediateEpic = (startDate, row) => {
+	const duration = 1;
 
 	const epic = {
-		color: EPIC_DEFAULT_COLOR,
+		color: INTERMEDIATE_EPIC_COLOR,
 		startDate,
-		endDate,
-		row: gridPos.y,
+		endDate: add(startDate, {days: duration}),
+		row,
 		id: "intermediate"
 	}
 
 	return epic;
 }
 
-const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
+const Canvas = ({roadmap}) => {
+	const [state, dispatch] = useReducer(reducer, {epics: {}, paths: {}, intermediate: {}, canvas: {
+		startDate: new Date(),
+		endDate: add(new Date(), {days: DEFAULT_ROADMAP_DURATION}),
+		rows: DEFAULT_ROWS
+	}});
+
 	const [global,,] = useContext(Global);
 
-	const numOfUnits = {
+	const gridSize = {
 		x: differenceInDays(state.canvas.endDate, state.canvas.startDate),
 		y: state.canvas.rows
 	}
 
 	const canvasSize = {
-		height: BASE_NODE_DIMENSIONS.height * numOfUnits.y,
-		width: BASE_NODE_DIMENSIONS.width * numOfUnits.x
+		height: BASE_NODE_DIMENSIONS.height * gridSize.y,
+		width: BASE_NODE_DIMENSIONS.width * gridSize.x
 	}
 
-	const pixelToGrid = usePixelToGrid(canvasSize, numOfUnits);
+	const pixelToGrid = usePixelToGrid(canvasSize, gridSize);
 	const interactiveLayerRef = useRef(null);
-	const mouseGridPos = useRef({x: -1, y: -1});
 
 	// rename to cutomDragEvent
 	const dragData = useRef({type: ""});
@@ -100,22 +100,15 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 
 	const getPosInCanvasRef = useGetPosInCanvas(interactiveLayerRef);
 
-	const interactiveLayerDoubleClickHandler = (e) => {
-		// debugger;
+	const increaseCanvasSizeBy = () => {}
+
+	const interactiveLayerDoubleClickHandler = e => {
 		e.preventDefault();
 
-		// // We can only create epic on top of "interactive-layer"
-		// if (e.target.className !== INTERACTIVE_LAYER_CLASS_NAME)
-		// 	return;
-
-		// const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
-
 		const pos = getPosInCanvasRef.current(e.nativeEvent);
+		const gridPos = pixelToGrid.current(pos);
 
-		let epic = createEpic(pos, state.canvas.startDate, canvasSize, numOfUnits);
-		epic.color = "#f1c40f";
-		if (epic == null)
-			return;
+		let epic = createIntermediateEpic(add(state.canvas.startDate, {days: gridPos.x}), gridPos.y);
 
 		dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic});
 	}
@@ -128,22 +121,10 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 	const interactiveLayerClickHandler = (e) => {
 		unselectEpic();
 	}
-
-	// const interactiveLayerMouseMoveHandler = e => {
-	// 	// console.log(getPosInCanvasRef.current(e.nativeEvent));
-	// 	if (e.target.className !== "interactive-layer") return;
-	// 	const {nativeEvent: {offsetX, offsetY}} = e;
-	// 	// console.log(offsetX, offsetY);
-	// 	const pos = pixelToGrid.current({x: offsetX, y: offsetY});
-	// 	if (pos.x !== mouseGridPos.current.x || pos.y !== mouseGridPos.current.y) {
-	// 		mouseGridPos.current = { ...pos }
-	// 		console.log(mouseGridPos.current);
-	// 	}
-	// }
-
+	
 	const createIntermediatePath = (originEpicId, rawEndpoint) => {
 		let path = {
-			id: getId__(),
+			id: "intermediate",
 			originEpicId,
 			rawEndpoint
 		}
@@ -173,7 +154,6 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 	const finaliseIntermediatePath = rawEpicId => {
 		if (state.intermediate.path === undefined) return;
 
-		// debugger;
 		if (rawEpicId === undefined) {
 			dispatch({type: "REMOVE_INTERMEDIATE_PATH"});
 			return;
@@ -183,7 +163,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		const originEpicKey = rawEpicKey === "from" ? "to" : "from";
 		
 		const p = {
-			id: getId__(),
+			id: 1,
 			[originEpicKey]: state.intermediate.path.originEpicId,
 			[rawEpicKey]: rawEpicId
 		}
@@ -215,14 +195,10 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 
 	const moveEpic = (epicId, targetDate) => {
 		let epic = epicId === "intermediate" ? state.intermediate.epic : state.epics[epicId];
-		// if (epicId === "intermediate")
-		// 	epic = state.intermediate.epic;
-		// else
-		// 	epic = state.epics[epicId];
 
 		if (epic === null || epic === undefined) return;
 
-		if (targetDate.isEqual(epic.startDate)) return;
+		if (differenceInDays(targetDate, epic.startDate) === 0) return;
 
 		const widthInDays = differenceInDays(epic.endDate, epic.startDate);
 
@@ -238,25 +214,33 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		dispatch(action);
 	}
 
+	// const resizeEpic = useEpicResizer(state, dispatch);
 
-	// const resizeEpic = (epicId, face, targetDate) => {
-	// 	const epic = state.epics[epicId];
+	const resizeEpic = (epicId, face, targetDate) => {
+		let epic = state.epics[epicId];
+		if (epicId === "intermediate")
+			epic = state.intermediate.epic;
 
-	// 	if (targetDate.isEqual(epic.startDate) || targetDate.isEqual(epic.endDate)) {
-	// 		return;
-	// 	}
+		if (differenceInDays(targetDate, epic.startDate) === 0 || differenceInDays(targetDate, epic.endDate) === 0)
+			return;
 
-	// 	if (shouldExtendCanvas(targetDate, state.canvas.endDate)) {
-	// 		increaseCanvasSizeBy(1);
-	// 	}
 
-	// 	dispatch({type: "UPDATE_EPIC", id: epic.id, patch: {
-	// 		startDate: face === EPIC_FACE.START ? targetDate : epic.startDate,
-	// 		endDate: face === EPIC_FACE.END ? targetDate : epic.endDate
-	// 	}})
-	// }
+		// if (shouldExtendCanvas(targetDate, state.canvas.endDate)) {
+		// 	increaseCanvasSizeBy(1);
+		// }
 
-	const resizeEpic = useEpicResizer(state, dispatch);
+		let action = {type: "UPDATE_EPIC", id: epic.id, patch: {
+			startDate: face === EPIC_FACE.START ? targetDate : epic.startDate,
+			endDate: face === EPIC_FACE.END ? targetDate : epic.endDate
+		}};
+
+		if (epicId === "intermediate") {
+			dispatch({type: "UPDATE_INTERMEDIATE_EPIC", epic: {...action.patch}});
+		}
+		else {
+			dispatch(action);
+		}
+	}
 
 	const dragOver = (e) => {
 		e.preventDefault();
@@ -269,16 +253,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 
 		const pos = getPosInCanvasRef.current(e.nativeEvent);
 
-		// const pos = {x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY};
-
-		// // position is always relative to interactive-layer
-		// if (e.target.className === "epic") {
-		// 	pos.x += e.target.offsetLeft;
-		// 	pos.y += e.target.offsetTop;
-		// }
-
 		const gridPos = pixelToGrid.current(pos);
-		// const gridPos = pixelToGridBasedPos__(pos, canvasSize, numOfUnits);
 		const targetDate = gridToDate(state.canvas.startDate, gridPos.x);
 
 		switch(dragData.current.type) {
@@ -289,13 +264,15 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 				moveEpic(dragData.current.epicId, targetDate);
 				break;
 			case "RESIZE_EPIC":
-				resizeEpic.current(dragData.current.epicId, dragData.current.face, targetDate);
+				resizeEpic(dragData.current.epicId, dragData.current.face, targetDate);
 				break;
 			// default:
 			// 	throw new Error(`Unknown drag event type: ${dragData.current.type}`);
 		}
 
 	}
+
+	const shouldExtendCanvas = () => {}
 
 	const drop = (e) => {
 		e.preventDefault();
@@ -319,7 +296,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 		// what if the row is already occupied?
 		usedRowsRef.current.add(epic_.row);
 
-		addRowsToFitEpic.current(epic_);
+		// addRowsToFitEpic.current(epic_);
 		
 		extendCanvasToFitEpic(epic_);
 		
@@ -327,8 +304,6 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 	}
 
 	const epicUpdatedOverSocket = epics => {
-		debugger;
-
 		if (Array.isArray(epics) === false) {
 			console.error("Updated epic must be sent as an array!");
 			return;
@@ -343,16 +318,14 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 	}
 
 	const epicDeletedOverSocket = epic => {
-		debugger;
 		dispatch({type: "DELETE_EPIC", id: epic.id});
 	}
 
-	const addRowsToFitEpic = useAddRowsToFitEpic(state, dispatch);
+	// const addRowsToFitEpic = useAddRowsToFitEpic(state, dispatch);
 
 	const extendCanvasToFitEpic = (epic) => {
-		if (epic.startDate.laterThan(state.canvas.startDate) && epic.endDate.earlierThan(state.canvas.endDate)) {
+		if (differenceInDays(epic.startDate, state.canvas.startDate) > 0 && differenceInDays(state.canvas.endDate, epic.endDate) > 0)
 			return;
-		}
 
 		const patchedRoadmapDuration = getStartEndDates([state.canvas.startDate, state.canvas.endDate], epic);
 
@@ -389,7 +362,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 				statePatch.epics[key] = epicPreprocessing(statePatch.epics[key]);
 
 				// get the last row for roadmap
-				lastRow = getLastRow(lastRow, statePatch.epics[key]);
+				// lastRow = getLastRow(lastRow, statePatch.epics[key]);
 				
 				// determine roadmap duration
 				roadmapDuration = getStartEndDates(roadmapDuration, statePatch.epics[key]);
@@ -407,9 +380,6 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 			dispatch({type: "PATCH", patch: statePatch});
 
 		})()
-
-		
-
 		// load all the paths
 
 		webSocket.addListener(SOCKET_EVENT.EPIC_CREATED, COMPONENT_ID, epicCreatedOverSocket);
@@ -422,9 +392,22 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 			webSocket.removeListener(SOCKET_EVENT.EPIC_DELETED, COMPONENT_ID);
 
 		}
-
-		// add all the socket listeners
 	}, []);
+
+	const getEpicPosInfo = epic => {
+		let info = {
+			width: differenceInDays(epic.endDate, epic.startDate),
+			pos: {
+				x: -1,
+				y: epic.row
+			}
+		};
+
+		const pos = gridToPixelBasedPos__({x: differenceInDays(epic.startDate, state.canvas.startDate), y: 0}, BASE_NODE_DIMENSIONS);
+		info.pos.x = pos.x;
+
+		return info;
+	}
 
 	return (
 		<div className="canvas-with-scale" style={{position: "relative"}}>
@@ -441,12 +424,15 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 					baseNodeDimensions={BASE_NODE_DIMENSIONS} 
 					unit={SCALE_UNIT.day}
 					canvasDimensions={canvasSize}
-					gridDimensions={numOfUnits}
+					gridDimensions={gridSize}
 					canvasRef={interactiveLayerRef}
 				/>
 			</div>
 			<div className="canvas-with-scale-row">
-				<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(state.epics)} unit={BASE_NODE_DIMENSIONS} rows={state.canvas.rows} />
+				<div>
+					<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(state.epics)} unit={BASE_NODE_DIMENSIONS} rows={state.canvas.rows} />
+					{/* <button>Button</button> */}
+				</div>
 				<div 
 					className="canvas-layer" 
 					id="canvas-layer"
@@ -462,7 +448,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 								canvas={{startDate: state.canvas.startDate}}
 								from={state.epics[x.from]}
 								to={state.epics[x.to]}
-								id={id} />
+								/>
 						})}
 						{state.intermediate.path !== undefined && <Path path={state.intermediate.path} canvas={{startDate: state.canvas.startDate}} />}
 					</svg>
@@ -475,10 +461,6 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 						onDoubleClick={interactiveLayerDoubleClickHandler}
 						onClick={interactiveLayerClickHandler}
 						ref={interactiveLayerRef}
-						// onMouseMove={interactiveLayerMouseMoveHandler}
-
-						// onMouseLeave={interactiveLayerMouseLeaveHandler}
-						// mouse
 					>
 						{state.intermediate.epic !== undefined && (
 							<Epic 
@@ -490,7 +472,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 								startDate: state.canvas.startDate,
 								endDate: state.canvas.endDate,
 								grid: {
-									...numOfUnits
+									...gridSize
 								}
 							}} />
 						)}
@@ -508,7 +490,7 @@ const Canvas = ({increaseCanvasSizeBy, dispatch, state}) => {
 									startDate: state.canvas.startDate,
 									endDate: state.canvas.endDate,
 									grid: {
-										...numOfUnits
+										...gridSize
 									}
 								}} />
 						})}

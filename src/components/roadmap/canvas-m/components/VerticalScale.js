@@ -6,7 +6,6 @@ const VerticalScale = ({style, epics, unit, rows}) => {
 				className={isPlaceholder ? "vertical-scale-label placeholder-label" : "vertical-scale-label" }
 				style={{height: unit.height}}>
 					{label}
-					{/* <>&larr;</> */}
 			</div>
 		)
 	}
@@ -41,8 +40,8 @@ const VerticalScale = ({style, epics, unit, rows}) => {
 			lastRow = epic.row;
 		});
 
-		if (lastRow >= rows)
-			throw new Error("Labels exceed the number of rows!");
+		// if (lastRow >= rows)
+		// 	throw new Error("Labels exceed the number of rows!");
 
 		labels = labels.concat(getPlaceholderLabels(lastRow + 1, rows - 1));
 	

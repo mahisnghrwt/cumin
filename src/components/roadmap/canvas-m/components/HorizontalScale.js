@@ -78,28 +78,31 @@ const highlightedLabelStyle = {
 }
 
 const HorizontalScale = ({startDate, endDate, unit, style, baseNodeDimensions, canvasRef, gridDimensions, canvasDimensions}) => {
-	const [labels, dispatch] = useReducer(reducer__, []);
+	// const [labels, dispatch] = useReducer(reducer__, []);
 	const [highlightedLabel, setHighlightedLabel] = useState(-1);
-	const pixelToGrid = usePixelToGrid(canvasDimensions, gridDimensions);
+	// const pixelToGrid = usePixelToGrid(canvasDimensions, gridDimensions);
 
-	useEffect(() => {
-		const labels = makeLabels(startDate, endDate, unit, baseNodeDimensions);
-		dispatch({type: "NEW", labels});
+	const labels = makeLabels(startDate, endDate, unit, baseNodeDimensions);
 
-	}, [startDate, endDate, unit]);
 
-	const highlightLabelAtPos = useCallback((pos) => {
-		if (pos.x !== highlightedLabel)
-			setHighlightedLabel(pos.x);
-	}, [highlightedLabel, setHighlightedLabel])
+	// useEffect(() => {
+	// 	const labels = makeLabels(startDate, endDate, unit, baseNodeDimensions);
+	// 	dispatch({type: "NEW", labels});
 
-	useEffect(() => {
-		canvasRef.current.addEventListener("mousemove", e => {
-			if (e.target.className !== "interactive-layer") return;
-			const pos = pixelToGrid.current({x: e.offsetX, y: e.offsetY});
-			highlightLabelAtPos(pos);
-		})
-	}, [canvasRef, pixelToGrid, highlightLabelAtPos])
+	// }, [startDate, endDate, unit]);
+
+	// const highlightLabelAtPos = useCallback((pos) => {
+	// 	if (pos.x !== highlightedLabel)
+	// 		setHighlightedLabel(pos.x);
+	// }, [highlightedLabel, setHighlightedLabel])
+
+	// useEffect(() => {
+	// 	canvasRef.current.addEventListener("mousemove", e => {
+	// 		if (e.target.className !== "interactive-layer") return;
+	// 		const pos = pixelToGrid.current({x: e.offsetX, y: e.offsetY});
+	// 		highlightLabelAtPos(pos);
+	// 	})
+	// }, [canvasRef, pixelToGrid, highlightLabelAtPos])
 
 
 	const width = differenceInDays(endDate, startDate) * baseNodeDimensions.width;

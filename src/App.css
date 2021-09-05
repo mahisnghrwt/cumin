@@ -223,6 +223,14 @@ button {
 	margin: 0 1rem 1rem 0;
 }
 
+.light-button {
+	border: 1px solid white;
+	background-color: transparent;
+	font-size: 1em;
+	padding: 0.25em 1em;
+	margin: 0;
+}
+
 button:disabled {
 	opacity: 0.5;
 }
@@ -256,9 +264,17 @@ button:disabled {
 /* ======================ALERT BAR======================================= */
 .alert-bar {
 	width: 100%;
-	padding: 0.25rem;
 	height: fit-content;
+	box-sizing: border-box;
+	padding: 0.1rem 0.5rem;
+	color: white;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-content: center;
 }
+
+
 
 /* ======================Placeholder======================================= */
 
