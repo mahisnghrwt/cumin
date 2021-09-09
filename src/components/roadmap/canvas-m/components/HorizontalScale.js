@@ -1,4 +1,4 @@
-import { add, differenceInDays, endOfMonth, nextSunday, sub } from "date-fns";
+import { add, differenceInCalendarDays, endOfMonth, nextSunday, sub } from "date-fns";
 import { useCallback, useEffect, useReducer, useState } from "react";
 import { SCALE_UNIT } from "../canvasEnums";
 import Helper from "../../../../Helper";
@@ -28,14 +28,14 @@ const makeLabels = (startDate, endDate, unit, baseNodeDimensions) => {
 		let currentDate = prevDate === null ? new Date(startDate) : getNextDate__(prevDate, unit);
 
 		// if the current date is greater than the end date of canvas 
-		if (differenceInDays(currentDate, endDate) >= -1) {
+		if (differenceInCalendarDays(currentDate, endDate) >= -1) {
 			// dont run the next loop iteration
 			endReached = true;
 			currentDate = sub(endDate, {days: 1});
 		}
 
 		// calc the days between prev date and current date
-		const duration = differenceInDays(currentDate, prevDate === null ? currentDate: prevDate);
+		const duration = differenceInCalendarDays(currentDate, prevDate === null ? currentDate: prevDate);
 
 		// covert duration into px
 		const durationInPx = duration * baseNodeDimensions.width;
@@ -105,7 +105,7 @@ const HorizontalScale = ({startDate, endDate, unit, style, baseNodeDimensions, c
 	// }, [canvasRef, pixelToGrid, highlightLabelAtPos])
 
 
-	const width = differenceInDays(endDate, startDate) * baseNodeDimensions.width;
+	const width = differenceInCalendarDays(endDate, startDate) * baseNodeDimensions.width;
 
 	return (
 		<div className="horizontal-scale" style={{...style, width}}>

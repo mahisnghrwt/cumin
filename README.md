@@ -3,7 +3,7 @@
 
 
 ## Upcoming features
-- [ ] ~"Add row" button on last canvas row.~
+- [x] ~"Add row" button on last canvas row.~
 - [x] Sync path between Epics
 - [x] Detect cycles in Roadmap
 	- ~[ ] Suggestions to resolve cycles~

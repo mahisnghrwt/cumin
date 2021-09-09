@@ -11,4 +11,10 @@ const LOGGED_IN = "loggedIn";
 const LOGGED_OUT = "loggedOut";
 const ALWAYS = "always";
 
-export { NavItem , LOGGED_IN, LOGGED_OUT, ALWAYS};
+const loginStatus = {
+	LOGGED_IN: "loggedIn",
+	LOGGED_OUT: "loggedOut",
+	ALWAYS: "always",
+}
+
+export { NavItem , LOGGED_IN, LOGGED_OUT, ALWAYS, loginStatus};

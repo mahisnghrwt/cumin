@@ -1,4 +1,4 @@
-import { differenceInDays } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
 import { gridToPixelBasedPos__ } from "../canvasHelper";
 import { BASE_NODE_DIMENSIONS } from "../canvasEnums";
 
@@ -27,12 +27,12 @@ const Path = ({id, from, to, path, canvas, color="#34495e"}) => {
 
 	const makePath = (from, to) => {
 		const head = {
-			x: differenceInDays(from.endDate, canvas.startDate),
+			x: differenceInCalendarDays(from.endDate, canvas.startDate),
 			y: from.row
 		}
 	
 		const tail = {
-			x: differenceInDays(to.startDate, canvas.startDate),
+			x: differenceInCalendarDays(to.startDate, canvas.startDate),
 			y: to.row
 		}
 
