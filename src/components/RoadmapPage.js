@@ -13,6 +13,7 @@ import SidebarTabContent from "./sidebar/SidebarTabContent";
 import IssueItemList from "./issueItem/IssueItemList";
 import SidebarWrapper  from "./sidebar/SidebarWrapper";
 import Canvas from "./roadmap/canvas-m/Canvas2";
+import { useRef } from "react";
 
 const ACTIVE_PAGE = "Roadmap";
 
@@ -40,11 +41,18 @@ const reducer = (state, action) => {
 	}
 }
 
+const canvasToolsReducer = (state, action) => {
+	switch(action.type) {
+		case "add":
+			return [...state, action.tool];
+	}
+}
+
 const RoadmapPage = () => {
 	const [global,,] = useContext(Global);
 	const [alert, setAlert_] = useState(null);
 	const [state, dispatch] = useReducer(reducer, {selectedEpic: null, intermediateEpic: null});
-
+	const [canvasTools, dispatchCanvasTools] = useReducer(canvasToolsReducer, []);
 	const isEpicSelected = state.selectedEpic !== null;
 
 	const setAlert = (messageJsx, type) => {
@@ -105,11 +113,11 @@ const RoadmapPage = () => {
 				
 				<h1>Roadmap</h1>
 				<CanvasToolbar>
-					{/* <button onClick={addCanvasRow} className="x-sm-2">+ Add Row</button> */}
+					{canvasTools}
 					<button onClick={deleteSelectedEpic} className="x-sm-2 bg-red" disabled={state.selectedEpic === null}>- Delete Epic</button>
 				</CanvasToolbar>
 				<div className="canvas-wrapper">
-					<Canvas roadmap={{setAlert, setIntermediateEpic, setSelectedEpic, selectedEpic: state.selectedEpic, intermediateEpic: state.intermediateEpic}} />
+					<Canvas roadmap={{setAlert, setIntermediateEpic, setSelectedEpic, selectedEpic: state.selectedEpic, intermediateEpic: state.intermediateEpic, dispatchCanvasTools}} />
 				</div>
 			</div>
 		</>
