@@ -38,7 +38,7 @@ const Button = ({kKey, label, onClick: submit, doesSubmit = false, ...rest}) => 
 	}
 
 	return (
-		<button onClick={buttonClickHandler} {...rest}>{label}</button>
+		<button className="std-button" onClick={buttonClickHandler} {...rest}>{label}</button>
 	)
 }
 

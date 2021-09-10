@@ -114,7 +114,7 @@ const RoadmapPage = () => {
 				<h1>Roadmap</h1>
 				<CanvasToolbar>
 					{canvasTools}
-					<button onClick={deleteSelectedEpic} className="x-sm-2 bg-red" disabled={state.selectedEpic === null}>- Delete Epic</button>
+					<button onClick={deleteSelectedEpic} className="std-button x-sm-2 bg-red" disabled={state.selectedEpic === null}>- Delete Epic</button>
 				</CanvasToolbar>
 				<div className="canvas-wrapper">
 					<Canvas roadmap={{setAlert, setIntermediateEpic, setSelectedEpic, selectedEpic: state.selectedEpic, intermediateEpic: state.intermediateEpic, dispatchCanvasTools}} />

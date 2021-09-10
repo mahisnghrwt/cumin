@@ -14,9 +14,7 @@
 	background-color: var(--success-green);
 }
 
-.bg-red {
-	background-color: var(--danger-red);
-}
+
 
 /* ============================================================================ */
 
@@ -209,7 +207,7 @@ form {
 	background-color: var(--danger-red);
 }
 
-button {
+.std-button {
 	width: fit-content;
 	height: fit-content;
 	padding: 0.5rem 2rem;
@@ -328,4 +326,8 @@ button:disabled {
 	flex-wrap: wrap;
 	border: 1px solid lightgrey;
 	padding: 0.25rem;
+}
+
+.bg-red {
+	background-color: var(--danger-red);
 }

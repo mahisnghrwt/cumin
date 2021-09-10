@@ -315,7 +315,7 @@ const Canvas = ({roadmap}) => {
 	}
 
 	useEffect(() => {
-		roadmap.dispatchCanvasTools({type: "add", tool: (<button onClick={addRow} className="x-sm-2">+ Add Row</button>)})
+		roadmap.dispatchCanvasTools({type: "add", tool: (<button onClick={addRow} className="std-button x-sm-2">+ Add Row</button>)})
 
 		let statePatch = {};
 		const token = localStorage.getItem("token");

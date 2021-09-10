@@ -109,8 +109,8 @@ const CreateEpicForm = ({intermediateEpic, setAlert, clearIntermediateEpic}) => 
 				{intermediateEpic && <DateRow startDate={intermediateEpic.startDate} endDate={intermediateEpic.endDate} />}
 				
 				<div className="form-row">
-					<button ref={submitButtonRef} onClick={createEpic}>Create</button>
-					{intermediateEpic && <button className="bg-red" onClick={clearIntermediateEpic}>Cancel</button>}
+					<button className="std-button" ref={submitButtonRef} onClick={createEpic}>Create</button>
+					{intermediateEpic && <button className="std-button bg-red" onClick={clearIntermediateEpic}>Cancel</button>}
 				</div>
 				<div className="form-row">
 					{state.log !== null && <div className={"form-item-alert " + state.log.type}>{state.log.message}</div>}

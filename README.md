@@ -1,5 +1,5 @@
 # Cumin
-![The San Juan Mountains are beautiful!](https://i.imgur.com/TZ9xQWd.jpeg "San Juan Mountains")
+![!](https://i.imgur.com/TZ9xQWd.jpeg "Roadmap Page screenshot")
 
 
 ## Upcoming features
