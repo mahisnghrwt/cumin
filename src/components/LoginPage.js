@@ -5,7 +5,6 @@ import socket from '../webSocket';
 import settings from "../settings";
 import Global from '../GlobalContext';
 import { useHistory } from 'react-router-dom';
-import Loader from './loader/Loader';
 
 const userLoginApiUrl = settings.API_ROOT + "/auth/login";
 const userTokenValidateApiUrl = settings.API_ROOT + "/auth";
@@ -38,7 +37,7 @@ const reducer = (state, action) => {
 	}
 }
 
-const LoginPage = ({redirectTo}) => {
+const LoginPage = ({location: location_}) => {
 	const [global, globalDispatch] = useContext(Global);
 	const [state, dispatch] = useReducer(reducer, {
 		[FIELDS.username]: {
@@ -65,22 +64,10 @@ const LoginPage = ({redirectTo}) => {
 		// save user and project in context
 
 		setUserAndProject(user, project);
-		// setUser(user);
-
-		// debugger;
-
-		// if (project !== undefined)
-		// 	setProject(project);
 	}
 
 	const redirectOnSuccess = () => {
-		let url = "/";
-		if (typeof redirectTo === "string") {
-			url = redirectTo;
-		}
-
-		console.log(global);
-
+		let url = (location_ && location_.state.referrer) ? location_.state.referrer : "/";
 		history_.push(url);
 	}
 
@@ -169,7 +156,7 @@ const LoginPage = ({redirectTo}) => {
 						</div>
 					</div>
 					<div className="form-row">
-						<button className="sm" onClick={login}>Login</button>
+						<button className="std-button sm" onClick={login}>Login</button>
 					</div>
 				</form>
 			</div>
