@@ -4,26 +4,12 @@ import usePixelToGrid from "../hooks/usePixelToGrid";
 import canvasContext from "../canvasContext";
 import { canvasEvent } from "../canvasEnums";
 import Epic2 from "./Epic2";
-import ContextMenu from "../../../context-menu/ContextMenu";
-import ContextMenuItem from "../../../context-menu/ContextMenuItem";
-
-const contextMenuStateReducer = (state, action) => {
-	switch(action.type) {
-		case "add":
-			return {
-				...state,
-				items: [...state.items, action.item],
-				pos: action.pos ? action.pos : state.pos
-			}
-	}
-}
 
 const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, createIntermediatePath, finaliseIntermediatePath, createIntermediateEpic, selectEpic, patchEpicDuration}, ref) => {
 	const {canvasSize, gridSize} = useContext(canvasContext);
 	const getPosInCanvasRef = useGetPosInCanvas(ref);
 	const pixelToGridRef = usePixelToGrid(canvasSize, gridSize);
 	const mouseDataTransferRef = useRef({type: null});
-	const [contextMenuState, dispatchContextMenuState] = useReducer(contextMenuStateReducer, {items: [], pos: null});
 
 	const extractMouseEventData = e => {
 		const pos = getPosInCanvasRef.current(e.nativeEvent);
@@ -105,14 +91,6 @@ const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, cre
 		selectEpic(null);
 	}
 
-	const contextMenuHandler = e => {
-		e.preventDefault();
-		debugger;
-		const pos = getPosInCanvasRef.current(e.nativeEvent);
-		const hello = new ContextMenuItem("Hello", () => {});
-		dispatchContextMenuState({type: "add", item: hello, pos});
-	}
-
 	const setMouseEventData = data => {
 		mouseDataTransferRef.current = data;
 	}
@@ -126,10 +104,8 @@ const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, cre
 			onDrop={dropHandler}
 			onDoubleClick={doubleClickHandler}
 			onClick={clickHandler}
-			onContextMenu={contextMenuHandler}
 			ref={ref}
 		>
-			<ContextMenu pos={contextMenuState.pos} items={contextMenuState.items} />
 			{epics.map(epic => {
 				return <Epic2 {...epic} setMouseEventData={setMouseEventData} mouseDataTransferRef={mouseDataTransferRef} />
 			})}
