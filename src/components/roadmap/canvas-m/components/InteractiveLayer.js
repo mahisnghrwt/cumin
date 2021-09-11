@@ -4,8 +4,10 @@ import usePixelToGrid from "../hooks/usePixelToGrid";
 import canvasContext from "../canvasContext";
 import { canvasEvent } from "../canvasEnums";
 import Epic2 from "./Epic2";
+import Global from "../../../../GlobalContext";
 
 const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, createIntermediatePath, finaliseIntermediatePath, createIntermediateEpic, selectEpic, patchEpicDuration}, ref) => {
+	const [global,,] = useContext(Global);
 	const {canvasSize, gridSize} = useContext(canvasContext);
 	const getPosInCanvasRef = useGetPosInCanvas(ref);
 	const pixelToGridRef = usePixelToGrid(canvasSize, gridSize);
@@ -95,15 +97,20 @@ const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, cre
 		mouseDataTransferRef.current = data;
 	}
 
+	const conditionalMouseEvents = {
+		onDragOver: e => e.preventDefault()
+	}
+
 	return (
 		<div 
 			id="interactive-layer"
 			className="interactive-layer"
+			onClick={clickHandler}
 			onDragEnter={dragEnterHandler}
 			onDragOver={dragOverHandler}
 			onDrop={dropHandler}
 			onDoubleClick={doubleClickHandler}
-			onClick={clickHandler}
+			{...(!global.isPm() && conditionalMouseEvents)}
 			ref={ref}
 		>
 			{epics.map(epic => {

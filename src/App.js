@@ -35,9 +35,16 @@ const reducer = (state, action) => {
 	}
 };
 
+const defaultGlobal = {
+	user: null, 
+	project: null,
+	isPm: function() {
+		return (this.user && this.user.role === "Project Manager")
+	}
+}
+
 function App() {
-	// const [user, setUser] = useState(null);
-	const [global, globalDispatch] = useReducer(reducer, {project: null, user: null});
+	const [global, globalDispatch] = useReducer(reducer, defaultGlobal);
 	const [alert_, setAlert_] = useState(null);
 
 	// push notification
