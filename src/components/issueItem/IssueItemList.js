@@ -47,7 +47,6 @@ const findIssueFromState = (state, issueId) => {
 const IssueItemList = ({selectedEpic = null}) => {
 	const [state, dispatch] = useReducer(reducer, defaultState);
 	const [global,,] = useContext(Global);
-	const {addTab, switchTab} = useContext(sidebarContext);
 
 	const actions = {
 		Edit: issueId => {
@@ -57,8 +56,8 @@ const IssueItemList = ({selectedEpic = null}) => {
 			{/* <SidebarTabContent kKey={sidebarTabs.editEpic}>
 							{issue !== null && <EditIssueForm issue={issue} />}
 						</SidebarTabContent> */}
-			addTab("editEpic", "Edit Epic", <EditIssueForm issue={issue} />);
-			switchTab("editEpic");
+			// addTab("editEpic", "Edit Epic", <EditIssueForm issue={issue} />);
+			// switchTab("editEpic");
 			// update
 			// editIssue(issue);
 		},
@@ -94,7 +93,7 @@ const IssueItemList = ({selectedEpic = null}) => {
 
 	return (
 		<div className="issue-item-list">
-			<h3>Issues in this Epic</h3>
+			<h4>Issues in this Epic</h4>
 			{	state.issuesByEpic[selectedEpic] === undefined &&
 				<p>No issues under this epic.</p>
 			}

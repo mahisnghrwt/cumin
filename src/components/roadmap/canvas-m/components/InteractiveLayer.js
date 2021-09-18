@@ -83,6 +83,7 @@ const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, cre
 
 	const doubleClickHandler = e => {
 		e.preventDefault();
+		debugger;
 
 		const eventData = extractMouseEventData(e);
 
@@ -110,7 +111,7 @@ const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, cre
 			onDragOver={dragOverHandler}
 			onDrop={dropHandler}
 			onDoubleClick={doubleClickHandler}
-			{...(!global.isPm() && conditionalMouseEvents)}
+			// {...(!global.isPm() && conditionalMouseEvents)}
 			ref={ref}
 		>
 			{epics.map(epic => {

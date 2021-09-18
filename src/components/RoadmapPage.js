@@ -8,52 +8,69 @@ import Helper from "../Helper";
 import settings from "../settings";
 import Global from "../GlobalContext";
 import CreateIssueForm from "./issue/CreateIssueForm";
-import Sidebar from "./sidebar/Sidebar"
+import Sidebar from "./sidebar2/Sidebar"
 import SidebarTabContent from "./sidebar/SidebarTabContent";
 import IssueItemList from "./issueItem/IssueItemList";
-import SidebarWrapper  from "./sidebar/SidebarWrapper";
+import SidebarWrapper  from "./sidebar2/SidebarWrapper";
 import Canvas from "./roadmap/canvas-m/Canvas2";
-import { useRef } from "react";
+import RoadmapSelector from "./roadmap/RoadmapSelector";
+import { useEffect } from "react";
+import CanvasWrapper from "./roadmap/CanvasWrapper";
+import roadmapContext from "./roadmap/roadmapContext";
+import { startOfMinute } from "date-fns";
 
 const ACTIVE_PAGE = "Roadmap";
 
 const reducer = (state, action) => {
 	switch(action.type) {
-		case "updateIntermediateEpic":
+		case "setSelectedRoadmap":
 			return {
 				...state,
-				intermediateEpic: action.intermediateEpic
+				selectedRoadmap: action.roadmap
 			}
-		case "patchIntermediateEpic":
-			return {
-				...state,
-				intermediateEpic: {
-					...state.intermediateEpic,
-					...action.intermediateEpic
-				}
-			}
-		case "setSelectedEpic": {
-			return {
-				...state,
-				selectedEpic: action.selectedEpic
-			}
-		}
 	}
 }
 
 const canvasToolsReducer = (state, action) => {
 	switch(action.type) {
 		case "add":
-			return [...state, action.tool];
+			return {
+				...state,
+				[action.id]: action.tool
+			}
+		case "remove":
+			const state_ = {...state};
+			delete state_[action.id];
+			return state_;
+		case "clear":
+			return {};
+	}
+}
+
+const roadmapReducer = (state, action) => {
+	switch(action.type) {
+		case "addMultiple":
+			return {
+				...state,
+				...action.roadmaps
+			}
+		case "patchRoadmap":
+			return {
+				...state,
+				[action.roadmapId]: {
+					...state[action.roadmapId],
+					...action.patch
+				}
+			}
 	}
 }
 
 const RoadmapPage = () => {
 	const [global,,] = useContext(Global);
 	const [alert, setAlert_] = useState(null);
-	const [state, dispatch] = useReducer(reducer, {selectedEpic: null, intermediateEpic: null});
-	const [canvasTools, dispatchCanvasTools] = useReducer(canvasToolsReducer, []);
-	const isEpicSelected = state.selectedEpic !== null;
+	const [state, dispatch] = useReducer(reducer, {selectedRoadmap: null});
+	const [roadmap, roadmapDispatch] = useReducer(roadmapReducer, {});
+	const [canvasTools, dispatchCanvasTools] = useReducer(canvasToolsReducer, {});
 
 	const setAlert = (messageJsx, type) => {
 		if (messageJsx === null) {
@@ -64,65 +81,76 @@ const RoadmapPage = () => {
 		setAlert_({message: messageJsx, type});
 	}
 
-	const clearIntermediateEpic = () => {
-		dispatch({type: "updateIntermediateEpic", intermediateEpic: null});
-	}
-
-	const setIntermediateEpic = (epic, patch = false) => {
-		let action = {
-			intermediateEpic: epic
-		}
-		action.type = patch ? "patchIntermediateEpic" : "updateIntermediateEpic";
-
-		dispatch(action);
-	}
-
-	const setSelectedEpic = selectedEpic => {
-		dispatch({type: "setSelectedEpic", selectedEpic});
-	}
-
-	const deleteSelectedEpic = async () => {
-		if (state.selectedEpic === null || !state.selectedEpic.id) return;
-		const epicId = state.selectedEpic.id;
-
+	// fetch roadmaps
+	const fetchRoadmaps = async () => {
 		const token = localStorage.getItem("token");
-		const url = `${settings.API_ROOT}/project/${global.project.id}/epic/${epicId}`;
-		debugger;
+		const projectId = global.project.id;
+		const url = `${settings.API_ROOT}/project/${projectId}/roadmap`;
+
 		try {
-			await Helper.http.request(url, "DELETE", token, null, false);
+			const roadmaps = await Helper.http.request(url, "GET", token, null, true);
+			return roadmaps;
 		} catch (e) {
 			console.error(e);
 		}
+
+		return null;
 	}
 
+	const findMainRoadmapId = roadmaps => {
+		// main roadmap does not have a creatorId 
+		const r = roadmaps.find(r => r.creatorId === null);
+		return r === undefined ? null : r.id;
+	}
+
+	const enableRoadmapSelector = roadmap && Object.values(roadmap).length !== 0;
+
+	const selectRoadmap = id => {
+		dispatch({ type: "setSelectedRoadmap", roadmap: id });
+	}
+
+	useEffect(() => {
+		// fetch roadmaps
+		void async function() {
+			const roadmaps = await fetchRoadmaps();
+			if (roadmaps === null) return;
+			
+			// store roadmaps as Object, for faster access
+			let roadmapObj = {};
+			roadmaps.forEach(r => {
+				roadmapObj[r.id] = r;
+			});
+
+			roadmapDispatch({ type: "addMultiple", roadmaps: roadmapObj});
+
+			let mainRoadmapId = findMainRoadmapId(roadmaps);
+			if (mainRoadmapId === null) {
+				// throw new Error("Could not find main roadmap.");
+				mainRoadmapId = roadmaps[0].id;
+			}
+			
+			// by default, select the main roadmap as active
+			dispatch({ type: "setSelectedRoadmap", roadmap: mainRoadmapId});
+		}()	
+	}, [])
+
 	return (
-		<>
+		<roadmapContext.Provider value={{setAlert, dispatchCanvasTools}}>
 			<NavBar loggedIn={true} activePage={ACTIVE_PAGE} />
 			{alert && <AlertBar message={alert} />}
 			<div className="roadmap-container">
 				<SidebarWrapper>
-					<Sidebar>
-						<SidebarTabContent>
-							<CreateEpicForm setAlert={setAlert} intermediateEpic={state.intermediateEpic} clearIntermediateEpic={clearIntermediateEpic} />
-							{isEpicSelected && <EditEpicForm epic={state.selectedEpicId} />}
-							{isEpicSelected && <CreateIssueForm />}
-							{isEpicSelected && <IssueItemList selectedEpic={state.selectedEpic.id} />}
-						</SidebarTabContent>
-					</Sidebar>
+					<Sidebar />
+					<h1>Roadmap</h1>
+					<CanvasToolbar>
+						{ enableRoadmapSelector && <RoadmapSelector roadmap={roadmap} defaultRoadmapId={state.selectedRoadmap} notifyChange={selectRoadmap} /> }
+						{Object.values(canvasTools).map(tool => tool)}
+					</CanvasToolbar>
+					<CanvasWrapper selectedRoadmap={state.selectedRoadmap} />
 				</SidebarWrapper>
-				
-				<h1>Roadmap</h1>
-				<CanvasToolbar>
-					{canvasTools}
-					<button onClick={deleteSelectedEpic} className="std-button x-sm-2 bg-red" disabled={state.selectedEpic === null}>- Delete Epic</button>
-				</CanvasToolbar>
-				<div className="canvas-wrapper">
-					<Canvas roadmap={{setAlert, setIntermediateEpic, setSelectedEpic, selectedEpic: state.selectedEpic, intermediateEpic: state.intermediateEpic, dispatchCanvasTools}} />
-				</div>
 			</div>
-		</>
+		</roadmapContext.Provider>
 	)
-
 }
 
 export default RoadmapPage;

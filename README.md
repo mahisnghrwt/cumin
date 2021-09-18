@@ -29,3 +29,13 @@
 
 ## Bugs
 - [x] Remove dragData, *child cannot update the prop even if it is a ref*
+
+### Sidebar in Roadmap
+- Default
+	- Create Epic
+- Epic
+	- Intermediate (Epic | Issue)
+	- Create Issue
+	- Update Epic
+	- Epic Details
+		- List of Issues

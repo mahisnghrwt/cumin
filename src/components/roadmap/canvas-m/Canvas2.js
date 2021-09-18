@@ -19,6 +19,10 @@ import { EPIC_FACE } from "./canvasEnums";
 import InteractiveLayer from "./components/InteractiveLayer";
 import canvasContext from "./canvasContext";
 import VerticalLine from "./components/VerticalLine";
+import roadmapContext from "../roadmapContext";
+import sidebarContext from "../../sidebar2/sidebarContext";
+import CreateEpicForm from "../CreateEpicForm";
+import IssueItemList from "../../issueItem/IssueItemList";
 
 const COMPONENT_ID = "CANVAS";
 const DEFAULT_ROWS = 7;
@@ -30,6 +34,13 @@ const VERTICAL_SCALE_WIDTH = "100px";
 const HORIZONTAL_SCALE_HEIGHT = "60px";
 const INTERMEDIATE_EPIC_COLOR = "#f1c40f";
 
+const defaultCanvas = {
+	startDate: new Date(),
+	endDate: add(new Date(), {days: DEFAULT_ROADMAP_DURATION}),
+	rows: DEFAULT_ROWS,
+};
+const defaultState = {selectedEpic: null, intermediate: {epic: null, path: null}};
+
 const canvasReducer = (state, action) => {
 	switch(action.type) {
 		case "patch":
@@ -37,6 +48,8 @@ const canvasReducer = (state, action) => {
 				...state,
 				...action.state
 			}
+		case "update":
+			return action.state;
 		case "addRow": {
 			return {
 				...state,
@@ -46,14 +59,64 @@ const canvasReducer = (state, action) => {
 	}
 }
 
-const Canvas = ({roadmap}) => {
-	const [state, dispatch] = useReducer(reducer, {epics: {}, paths: {}, intermediate: {}});
+const stateReducer = (state, action) => {
+	switch(action.type) {
+		case "update":
+			return action.state;
+		case "setSelectedEpic":
+			return {
+				...state,
+				selectedEpic: action.epic
+			}
+		case "updateIntermediateEpic":
+			return {
+				...state,
+				intermediate: {
+					...state.intermediate,
+					epic: action.epic
+				}
+			}
+		case "updateIntermediatePath":
+			return {
+				...state,
+				intermediate: {
+					...state.intermediate,
+					path: action.path
+				}
+			}
+		case "patchIntermediateEpic":
+			return {
+				...state,
+				intermediate: {
+					...state.intermediate,
+					epic: {
+						...state.intermediate.epic,
+						...action.epic
+					}
+				}
+			}
+		case "patchIntermediatePath":
+			return {
+				...state,
+				intermediate: {
+					...state.intermediate,
+					path: {
+						...state.intermediate.path,
+						...action.path
+					}
+				}
+			}
+	}
+};
 
-	const [canvas, dispatchCanvas] = useReducer(canvasReducer, {
-		startDate: new Date(),
-		endDate: add(new Date(), {days: DEFAULT_ROADMAP_DURATION}),
-		rows: DEFAULT_ROWS,
-	})
+const Canvas = ({roadmap, roadmapDispatch}) => {
+	const [globalContext,,] = useContext(Global);
+	const {dispatchCanvasTools} = useContext(roadmapContext);
+	const {state: {dispatch: sidebarDispatch}} = useContext(sidebarContext);
+	const [state, stateDispatch] = useReducer(stateReducer, defaultState)
+	const [canvas, dispatchCanvas] = useReducer(canvasReducer, defaultCanvas)
+	const interactiveLayerRef = useRef(null);
+	const usedRowsRef = useRef(new Set());
 
 	const gridSize = {
 		x: differenceInCalendarDays(canvas.endDate, canvas.startDate),
@@ -63,14 +126,6 @@ const Canvas = ({roadmap}) => {
 		height: BASE_NODE_DIMENSIONS.height * gridSize.y,
 		width: BASE_NODE_DIMENSIONS.width * gridSize.x
 	}
-
-	const [globalContext,,] = useContext(Global);
-
-	const pixelToGridRef = usePixelToGrid(canvasSize, gridSize);
-	const interactiveLayerRef = useRef(null);
-	const usedRowsRef = useRef(new Set());
-
-	const getPosInCanvasRef = useGetPosInCanvas(interactiveLayerRef);
 
 	const createIntermediateEpic = (pos) => {
 		const duration = 1;
@@ -83,11 +138,11 @@ const Canvas = ({roadmap}) => {
 			id: "intermediate"
 		}
 
-		roadmap.setIntermediateEpic(epic);
+		stateDispatch({type: "updateIntermediateEpic", epic});
 	}
 
 	const selectEpic = epicId => {
-		roadmap.setSelectedEpic(epicId === null ? null : state.epics[epicId]);
+		stateDispatch({type: "setSelectedEpic", epic: epicId});
 	}
 	
 	const createIntermediatePath = (originEpicId, rawEndpoint) => {
@@ -97,7 +152,7 @@ const Canvas = ({roadmap}) => {
 			rawEndpoint
 		}
 
-		const originEpic = state.epics[originEpicId];
+		const originEpic = roadmap.epics[originEpicId];
 		if (originEpic == null)	
 			return;
 
@@ -116,14 +171,14 @@ const Canvas = ({roadmap}) => {
 			...placeholderEndpoint
 		};
 
-		dispatch({type: "CREATE_INTERMEDIATE_PATH", path});
+		stateDispatch({type: "updateIntermediatePath", path});
 	}
 
 	const finaliseIntermediatePath = async rawEpicId => {
-		if (state.intermediate.path === undefined) return;
+		if (state.intermediate.path === null) return;
 
 		if (rawEpicId === undefined) {
-			dispatch({type: "REMOVE_INTERMEDIATE_PATH"});
+			stateDispatch({type: "updateIntermediatePath", path: null});
 			return;
 		}
 
@@ -148,11 +203,11 @@ const Canvas = ({roadmap}) => {
 			console.error(e);
 		}
 
-		dispatch({type: "REMOVE_INTERMEDIATE_PATH"});
+		stateDispatch({type: "updateIntermediatePath", path: null});
 	}
 
 	const drawPath = (pos) => {
-		if (state.intermediate.path === undefined)
+		if (state.intermediate.path === null)
 			return;
 
 		const targetDate = add(canvas.startDate, {days: pos.x});
@@ -169,7 +224,7 @@ const Canvas = ({roadmap}) => {
 			y: pos.y
 		};
 
-		dispatch({type: "PATCH_INTERMEDIATE_PATH", patch});
+		stateDispatch({type: "patchIntermediatePath", path: patch});
 	}
 
 	const getSupersetCanvas = nodes => {
@@ -214,7 +269,7 @@ const Canvas = ({roadmap}) => {
 
 	const moveEpic = (epicId, pos) => {
 		const targetDate = add(canvas.startDate, {days: pos.x});
-		let epic = epicId === "intermediate" ? roadmap.intermediateEpic : state.epics[epicId];
+		let epic = epicId === "intermediate" ? state.intermediate.epic : roadmap.epics[epicId];
 
 		if (epic === null || epic === undefined) return;
 		if (differenceInCalendarDays(targetDate, epic.startDate) === 0) return;
@@ -227,50 +282,43 @@ const Canvas = ({roadmap}) => {
 		const epicPatch = {startDate: targetDate, endDate: newEndDate}
 
 		if (epicId === "intermediate") {
-			roadmap.setIntermediateEpic(epicPatch, true);
+			stateDispatch({type: "patchIntermediateEpic", epic: epicPatch});
 		}
 		else {
-			let action = {type: "UPDATE_EPIC", id: epicId, patch: {startDate: targetDate, endDate: newEndDate}};
-			dispatch(action);
-
+			let action = {type: "patchEpic", roadmapId: roadmap.id, epic: {id: epicId, startDate: targetDate, endDate: newEndDate}};
+			roadmapDispatch(action);
 		}
 	}
 
 	const resizeEpic = (epicId, face, pos) => {
 		const targetDate = add(canvas.startDate, {days: pos.x});
 
-		let epic = state.epics[epicId];
+		let epic = roadmap.epics[epicId];
 		if (epicId === "intermediate")
-			epic = roadmap.intermediateEpic;
+			epic = state.intermediate.epic;
 
 		if (differenceInCalendarDays(targetDate, epic.startDate) === 0 || differenceInCalendarDays(targetDate, epic.endDate) === 0)
 			return;
 
-		let action = {type: "UPDATE_EPIC", id: epic.id, patch: {
+		let action = {type: "patchEpic", roadmapId: roadmap.id, epic: {
+			id: epic.id,
 			startDate: face === EPIC_FACE.START ? targetDate : epic.startDate,
 			endDate: face === EPIC_FACE.END ? targetDate : epic.endDate
 		}};
 
 		if (epicId === "intermediate") {
-			roadmap.setIntermediateEpic(action.patch, true);
+			stateDispatch({type: "patchIntermediateEpic", epic: action.epic});
 		}
 		else {
-			dispatch(action);
+			roadmapDispatch(action);
 		}
-	}
-
-	const detectAndMergeCycle = _ => {
-		const cycles = detectCycles(state.epics, state.paths);
-		const patch = createCyclePatch(cycles);
-
-		dispatch({type: "MERGE_PATH_PATCHES", patch});
 	}
 
 	const patchEpicDuration = async epicId => {
 		if (epicId === "intermediate") return;
 		
-		const reqBody = {startDate: state.epics[epicId].startDate, endDate: state.epics[epicId].endDate};
-		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/epic/${epicId}`;
+		const reqBody = {startDate: roadmap.epics[epicId].startDate, endDate: roadmap.epics[epicId].endDate};
+		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/epic/${epicId}`;
 
 		try {
 			await Helper.http.request(url, "PATCH", localStorage.getItem("token"), reqBody, true);
@@ -279,102 +327,72 @@ const Canvas = ({roadmap}) => {
 		}
 	}
 
-	const epicCreatedOverSocket = epic => {
-		const epic_ = epicPreprocessing(epic);
-		// what if the row is already occupied?
-		usedRowsRef.current.add(epic_.row);
-		extendCanvasToFitEpic(epic_);
-		dispatch({type: "ADD_EPIC", epic: epic_});
-	}
-
-	const epicUpdatedOverSocket = epics => {
-		if (Array.isArray(epics) === false) {
-			console.error("Updated epic must be sent as an array!");
-			return;
-		}
-		const epic = epicPreprocessing(epics[1]);
-		extendCanvasToFitEpic(epic);
-		dispatch({type: "UPDATE_EPIC", id: epic.id, patch: epic});
-	}
-
-	const epicDeletedOverSocket = epic => {
-		dispatch({type: "DELETE_EPIC", id: epic.id});
-	}
-
-	const pathCreatedOverSocket = path => {
-		dispatch({type: "CREATE_NEW_PATH", path: pathPreprocessing(path)});
-		detectAndMergeCycle();
-	}
-
-	const pathDeletedOverSocket = path => {
-
-	}
-
 	const addRow = () => {
 		dispatchCanvas({type: "addRow", rows: 1});
 	}
 
 	useEffect(() => {
-		roadmap.dispatchCanvasTools({type: "add", tool: (<button onClick={addRow} className="std-button x-sm-2">+ Add Row</button>)})
+		if (roadmap === null || roadmap === undefined) return;
 
-		let statePatch = {};
-		const token = localStorage.getItem("token");
+		// clear old state
+		stateDispatch({type: "update", state: defaultState});
+		dispatchCanvas({type: "update", state: defaultCanvas});
+		dispatchCanvasTools({type: "clear"});
 
-		(async () => {
-			const getEpicUrl = settings.API_ROOT + "/project/" + globalContext.project.id + "/epic";
-			const getPathsUrl = settings.API_ROOT + "/project/" + globalContext.project.id + "/path";
-			
-			try {
-				const epics = await Helper.http.request(getEpicUrl, "GET", token, null, true);
-				statePatch.epics = {...epics};
-				const paths = await Helper.http.request(getPathsUrl, "GET", token, null, true);
-				statePatch.paths = {...paths};
-			} catch (e) {
-				console.error(e);
-			}
+		// expose add row button
+		dispatchCanvasTools({type: "add", id: "addRow", tool: (<button onClick={addRow} className="std-button x-sm-2">+ Add Row</button>)})
 
-			if (statePatch.epics !== undefined) {
-				Object.keys(statePatch.epics).forEach(key => {
-					// some preprocessing for our React components (e.g. string date to Date)
-					statePatch.epics[key] = epicPreprocessing(statePatch.epics[key]);
-					usedRowsRef.current.add(statePatch.epics[key].row);
-				})
-	
-				const superCanvas = getSupersetCanvas(Object.values(statePatch.epics));
-				dispatchCanvas({type: "patch", state: superCanvas});
-			}
+		// preprocessing epics
+		Object.values(roadmap.epics).forEach(epic => {
+			usedRowsRef.current.add(epic.row);
+		})
 
-			if (statePatch.paths !== undefined) {
-				Object.keys(statePatch.paths).forEach(key => {
-					statePatch.paths[key] = pathPreprocessing(statePatch.paths[key]);
-				})
-			}
+		// adjust the canvas size to fit all epics
+		const superCanvas = getSupersetCanvas(Object.values(roadmap.epics));
+		dispatchCanvas({type: "patch", state: superCanvas});
 
-			dispatch({type: "PATCH", patch: statePatch});
+		// detect cycles and merge patch
+		// const cycles = detectCycles(statePatch.epics, statePatch.paths);
+		// const cyclePatch = createCyclePatch(cycles);
+		// dispatch({type: "MERGE_PATH_PATCHES", patch: cyclePatch});
 
-			// detect cycles and merge patch
-			const cycles = detectCycles(statePatch.epics, statePatch.paths);
-			const cyclePatch = createCyclePatch(cycles);
-			dispatch({type: "MERGE_PATH_PATCHES", patch: cyclePatch});
-
-		})()
-	}, []);
+	}, [roadmap]);
 
 	useEffect(() => {
-		webSocket.addListener(SOCKET_EVENT.EPIC_CREATED, COMPONENT_ID, epicCreatedOverSocket);
-		webSocket.addListener(SOCKET_EVENT.EPIC_DELETED, COMPONENT_ID, epicDeletedOverSocket);
-		webSocket.addListener(SOCKET_EVENT.EPIC_UPDATED, COMPONENT_ID, epicUpdatedOverSocket);
-		webSocket.addListener(SOCKET_EVENT.PATH_CREATED, COMPONENT_ID, pathCreatedOverSocket);
-		webSocket.addListener(SOCKET_EVENT.PATH_DELETED, COMPONENT_ID, pathDeletedOverSocket);
-
-		return () => {
-			webSocket.removeListener(SOCKET_EVENT.EPIC_CREATED, COMPONENT_ID);
-			webSocket.removeListener(SOCKET_EVENT.EPIC_UPDATED, COMPONENT_ID);
-			webSocket.removeListener(SOCKET_EVENT.EPIC_DELETED, COMPONENT_ID);
-			webSocket.removeListener(SOCKET_EVENT.PATH_CREATED, COMPONENT_ID);
-			webSocket.removeListener(SOCKET_EVENT.PATH_DELETED, COMPONENT_ID);
+		// So, CreateEpicForm has uptodate epic value
+		if (state.intermediate.epic === null) {
+			sidebarDispatch({type: "remove", key: "createEpicForm"})
+			return;
 		}
-	}, [canvas])
+
+		const addEpic = epic => {
+			const epic_ = epicPreprocessing(epic);
+			roadmapDispatch({type: "addEpic", roadmapId: roadmap.id, epic: epic_});
+		}
+
+		const clearIntermediateEpic = () => {
+			stateDispatch({type: "updateIntermediateEpic", epic: null});
+		}
+
+		sidebarDispatch({type: "add", key: "createEpicForm", item: 
+			(<CreateEpicForm 
+				roadmap={roadmap.id} 
+				intermediateEpic={state.intermediate.epic} 
+				clearIntermediateEpic={clearIntermediateEpic}
+				addEpic={addEpic}
+			/>)})
+	}, [state.intermediate.epic]);
+
+	useEffect(() => {
+		const itemKey = "issueItemList";
+		if (state.selectedEpic === null) {
+			sidebarDispatch({type: "remove", key: itemKey})
+			return;
+		}
+
+		sidebarDispatch({type: "add", key: itemKey, item: 
+			(<IssueItemList selectedEpic={state.selectedEpic} />)});
+	}, [state.selectedEpic])
 
 	const getEpicPosInfo = epic => {
 		let info = {
@@ -392,16 +410,16 @@ const Canvas = ({roadmap}) => {
 	}
 
 	const normalizeEpics = () => {
-		let epics = Object.values(state.epics).map(epic => {
+		let epics = Object.values(roadmap.epics).map(epic => {
 			return {
 				...epic,
-				isSelected: !roadmap.selectedEpic ? false : roadmap.selectedEpic.id === epic.id,
+				isSelected: !state.selectedEpic ? false : state.selectedEpic === epic.id,
 				...getEpicPosInfo(epic)
 			}
 		});
 
-		if (roadmap.intermediateEpic) {
-			epics.push({...roadmap.intermediateEpic, ...getEpicPosInfo(roadmap.intermediateEpic)});
+		if (state.intermediate.epic) {
+			epics.push({...state.intermediate.epic, ...getEpicPosInfo(state.intermediate.epic)});
 		}
 
 		return epics;
@@ -415,7 +433,7 @@ const Canvas = ({roadmap}) => {
 	// only render today marker, if today is within canvas interval.
 	const renderTodayMarker = isWithinInterval(new Date(), {start: canvas.startDate, end: canvas.endDate});
 
-
+	if (!roadmap || !roadmap.processed) return null;
 
 	return (
 		<canvasContext.Provider value={{...canvas, selectEpic, canvasSize, gridSize}}>
@@ -438,7 +456,7 @@ const Canvas = ({roadmap}) => {
 				/>
 			</div>
 			<div className="canvas-with-scale-row">
-				<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(state.epics)} unit={BASE_NODE_DIMENSIONS} rows={canvas.rows} />
+				<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(roadmap.epics)} unit={BASE_NODE_DIMENSIONS} rows={canvas.rows} />
 				<div 
 					className="canvas-layer" 
 					id="canvas-layer"
@@ -450,15 +468,15 @@ const Canvas = ({roadmap}) => {
 
 					{/* Svg Layer */}
 					<svg id="svg-layer">
-						{Object.values(state.paths).map(x => {
+						{Object.values(roadmap.paths).map(x => {
 							return <Path 
 								canvas={{startDate: canvas.startDate}}
-								from={state.epics[x.from]}
-								to={state.epics[x.to]}
+								from={roadmap.epics[x.from]}
+								to={roadmap.epics[x.to]}
 								color={x.color}
 								/>
 						})}
-						{state.intermediate.path !== undefined && <Path path={state.intermediate.path} canvas={{startDate: canvas.startDate}} />}
+						{/* {roadmap.intermediate.path !== undefined && <Path path={roadmap.intermediate.path} canvas={{startDate: canvas.startDate}} />} */}
 					</svg>
 
 					<InteractiveLayer 

@@ -47,15 +47,16 @@ const DateRow = ({startDate, endDate}) => {
 	)
 }
 
-const CreateEpicForm = ({intermediateEpic, setAlert, clearIntermediateEpic}) => {
+const CreateEpicForm = ({roadmap, intermediateEpic, clearIntermediateEpic, addEpic}) => {
 	const [state, dispatch] = useReducer(reducer, {log: null, errors: {}, values: {title: "", row: 1, startDate: new Date().toDateString(), endDate: new Date().toDateString()}});
 	const [global, globalDispatch] = useContext(Global);
 
 	const submitButtonRef = useRef(null);
 
 	const createEpic = (e) => {
-		const url = settings.API_ROOT + "/project/" + global.project.id + "/epic";
+		const url = `${settings.API_ROOT}/project/${global.project.id}/roadmap/${roadmap}/epic`;
 		const token = localStorage.getItem("token");
+
 
 		let createEpicReq = {
 			title: state.values.title,
@@ -66,6 +67,7 @@ const CreateEpicForm = ({intermediateEpic, setAlert, clearIntermediateEpic}) => 
 
 		Helper.http.request(url, "POST", token, createEpicReq, true)
 		.then(epicCreated => {
+			addEpic(epicCreated);
 			clearIntermediateEpic();
 		})
 		.catch(e => console.error(e));
