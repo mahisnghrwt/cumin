@@ -26,6 +26,8 @@ const Sidebar2 = ({children}) => {
 		dispatchWrapper({type: "add", key: "dispatch", action: dispatch});
 	}, [dispatch, dispatchWrapper])
 
+	if (children === undefined && (!state || Object.keys(state).length === 0)) return null;
+
 	return (
 		<div className="sidebar">
 			{children}

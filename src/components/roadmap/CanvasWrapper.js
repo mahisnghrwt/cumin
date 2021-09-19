@@ -1,9 +1,20 @@
-import { useContext, useEffect, useReducer } from "react";
+import { useContext, useEffect, useReducer} from "react";
 import Canvas from "./canvas-m/Canvas2";
 import settings from "../../settings";
 import Helper from "../../Helper";
 import {epicPreprocessing, pathPreprocessing} from "./canvas-m/canvasHelper";
 import Global from "../../GlobalContext";
+import {add} from "date-fns";
+import { getSupersetCanvas } from "./canvas-m/canvasHelper";
+
+const DEFAULT_ROWS = 1;
+const DEFAULT_ROADMAP_DURATION = 100;
+
+const defaultCanvas = {
+	startDate: new Date(),
+	endDate: add(new Date(), {days: DEFAULT_ROADMAP_DURATION}),
+	rows: DEFAULT_ROWS,
+};
 
 const roadmapReducer = (state, action) => {
 	switch(action.type) {
@@ -51,6 +62,41 @@ const roadmapReducer = (state, action) => {
 				}
 			}
 		}
+		case "patchCanvas": {
+			return {
+				...state,
+				[action.roadmapId]: {
+					...state[action.roadmapId],
+					canvas: {
+						...state[action.roadmapId].canvas,
+						...action.canvas
+					}
+				}
+			}
+		}
+		case "updateCanvas": {
+			return {
+				...state,
+				[action.roadmapId]: {
+					...state[action.roadmapId],
+					canvas: action.canvas
+				}
+			}
+		}
+		case "addRowsToCanvas": {
+			return {
+				...state,
+				[action.roadmapId]: {
+					...state[action.roadmapId],
+					canvas: {
+						...state[action.roadmapId].canvas,
+						rows: state[action.roadmapId].canvas.rows + action.rows
+					}
+				}
+			}
+		}
+		default:
+			throw new Error(action);
 	}
 }
 
@@ -77,14 +123,14 @@ const CanvasWrapper = ({selectedRoadmap}) => {
 		// remove the original epics and paths
 		// mark it as processed, so we do not perform preprocessing again
 		let roadmapPatch = {
+			id: roadmap.id,
+			projectId: roadmap.projectId,
 			processed: true,
 			roadmapEpics: undefined,
 			roadmapPaths: undefined,
 			epics: {},
 			paths: {}
 		};
-
-		debugger;
 
 		// preprocessing epics
 		roadmap.epics.forEach(epic => {
@@ -96,6 +142,12 @@ const CanvasWrapper = ({selectedRoadmap}) => {
 		roadmap.paths.forEach(path => {
 			roadmapPatch.paths[path.id] = pathPreprocessing(path);
 		})
+
+		roadmapPatch.canvas = getSupersetCanvas(defaultCanvas, Object.values(roadmapPatch.epics));
+		
+		// add empty row at the bottom, if canvas is not empty
+		if (Object.keys(roadmapPatch.epics).length !== 0)
+			roadmapPatch.canvas.rows++;
 
 		return roadmapPatch;
 	}
@@ -109,26 +161,12 @@ const CanvasWrapper = ({selectedRoadmap}) => {
 			// store roadmaps as Object, for faster access
 			let roadmapObj = {};
 			roadmaps.forEach(r => {
-				roadmapObj[r.id] = r;
+				roadmapObj[r.id] = roadmapPreprocessing(r);
 			});
 
 			roadmapDispatch({type: "addMultiple", roadmaps: roadmapObj});
 		}()	
 	}, []);
-
-	useEffect(() => {
-		if (roadmap[selectedRoadmap] === undefined) return;
-		if (roadmap[selectedRoadmap].processed) return;
-
-		const roadmapPatch = roadmapPreprocessing(roadmap[selectedRoadmap]);
-		roadmapDispatch({type: "patchRoadmap", roadmapId: selectedRoadmap, roadmap: roadmapPatch});
-
-		// detect cycles and merge patch
-		// const cycles = detectCycles(statePatch.epics, statePatch.paths);
-		// const cyclePatch = createCyclePatch(cycles);
-		// dispatch({type: "MERGE_PATH_PATCHES", patch: cyclePatch});
-
-	}, [selectedRoadmap, roadmap])
 
 	if (roadmap[selectedRoadmap] === undefined || !roadmap[selectedRoadmap].processed)
 		return <h1>Could not fetch roadmap.</h1>;

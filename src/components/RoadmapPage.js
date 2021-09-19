@@ -138,15 +138,17 @@ const RoadmapPage = () => {
 		<roadmapContext.Provider value={{setAlert, dispatchCanvasTools}}>
 			<NavBar loggedIn={true} activePage={ACTIVE_PAGE} />
 			{alert && <AlertBar message={alert} />}
-			<div className="roadmap-container">
+			<div className="container">
 				<SidebarWrapper>
+					<div className="roadmap-content">
+						<h1>Roadmap</h1>
+						<CanvasToolbar>
+							{ enableRoadmapSelector && <RoadmapSelector roadmap={roadmap} defaultRoadmapId={state.selectedRoadmap} notifyChange={selectRoadmap} /> }
+							{Object.values(canvasTools).map(tool => tool)}
+						</CanvasToolbar>
+						<CanvasWrapper selectedRoadmap={state.selectedRoadmap} />
+					</div>
 					<Sidebar />
-					<h1>Roadmap</h1>
-					<CanvasToolbar>
-						{ enableRoadmapSelector && <RoadmapSelector roadmap={roadmap} defaultRoadmapId={state.selectedRoadmap} notifyChange={selectRoadmap} /> }
-						{Object.values(canvasTools).map(tool => tool)}
-					</CanvasToolbar>
-					<CanvasWrapper selectedRoadmap={state.selectedRoadmap} />
 				</SidebarWrapper>
 			</div>
 		</roadmapContext.Provider>

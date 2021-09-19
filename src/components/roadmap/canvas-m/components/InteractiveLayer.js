@@ -83,10 +83,7 @@ const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, cre
 
 	const doubleClickHandler = e => {
 		e.preventDefault();
-		debugger;
-
 		const eventData = extractMouseEventData(e);
-
 		createIntermediateEpic(eventData.gridPos);
 	}
 
@@ -96,10 +93,6 @@ const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, cre
 
 	const setMouseEventData = data => {
 		mouseDataTransferRef.current = data;
-	}
-
-	const conditionalMouseEvents = {
-		onDragOver: e => e.preventDefault()
 	}
 
 	return (

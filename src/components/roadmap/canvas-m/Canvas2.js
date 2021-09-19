@@ -4,7 +4,7 @@ import { BASE_NODE_DIMENSIONS, PATH_ENDPOINT, SCALE_UNIT, DRAG_EVENTS, pathEndpo
 import HorizontalScale from "./components/HorizontalScale";
 import VerticalScale from "./components/VerticalScale";
 import { add, differenceInCalendarDays, isWithinInterval } from "date-fns";
-import {createCyclePatch, detectCycles, gridToPixelBasedPos__, pathPreprocessing} from "./canvasHelper";
+import {createCyclePatch, detectCycles, getSupersetCanvas, gridToPixelBasedPos__, pathPreprocessing} from "./canvasHelper";
 import Path from "./components/Path";
 import webSocket from "../../../webSocket"
 import {SOCKET_EVENT} from "../../../enums";
@@ -23,10 +23,9 @@ import roadmapContext from "../roadmapContext";
 import sidebarContext from "../../sidebar2/sidebarContext";
 import CreateEpicForm from "../CreateEpicForm";
 import IssueItemList from "../../issueItem/IssueItemList";
+import EditEpicForm from "../EditEpicForm";
 
-const COMPONENT_ID = "CANVAS";
-const DEFAULT_ROWS = 7;
-const DEFAULT_ROADMAP_DURATION = 100;
+
 const EPIC_DEFAULT_COLOR = "#f1c40f";
 const GRIDLINE_COLOR = "#bdc3c7";
 const GRIDLINE_SIZE_IN_PX = 1;
@@ -34,30 +33,8 @@ const VERTICAL_SCALE_WIDTH = "100px";
 const HORIZONTAL_SCALE_HEIGHT = "60px";
 const INTERMEDIATE_EPIC_COLOR = "#f1c40f";
 
-const defaultCanvas = {
-	startDate: new Date(),
-	endDate: add(new Date(), {days: DEFAULT_ROADMAP_DURATION}),
-	rows: DEFAULT_ROWS,
-};
 const defaultState = {selectedEpic: null, intermediate: {epic: null, path: null}};
 
-const canvasReducer = (state, action) => {
-	switch(action.type) {
-		case "patch":
-			return {
-				...state,
-				...action.state
-			}
-		case "update":
-			return action.state;
-		case "addRow": {
-			return {
-				...state,
-				rows: state.rows + action.rows
-			}
-		}
-	}
-}
 
 const stateReducer = (state, action) => {
 	switch(action.type) {
@@ -114,13 +91,11 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	const {dispatchCanvasTools} = useContext(roadmapContext);
 	const {state: {dispatch: sidebarDispatch}} = useContext(sidebarContext);
 	const [state, stateDispatch] = useReducer(stateReducer, defaultState)
-	const [canvas, dispatchCanvas] = useReducer(canvasReducer, defaultCanvas)
 	const interactiveLayerRef = useRef(null);
-	const usedRowsRef = useRef(new Set());
 
 	const gridSize = {
-		x: differenceInCalendarDays(canvas.endDate, canvas.startDate),
-		y: canvas.rows
+		x: differenceInCalendarDays(roadmap.canvas.endDate, roadmap.canvas.startDate),
+		y: roadmap.canvas.rows
 	}
 	const canvasSize = {
 		height: BASE_NODE_DIMENSIONS.height * gridSize.y,
@@ -132,8 +107,8 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	
 		const epic = {
 			color: INTERMEDIATE_EPIC_COLOR,
-			startDate: add(canvas.startDate, {days: pos.x}),
-			endDate: add(canvas.startDate, {days: duration + pos.x}),
+			startDate: add(roadmap.canvas.startDate, {days: pos.x}),
+			endDate: add(roadmap.canvas.startDate, {days: duration + pos.x}),
 			row: pos.y,
 			id: "intermediate"
 		}
@@ -159,7 +134,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		const refDate = rawEndpoint === pathEndpoint.HEAD ? originEpic.startDate : originEpic.endDate;
 
 		let placeholderEndpoint = {
-			x: differenceInCalendarDays(refDate, canvas.startDate),
+			x: differenceInCalendarDays(refDate, roadmap.canvas.startDate),
 			y: originEpic.row
 		}
 
@@ -210,9 +185,9 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		if (state.intermediate.path === null)
 			return;
 
-		const targetDate = add(canvas.startDate, {days: pos.x});
+		const targetDate = add(roadmap.canvas.startDate, {days: pos.x});
 
-		const newPathX = differenceInCalendarDays(targetDate, canvas.startDate);
+		const newPathX = differenceInCalendarDays(targetDate, roadmap.canvas.startDate);
 		const rawEndpoint = state.intermediate.path.rawEndpoint;
 		const currentPathX =  state.intermediate.path[rawEndpoint].x;
 
@@ -227,34 +202,17 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		stateDispatch({type: "patchIntermediatePath", path: patch});
 	}
 
-	const getSupersetCanvas = nodes => {
-		let duration = [canvas.startDate, canvas.endDate];
-		let rows = canvas.rows - 1;
-
-		for (let i = 0; i < nodes.length; i++) {
-			duration[0] = differenceInCalendarDays(duration[0], nodes[i].startDate) > 0 ? nodes[i].startDate : duration[0];
-			duration[1] = differenceInCalendarDays(nodes[i].endDate, duration[1]) > 0 ? nodes[i].endDate : duration[1];
-			rows = Math.max(rows, nodes[i].row)
-		}
-
-		return {
-			startDate: duration[0],
-			endDate: duration[1],
-			rows: rows + 1
-		}
-	}
-
 	const shouldExtendCanvas = epic => {
 		const epicWPadding = {
 			...epic,
 			startDate: add(epic.startDate, {days: -2}),
 			endDate: add(epic.endDate, {days: 2})
 		}
-		const superCanvas = getSupersetCanvas([epicWPadding]);
+		const superCanvas = getSupersetCanvas(roadmap.canvas, [epicWPadding]);
 
-		if ((differenceInCalendarDays(superCanvas.startDate, canvas.startDate) !== 0 || 
-			differenceInCalendarDays(superCanvas.endDate, canvas.endDate) !== 0) || 
-			superCanvas.rows !== canvas.rows) {
+		if ((differenceInCalendarDays(superCanvas.startDate, roadmap.canvas.startDate) !== 0 || 
+			differenceInCalendarDays(superCanvas.endDate, roadmap.canvas.endDate) !== 0) || 
+			superCanvas.rows !== roadmap.canvas.rows) {
 				return superCanvas;
 			}
 
@@ -264,11 +222,11 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	const extendCanvasToFitEpic = epic => {
 		const superCanvas = shouldExtendCanvas(epic);
 		if (superCanvas !== null)
-			dispatchCanvas({type: "patch", state: superCanvas});
+			roadmapDispatch({type: "patchCanvas", roadmapId: roadmap.id, canvas: superCanvas});
 	}
 
 	const moveEpic = (epicId, pos) => {
-		const targetDate = add(canvas.startDate, {days: pos.x});
+		const targetDate = add(roadmap.canvas.startDate, {days: pos.x});
 		let epic = epicId === "intermediate" ? state.intermediate.epic : roadmap.epics[epicId];
 
 		if (epic === null || epic === undefined) return;
@@ -291,7 +249,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	}
 
 	const resizeEpic = (epicId, face, pos) => {
-		const targetDate = add(canvas.startDate, {days: pos.x});
+		const targetDate = add(roadmap.canvas.startDate, {days: pos.x});
 
 		let epic = roadmap.epics[epicId];
 		if (epicId === "intermediate")
@@ -327,35 +285,13 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		}
 	}
 
-	const addRow = () => {
-		dispatchCanvas({type: "addRow", rows: 1});
-	}
-
 	useEffect(() => {
 		if (roadmap === null || roadmap === undefined) return;
 
-		// clear old state
 		stateDispatch({type: "update", state: defaultState});
-		dispatchCanvas({type: "update", state: defaultCanvas});
-		dispatchCanvasTools({type: "clear"});
-
-		// expose add row button
-		dispatchCanvasTools({type: "add", id: "addRow", tool: (<button onClick={addRow} className="std-button x-sm-2">+ Add Row</button>)})
-
-		// preprocessing epics
-		Object.values(roadmap.epics).forEach(epic => {
-			usedRowsRef.current.add(epic.row);
-		})
-
-		// adjust the canvas size to fit all epics
-		const superCanvas = getSupersetCanvas(Object.values(roadmap.epics));
-		dispatchCanvas({type: "patch", state: superCanvas});
-
-		// detect cycles and merge patch
-		// const cycles = detectCycles(statePatch.epics, statePatch.paths);
-		// const cyclePatch = createCyclePatch(cycles);
-		// dispatch({type: "MERGE_PATH_PATCHES", patch: cyclePatch});
-
+		// Sample code to expose buttons from canvas
+		// dispatchCanvasTools({type: "clear"});
+		// dispatchCanvasTools({type: "add", id: "addRow", tool: (<button onClick={addRow} className="std-button x-sm-2">+ Add Row</button>)})
 	}, [roadmap]);
 
 	useEffect(() => {
@@ -367,7 +303,10 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 
 		const addEpic = epic => {
 			const epic_ = epicPreprocessing(epic);
+			debugger;
 			roadmapDispatch({type: "addEpic", roadmapId: roadmap.id, epic: epic_});
+			// always add an extra empty row at the bottom of canvas
+			roadmapDispatch({type: "addRowsToCanvas", roadmapId: roadmap.id, rows: 1});
 		}
 
 		const clearIntermediateEpic = () => {
@@ -384,14 +323,16 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	}, [state.intermediate.epic]);
 
 	useEffect(() => {
-		const itemKey = "issueItemList";
 		if (state.selectedEpic === null) {
-			sidebarDispatch({type: "remove", key: itemKey})
+			sidebarDispatch({type: "remove", key: "issueItemList"});
+			sidebarDispatch({type: "remove", key: "editEpicForm"});
 			return;
 		}
 
-		sidebarDispatch({type: "add", key: itemKey, item: 
+		sidebarDispatch({type: "add", key: "issueItemList", item: 
 			(<IssueItemList selectedEpic={state.selectedEpic} />)});
+		sidebarDispatch({type: "add", key: "editEpicForm", item: 
+			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} />)});
 	}, [state.selectedEpic])
 
 	const getEpicPosInfo = epic => {
@@ -403,7 +344,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			}
 		};
 
-		const pos = gridToPixelBasedPos__({x: differenceInCalendarDays(epic.startDate, canvas.startDate), y: 0}, BASE_NODE_DIMENSIONS);
+		const pos = gridToPixelBasedPos__({x: differenceInCalendarDays(epic.startDate, roadmap.canvas.startDate), y: 0}, BASE_NODE_DIMENSIONS);
 		info.pos.x = pos.x;
 
 		return info;
@@ -427,16 +368,16 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 
 	const calcVerticalLinePos = () => {
 		const today = new Date();
-		return gridToPixelBasedPos__({x: differenceInCalendarDays(today, canvas.startDate), y: 0}, BASE_NODE_DIMENSIONS);
+		return gridToPixelBasedPos__({x: differenceInCalendarDays(today, roadmap.canvas.startDate), y: 0}, BASE_NODE_DIMENSIONS);
 	}
 
 	// only render today marker, if today is within canvas interval.
-	const renderTodayMarker = isWithinInterval(new Date(), {start: canvas.startDate, end: canvas.endDate});
+	const renderTodayMarker = isWithinInterval(new Date(), {start: roadmap.canvas.startDate, end: roadmap.canvas.endDate});
 
 	if (!roadmap || !roadmap.processed) return null;
 
 	return (
-		<canvasContext.Provider value={{...canvas, selectEpic, canvasSize, gridSize}}>
+		<canvasContext.Provider value={{...roadmap.canvas, selectEpic, canvasSize, gridSize}}>
 		<div className="canvas-with-scale" style={{position: "relative"}}>
 			<div className="canvas-with-scale-row">
 				<div className="canvas-with-scale-origin"
@@ -446,8 +387,8 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 					}} />
 				<HorizontalScale 
 					style={{height: HORIZONTAL_SCALE_HEIGHT}} 
-					startDate={canvas.startDate} 
-					endDate={canvas.endDate} 
+					startDate={roadmap.canvas.startDate} 
+					endDate={roadmap.canvas.endDate} 
 					baseNodeDimensions={BASE_NODE_DIMENSIONS} 
 					unit={SCALE_UNIT.day}
 					canvasDimensions={canvasSize}
@@ -456,7 +397,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 				/>
 			</div>
 			<div className="canvas-with-scale-row">
-				<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(roadmap.epics)} unit={BASE_NODE_DIMENSIONS} rows={canvas.rows} />
+				<VerticalScale style={{position: "sticky", width: VERTICAL_SCALE_WIDTH}} epics={Object.values(roadmap.epics)} unit={BASE_NODE_DIMENSIONS} rows={roadmap.canvas.rows} />
 				<div 
 					className="canvas-layer" 
 					id="canvas-layer"
@@ -470,13 +411,13 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 					<svg id="svg-layer">
 						{Object.values(roadmap.paths).map(x => {
 							return <Path 
-								canvas={{startDate: canvas.startDate}}
+								canvas={{startDate: roadmap.canvas.startDate}}
 								from={roadmap.epics[x.from]}
 								to={roadmap.epics[x.to]}
 								color={x.color}
 								/>
 						})}
-						{/* {roadmap.intermediate.path !== undefined && <Path path={roadmap.intermediate.path} canvas={{startDate: canvas.startDate}} />} */}
+						{state.intermediate.path && <Path path={state.intermediate.path} canvas={{startDate: roadmap.canvas.startDate}} />}
 					</svg>
 
 					<InteractiveLayer 

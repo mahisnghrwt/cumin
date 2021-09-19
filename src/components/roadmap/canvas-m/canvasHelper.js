@@ -1,4 +1,4 @@
-import {differenceInDays, add, max} from "date-fns"
+import {differenceInDays, add, max, differenceInCalendarDays} from "date-fns"
 
 /**
  * Converts the grid based position into pixel based position (canvas)
@@ -221,3 +221,20 @@ export const createCyclePatch = cycles => {
 
 	return patch;
 }
+
+export const getSupersetCanvas = (canvas, nodes) => {
+	let duration = [canvas.startDate, canvas.endDate];
+	let rows = canvas.rows - 1;
+
+	for (let i = 0; i < nodes.length; i++) {
+		duration[0] = differenceInCalendarDays(duration[0], nodes[i].startDate) > 0 ? nodes[i].startDate : duration[0];
+		duration[1] = differenceInCalendarDays(nodes[i].endDate, duration[1]) > 0 ? nodes[i].endDate : duration[1];
+		rows = Math.max(rows, nodes[i].row)
+	}
+
+	return {
+		startDate: duration[0],
+		endDate: duration[1],
+		rows: rows + 1
+	}
+};

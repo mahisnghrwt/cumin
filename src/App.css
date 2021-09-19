@@ -6,6 +6,7 @@
 	--danger-red: #e74c3c;
 	--success-green: #27ae60;
 	--slate-grey: #34495e;
+	--nav-bar-height: 1.9rem;
 }
 
 /* ============================================================================ */
@@ -19,19 +20,18 @@
 /* ============================================================================ */
 
 
-body, #root {
+body, #root, .App {
 	margin: 0;
 	padding: 0;
 	font-family: 'Mukta', sans-serif;
+	height: 100vh;
+	width: 100%;
 }
 
 .navbar {
-	height: fit-content;
+	height: var(--nav-bar-height);
 	background-color: #2f3542;
 	width: 100%;
-	position: fixed;
-	top: 0;
-	position: relative;
 }
 
 .left-nav-item-group {
@@ -43,12 +43,16 @@ body, #root {
 }
 
 .nav-link {
+	box-sizing: border-box;
 	text-decoration: none;
 	color: white;
-	margin: 0.5rem 0;
-	padding: 0 0.5rem;
-	/* display: inline-block; */
+	height: 100%;
+	font-size: 1rem;
+	margin: 0;
+	padding: 0.1rem 0.5rem;
+	display: inline-block;
 }
+
 
 .nav-link:hover {
 	background-color: #57606f;
@@ -60,11 +64,7 @@ body, #root {
 
 /* ============================================================================ */
 
-.content {
-	width: 60%;
-	position: relative;
-	left: 10%;
-}
+
 
 /* ============================================================================ */
 
@@ -78,7 +78,6 @@ body, #root {
 	right: 0;
 	width: var(--default-width);
 	border: 1px solid var(--border-color);
-	/* padding: 0 1rem; */
 	z-index: 3;
 }
 
@@ -314,20 +313,42 @@ button:disabled {
 	background-color: white;
 }
 
-.roadmap-container {
-	left: 1rem;
-	position: relative;
-	width: 75%;
-}
+
 
 .canvas-toolbar {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
-	border: 1px solid lightgrey;
+	align-items: baseline;
+	background-color: #f1f2f6;
+	/* border: 1px solid lightgrey; */
 	padding: 0.25rem;
 }
 
 .bg-red {
 	background-color: var(--danger-red);
+}
+
+/* ======================New Layout======================================= */
+
+.container {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	overflow: auto;
+	height: calc(100vh - var(--nav-bar-height)); /* add space after navbar */
+	width: 100%;
+}
+
+.content {
+	width: 60%;
+	position: relative;
+	left: 10%;
+}
+
+.roadmap-content {
+	box-sizing: border-box;
+	margin-left: 1rem;
+	position: relative;
+	width: 70%;
 }

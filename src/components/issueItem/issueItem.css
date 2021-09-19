@@ -1,10 +1,11 @@
 .issue-item {
 	display: flex;
 	flex-direction: column;
-	border: 0.1rem solid #ecf0f1;
+	border: 0.1rem solid #353b48;
 	padding: 0.25rem 1rem;
 	box-sizing: border-box;
 	align-items: flex-start;
+	background-color: white;
 }
 
 .issue-item>* {
