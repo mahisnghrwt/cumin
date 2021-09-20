@@ -9,11 +9,20 @@
 	--nav-bar-height: 1.9rem;
 }
 
+.success-background {
+	background-color: var(--success-green);
+}
+
+.danger-background {
+	background-color: var(--danger-red);
+}
+
 /* ============================================================================ */
 
 .bg-green {
 	background-color: var(--success-green);
 }
+
 
 
 
@@ -351,4 +360,12 @@ button:disabled {
 	margin-left: 1rem;
 	position: relative;
 	width: 70%;
+}
+
+.success-background {
+	background-color: var(--success-green);
+}
+
+.danger-background {
+	background-color: var(--danger-red);
 }

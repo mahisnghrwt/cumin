@@ -1,4 +1,3 @@
-import { differenceInCalendarDays } from "date-fns";
 import { gridToPixelBasedPos__ } from "../canvasHelper";
 import { BASE_NODE_DIMENSIONS } from "../canvasEnums";
 
@@ -9,7 +8,7 @@ import { BASE_NODE_DIMENSIONS } from "../canvasEnums";
  * @param {{x: number, y: number}} c 
  * @returns 
  */
-const generatePathString__ = (from, to, c) => {
+const generatePathString = (from, to, c) => {
 	const c1 = {
 		x: from.x + c.x,
 		y: from.y + c.y
@@ -23,24 +22,7 @@ const generatePathString__ = (from, to, c) => {
 	return `M${from.x} ${from.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${to.x} ${to.y}`;
 }
 
-const Path = ({id, from, to, path, canvas, color="#34495e"}) => {
-
-	const makePath = (from, to) => {
-		const head = {
-			x: differenceInCalendarDays(from.endDate, canvas.startDate),
-			y: from.row
-		}
-	
-		const tail = {
-			x: differenceInCalendarDays(to.startDate, canvas.startDate),
-			y: to.row
-		}
-
-		return {
-			head, tail
-		}
-	}
-
+const Path = ({id, path, color="#34495e"}) => {
 	const width = "2px";
 
 	const calcPathD = (path) => {
@@ -50,15 +32,14 @@ const Path = ({id, from, to, path, canvas, color="#34495e"}) => {
 		const p2 = gridToPixelBasedPos__(path.tail, BASE_NODE_DIMENSIONS);
 		p2.y += BASE_NODE_DIMENSIONS.height / 2;
 
-		return generatePathString__(p1, p2, {x: BASE_NODE_DIMENSIONS.width, y: 0})
-	}
+		return generatePathString(p1, p2, {x: BASE_NODE_DIMENSIONS.width, y: 0})
+	};
 
-
-	const pathD = calcPathD(path !== undefined ? path : makePath(from, to));
+	const pathD = calcPathD(path);
 
 	return (
 		<path d={pathD} 
-			key={id}
+			// key={id}
 			stroke={color}
 			strokeWidth={width}
 			fill="transparent" />

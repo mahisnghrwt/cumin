@@ -238,3 +238,19 @@ export const getSupersetCanvas = (canvas, nodes) => {
 		rows: rows + 1
 	}
 };
+
+export const makePath = (fromEpic, toEpic, canvasStartDate) => {
+	const head = {
+		x: differenceInCalendarDays(fromEpic.endDate, canvasStartDate),
+		y: toEpic.row
+	}
+
+	const tail = {
+		x: differenceInCalendarDays(toEpic.startDate, canvasStartDate),
+		y: toEpic.row
+	}
+
+	return {
+		head, tail
+	}
+}

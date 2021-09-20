@@ -16,6 +16,34 @@ const defaultCanvas = {
 	rows: DEFAULT_ROWS,
 };
 
+const removeEpic = (state, action) => {
+	const targetRow = state[action.roadmapId].epics[action.epicId].row;
+
+	const state_ =  {
+		...state,
+		[action.roadmapId]: {
+			...state[action.roadmapId],
+			canvas: {
+				...state[action.roadmapId].canvas,
+				rows: state[action.roadmapId].canvas.rows - 1
+			},
+			epics: { }
+		}
+	}
+	
+	// decrement all the rows after target row
+	Object.values(state[action.roadmapId].epics).forEach(epic => {
+		if (epic.id !== action.epicId) {
+			state_[action.roadmapId].epics[epic.id] = {
+				...epic,
+				row: epic.row > targetRow ? epic.row - 1 : epic.row
+			}
+		}
+	});
+
+	return state_;
+}
+
 const roadmapReducer = (state, action) => {
 	switch(action.type) {
 		case "addMultiple":
@@ -45,6 +73,9 @@ const roadmapReducer = (state, action) => {
 					}
 				}
 			}
+		}
+		case "removeEpic": {
+			return removeEpic(state, action);
 		}
 		case "patchEpic": {
 			return {

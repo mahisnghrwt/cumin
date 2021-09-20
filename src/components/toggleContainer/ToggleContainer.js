@@ -25,8 +25,6 @@ const reducer = (state, action) => {
 const ToggleContainer = ({enabled = true, children}) => {
 	const [state, dispatch] = useReducer(reducer, {enabled});
 
-	debugger;
-
 	return (
 		<toggleContext.Provider value={[state, dispatch]}>
 			<div className="toggle-container">
