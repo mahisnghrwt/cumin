@@ -6,7 +6,7 @@ import { canvasEvent } from "../canvasEnums";
 import Epic2 from "./Epic2";
 import Global from "../../../../GlobalContext";
 
-const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, createIntermediatePath, finaliseIntermediatePath, createIntermediateEpic, selectEpic, patchEpicDuration}, ref) => {
+const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, createIntermediatePath, finaliseIntermediatePath, createIntermediateEpic, selectEpic, selectPath, patchEpicDuration}, ref) => {
 	const [global,,] = useContext(Global);
 	const {canvasSize, gridSize} = useContext(canvasContext);
 	const getPosInCanvasRef = useGetPosInCanvas(ref);
@@ -15,6 +15,7 @@ const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, cre
 
 	const extractMouseEventData = e => {
 		const pos = getPosInCanvasRef.current(e.nativeEvent);
+	
 		const gridPos = pixelToGridRef.current(pos);
 
 		const eventData = {
@@ -89,6 +90,7 @@ const InteractiveLayer = forwardRef(({epics, drawPath, moveEpic, resizeEpic, cre
 
 	const clickHandler = e => {
 		selectEpic(null);
+		selectPath(null);
 	}
 
 	const setMouseEventData = data => {

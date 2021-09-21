@@ -3,6 +3,7 @@ import { BASE_NODE_DIMENSIONS } from "../canvasEnums";
 import { useReducer } from "react";
 
 const highlightColor = "#f39c12";
+const selectedColor = "#e67e22";
 
 const reducer = (state, action) => {
 	switch(action.type) {
@@ -35,7 +36,7 @@ const generatePathString = (from, to, c) => {
 	return `M${from.x} ${from.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${to.x} ${to.y}`;
 }
 
-const Path = ({id, path, color="#34495e"}) => {
+const Path = ({id, path, isSelected, selectPath, color="#34495e"}) => {
 	const [state, dispatch] = useReducer(reducer, {isMouseOver: false});
 	const width = "2px";
 
@@ -49,12 +50,9 @@ const Path = ({id, path, color="#34495e"}) => {
 		return generatePathString(p1, p2, {x: BASE_NODE_DIMENSIONS.width, y: 0})
 	};
 
-	document.addEventListener("mousemove", e => console.log(e.target.tagName ));
-
 	const pathD = calcPathD(path);
 
 	const mouseEnterHandler = e => {
-		console.log("mousenter");
 		dispatch({type: "setMouseOver", isMouseOver: true});
 	}
 
@@ -62,14 +60,18 @@ const Path = ({id, path, color="#34495e"}) => {
 		dispatch({type: "setMouseOver", isMouseOver: false});
 	}
 
+	const clickHandler = e => {
+		selectPath(id);
+	}
+
 	return (
 		<path d={pathD} 
-			// key={id}
-			stroke={state.isMouseOver ? highlightColor : color}
+			stroke={isSelected ? selectedColor : (state.isMouseOver ? highlightColor : color)}
 			strokeWidth={width}
 			pointerEvents="auto"
 			onMouseEnter={mouseEnterHandler}
 			onMouseLeave={mouseLeaveHandler}
+			onClick={clickHandler}
 			fill="transparent" />
 	)
 }

@@ -30,6 +30,9 @@
 ## Bugs
 - [x] Remove dragData, *child cannot update the prop even if it is a ref*
 
+## Performance Drops
+- [ ] Drag event handler in InteractiveLayer in Canvas.
+
 ### Sidebar in Roadmap
 - Default
 	- Create Epic

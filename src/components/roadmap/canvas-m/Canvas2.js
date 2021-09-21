@@ -33,7 +33,7 @@ const VERTICAL_SCALE_WIDTH = "100px";
 const HORIZONTAL_SCALE_HEIGHT = "60px";
 const INTERMEDIATE_EPIC_COLOR = "#f1c40f";
 
-const defaultState = {selectedEpic: null, intermediate: {epic: null, path: null}};
+const defaultState = {selectedEpic: null, selectedPath: null, intermediate: {epic: null, path: null}};
 
 
 const stateReducer = (state, action) => {
@@ -44,6 +44,11 @@ const stateReducer = (state, action) => {
 			return {
 				...state,
 				selectedEpic: action.epic
+			}
+		case "setSelectedPath":
+			return {
+				...state,
+				selectedPath: action.path
 			}
 		case "updateIntermediateEpic":
 			return {
@@ -118,6 +123,10 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 
 	const selectEpic = epicId => {
 		stateDispatch({type: "setSelectedEpic", epic: epicId});
+	}
+
+	const selectPath = pathId => {
+		stateDispatch({type: "setSelectedPath", path: pathId});
 	}
 	
 	const createIntermediatePath = (originEpicId, rawEndpoint) => {
@@ -294,6 +303,16 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		}
 	}
 
+	const deletePath = async epicId => {
+		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/epic/${epicId}`;
+		try {
+			await Helper.http.request(url, "DELETE", localStorage.getItem("token"), null, false);
+			roadmapDispatch({type: "removeEpic", roadmapId: roadmap.id, epicId});
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
 	const patchEpicDuration = async epicId => {
 		if (epicId === "intermediate") return;
 		
@@ -361,6 +380,17 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} />)});
 	}, [state.selectedEpic])
 
+	useEffect(() => {
+		if (state.selectedPath === null) {
+			dispatchCanvasTools({type: "remove", id: "deletePath"});
+			return;
+		}
+
+		dispatchCanvasTools({type: "add", id: "deletePath", tool: (
+			<button onClick={() => deletePath(state.selectedPath)} className="std-button x-sm-2 danger-background">Delete Path</button>
+		)});
+	}, [state.selectedPath])
+
 	const getEpicPosInfo = epic => {
 		let info = {
 			width: differenceInCalendarDays(epic.endDate, epic.startDate) * BASE_NODE_DIMENSIONS.width,
@@ -395,7 +425,11 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	const normalizePaths = () => {
 
 		let paths = Object.values(roadmap.paths).map(path => {
-			return makePath(roadmap.epics[path[pathEndpoint.HEAD]], roadmap.epics[path[pathEndpoint.TAIL]], roadmap.canvas.startDate);
+			return {
+				...makePath(roadmap.epics[path[pathEndpoint.HEAD]], roadmap.epics[path[pathEndpoint.TAIL]], roadmap.canvas.startDate),
+				id: path.id,
+				isSelected: state.selectedPath === path.id
+			}
 		});
 
 		if (state.intermediate.path) {
@@ -405,7 +439,9 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			const p = makePath(roadmap.epics[state.intermediate.path.originEpicId], roadmap.epics[state.intermediate.path.originEpicId], roadmap.canvas.startDate);
 			const pPos = {
 				[pathEndpoint.HEAD]: state.intermediate.path.rawEndpoint === pathEndpoint.HEAD ? state.intermediate.path.head : p.head,
-				[pathEndpoint.TAIL]: state.intermediate.path.rawEndpoint === pathEndpoint.TAIL ? state.intermediate.path.tail : p.tail
+				[pathEndpoint.TAIL]: state.intermediate.path.rawEndpoint === pathEndpoint.TAIL ? state.intermediate.path.tail : p.tail,
+				id: "intermediate",
+				isSelected: false
 			}
 			paths.push(pPos);
 		}
@@ -456,25 +492,6 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 					}}>
 					{ renderTodayMarker && <VerticalLine pos={calcVerticalLinePos()} height={canvasSize.height} /> }
 
-					{/* Svg Layer */}
-					<svg id="svg-layer">
-						{normalizePaths().map(path => {
-							return <Path 
-								canvasStartDate={roadmap.canvas.startDate}
-								path={path}
-							/>
-						})}
-						{/* {Object.values(roadmap.paths).map(x => {
-							return <Path 
-								canvas={{startDate: roadmap.canvas.startDate}}
-								from={roadmap.epics[x.from]}
-								to={roadmap.epics[x.to]}
-								color={x.color}
-								/>
-						})}
-						{state.intermediate.path && <Path path={state.intermediate.path} canvas={{startDate: roadmap.canvas.startDate}} />} */}
-					</svg>
-
 					<InteractiveLayer 
 						epics={normalizeEpics()} 
 						ref={interactiveLayerRef} 
@@ -485,8 +502,35 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 						finaliseIntermediatePath={finaliseIntermediatePath}
 						createIntermediateEpic={createIntermediateEpic}
 						selectEpic={selectEpic}
+						selectPath={selectPath}
 						patchEpicDuration={patchEpicDuration}
 					/>
+					{/* Svg Layer */}
+					<svg id="svg-layer">
+						{normalizePaths().map(path => {
+							return <Path 
+								key={path.id}
+								id={path.id}
+								isSelected={path.isSelected}
+								canvasStartDate={roadmap.canvas.startDate}
+								path={path}
+								selectPath={selectPath}
+							/>
+						})}
+					</svg>
+
+					{/* <InteractiveLayer 
+						epics={normalizeEpics()} 
+						ref={interactiveLayerRef} 
+						drawPath={drawPath} 
+						moveEpic={moveEpic} 
+						resizeEpic={resizeEpic} 
+						createIntermediatePath={createIntermediatePath} 
+						finaliseIntermediatePath={finaliseIntermediatePath}
+						createIntermediateEpic={createIntermediateEpic}
+						selectEpic={selectEpic}
+						patchEpicDuration={patchEpicDuration}
+					/> */}
 				</div>
 			</div>
 		</div>
