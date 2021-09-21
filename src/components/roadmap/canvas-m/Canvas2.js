@@ -121,6 +121,9 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	}
 	
 	const createIntermediatePath = (originEpicId, rawEndpoint) => {
+		// cannot connect path to intermediate epic
+		if (originEpicId === "intermediate") return;
+
 		let path = {
 			id: "intermediate",
 			originEpicId,
@@ -156,8 +159,8 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	const finaliseIntermediatePath = async rawEpicId => {
 		if (state.intermediate.path === null) return;
 
-		// do not remove intermediate path even if it does not ends on any epic.
-		if (rawEpicId === undefined) {
+		// cannot connect path with intermediate epic
+		if (rawEpicId === undefined || rawEpicId === "intermediate") {
 			stateDispatch({type: "updateIntermediatePath", path: null});
 			return;
 		}
@@ -172,13 +175,15 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		};
 
 		// submit create path request
-		const createPathUrl = `${settings.API_ROOT}/project/${globalContext.project.id}/path`;
+		const createPathUrl = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/path`;
 		const body = {
 			fromEpicId: p.from,
 			toEpicId: p.to
 		};
 		try {
-			await Helper.http.request(createPathUrl, "POST", localStorage.getItem("token"), body, false);
+			const path = await Helper.http.request(createPathUrl, "POST", localStorage.getItem("token"), body, true);
+			const path_ = pathPreprocessing(path);
+			roadmapDispatch({type: "addPath", path: path_, roadmapId: roadmap.id});
 		} catch (e) {
 			console.error(e);
 		}
@@ -388,8 +393,9 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	}
 
 	const normalizePaths = () => {
+
 		let paths = Object.values(roadmap.paths).map(path => {
-			return makePath(roadmap.epics[path.from], roadmap.epics[path.to], roadmap.canvas.startDate);
+			return makePath(roadmap.epics[path[pathEndpoint.HEAD]], roadmap.epics[path[pathEndpoint.TAIL]], roadmap.canvas.startDate);
 		});
 
 		if (state.intermediate.path) {
@@ -398,8 +404,8 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			// intermediate.path.head | intermediate.path.tail (gridPos)
 			const p = makePath(roadmap.epics[state.intermediate.path.originEpicId], roadmap.epics[state.intermediate.path.originEpicId], roadmap.canvas.startDate);
 			const pPos = {
-				head: state.intermediate.path.rawEndpoint === pathEndpoint.HEAD ? state.intermediate.path.head : p.head,
-				tail: state.intermediate.path.rawEndpoint === pathEndpoint.TAIL ? state.intermediate.path.tail : p.tail
+				[pathEndpoint.HEAD]: state.intermediate.path.rawEndpoint === pathEndpoint.HEAD ? state.intermediate.path.head : p.head,
+				[pathEndpoint.TAIL]: state.intermediate.path.rawEndpoint === pathEndpoint.TAIL ? state.intermediate.path.tail : p.tail
 			}
 			paths.push(pPos);
 		}

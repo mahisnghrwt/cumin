@@ -1,5 +1,18 @@
 import { gridToPixelBasedPos__ } from "../canvasHelper";
 import { BASE_NODE_DIMENSIONS } from "../canvasEnums";
+import { useReducer } from "react";
+
+const highlightColor = "#f39c12";
+
+const reducer = (state, action) => {
+	switch(action.type) {
+		case "setMouseOver":
+			return {
+				...state,
+				isMouseOver: action.isMouseOver
+			}
+	}
+}
 
 /**
  * 
@@ -23,6 +36,7 @@ const generatePathString = (from, to, c) => {
 }
 
 const Path = ({id, path, color="#34495e"}) => {
+	const [state, dispatch] = useReducer(reducer, {isMouseOver: false});
 	const width = "2px";
 
 	const calcPathD = (path) => {
@@ -35,13 +49,27 @@ const Path = ({id, path, color="#34495e"}) => {
 		return generatePathString(p1, p2, {x: BASE_NODE_DIMENSIONS.width, y: 0})
 	};
 
+	document.addEventListener("mousemove", e => console.log(e.target.tagName ));
+
 	const pathD = calcPathD(path);
+
+	const mouseEnterHandler = e => {
+		console.log("mousenter");
+		dispatch({type: "setMouseOver", isMouseOver: true});
+	}
+
+	const mouseLeaveHandler = e => {
+		dispatch({type: "setMouseOver", isMouseOver: false});
+	}
 
 	return (
 		<path d={pathD} 
 			// key={id}
-			stroke={color}
+			stroke={state.isMouseOver ? highlightColor : color}
 			strokeWidth={width}
+			pointerEvents="auto"
+			onMouseEnter={mouseEnterHandler}
+			onMouseLeave={mouseLeaveHandler}
 			fill="transparent" />
 	)
 }

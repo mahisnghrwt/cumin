@@ -1,4 +1,5 @@
 import {differenceInDays, add, max, differenceInCalendarDays} from "date-fns"
+import { pathEndpoint } from "./canvasEnums";
 
 /**
  * Converts the grid based position into pixel based position (canvas)
@@ -65,8 +66,8 @@ export const pathPreprocessing = path => {
 	const {fromEpicId, toEpicId, ...rest} = path;
 	const finalPath = {
 		...rest,
-		from: fromEpicId,
-		to: toEpicId
+		[pathEndpoint.HEAD]: fromEpicId,
+		[pathEndpoint.TAIL]: toEpicId
 	}
 
 	return finalPath;
@@ -242,7 +243,7 @@ export const getSupersetCanvas = (canvas, nodes) => {
 export const makePath = (fromEpic, toEpic, canvasStartDate) => {
 	const head = {
 		x: differenceInCalendarDays(fromEpic.endDate, canvasStartDate),
-		y: toEpic.row
+		y: fromEpic.row
 	}
 
 	const tail = {

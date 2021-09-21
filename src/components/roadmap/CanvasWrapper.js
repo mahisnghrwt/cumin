@@ -27,7 +27,8 @@ const removeEpic = (state, action) => {
 				...state[action.roadmapId].canvas,
 				rows: state[action.roadmapId].canvas.rows - 1
 			},
-			epics: { }
+			epics: { },
+			paths: { }
 		}
 	}
 	
@@ -40,6 +41,14 @@ const removeEpic = (state, action) => {
 			}
 		}
 	});
+
+	// delete all the paths connected to the target epic
+	Object.values(state[action.roadmapId].paths).forEach(path => {
+		if (path.head !== action.epicId && path.tail !== action.epicId) {
+			state_[action.roadmapId].paths[path.id] = path;
+		}
+	});
+
 
 	return state_;
 }
@@ -69,6 +78,21 @@ const roadmapReducer = (state, action) => {
 						...state[action.roadmapId].epics,
 						[action.epic.id]: {
 							...action.epic
+						}
+					}
+				}
+			}
+		}
+		case "addPath": {
+			return {
+				...state,
+				[action.roadmapId]: {
+					...state[action.roadmapId],
+					paths: 
+					{
+						...state[action.roadmapId].paths,
+						[action.path.id]: {
+							...action.path
 						}
 					}
 				}
@@ -172,7 +196,7 @@ const CanvasWrapper = ({selectedRoadmap}) => {
 		// preprocessing paths
 		roadmap.paths.forEach(path => {
 			roadmapPatch.paths[path.id] = pathPreprocessing(path);
-		})
+		});
 
 		roadmapPatch.canvas = getSupersetCanvas(defaultCanvas, Object.values(roadmapPatch.epics));
 		
