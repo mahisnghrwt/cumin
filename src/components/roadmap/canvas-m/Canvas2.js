@@ -303,11 +303,11 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		}
 	}
 
-	const deletePath = async epicId => {
-		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/epic/${epicId}`;
+	const deletePath = async pathId => {
+		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/path/${pathId}`;
 		try {
 			await Helper.http.request(url, "DELETE", localStorage.getItem("token"), null, false);
-			roadmapDispatch({type: "removeEpic", roadmapId: roadmap.id, epicId});
+			roadmapDispatch({type: "removePath", roadmapId: roadmap.id, pathId});
 		} catch (e) {
 			console.error(e);
 		}

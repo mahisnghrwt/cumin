@@ -83,6 +83,9 @@ const roadmapReducer = (state, action) => {
 				}
 			}
 		}
+		case "removeEpic": {
+			return removeEpic(state, action);
+		}
 		case "addPath": {
 			return {
 				...state,
@@ -98,8 +101,19 @@ const roadmapReducer = (state, action) => {
 				}
 			}
 		}
-		case "removeEpic": {
-			return removeEpic(state, action);
+		case "removePath": {
+			const state_ = {
+				...state,
+				[action.roadmapId]: {
+					...state[action.roadmapId],
+					paths: 
+					{
+						...state[action.roadmapId].paths
+					}
+				}
+			}
+			delete state_[action.roadmapId].paths[action.pathId];
+			return state_;
 		}
 		case "patchEpic": {
 			return {
