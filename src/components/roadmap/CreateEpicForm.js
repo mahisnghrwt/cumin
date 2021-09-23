@@ -2,7 +2,8 @@ import { useContext, useEffect, useReducer, useRef } from "react";
 import Global from "../../GlobalContext";
 import Helper from "../../Helper";
 import settings from "../../settings";
-import {add} from "date-fns";
+
+const defaultEpicColor = "#7ed6df";
 
 const reducer = (state, action) => {
 	switch(action.type) {
@@ -49,7 +50,7 @@ const DateRow = ({startDate, endDate}) => {
 
 const CreateEpicForm = ({roadmap, intermediateEpic, clearIntermediateEpic, addEpic}) => {
 	const [state, dispatch] = useReducer(reducer, {log: null, errors: {}, values: {title: "", row: 1, startDate: new Date().toDateString(), endDate: new Date().toDateString()}});
-	const [global, globalDispatch] = useContext(Global);
+	const [global,,] = useContext(Global);
 
 	const submitButtonRef = useRef(null);
 
@@ -62,7 +63,8 @@ const CreateEpicForm = ({roadmap, intermediateEpic, clearIntermediateEpic, addEp
 			title: state.values.title,
 			startDate: intermediateEpic.startDate,
 			endDate: intermediateEpic.endDate,
-			row: intermediateEpic.row
+			row: intermediateEpic.row,
+			color: intermediateEpic.row
 		};
 
 		Helper.http.request(url, "POST", token, createEpicReq, true)

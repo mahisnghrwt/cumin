@@ -84,6 +84,10 @@
 	bottom: 0;
 }
 
+.epic {
+	box-sizing: border-box;
+}
+
 .epic-left-tip, .epic-right-tip {
 	position: absolute;
 	left: -0.5rem;

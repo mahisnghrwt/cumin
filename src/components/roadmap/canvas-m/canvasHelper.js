@@ -53,12 +53,9 @@ export const generatePathD = (head, tail, controlPoint) => {
 }
 
 export const epicPreprocessing = (epic) => {
-	const EPIC_DEFAULT_COLOR = "#7ed6df";
-
 	let epic_ = {...epic };
 	epic_.startDate = new Date(epic.startDate);
 	epic_.endDate = new Date(epic.endDate);
-	epic_.color = EPIC_DEFAULT_COLOR;
 	return epic_;
 }
 

@@ -11,7 +11,7 @@ import ToggleHeader from "../toggleContainer/ToggleHeader";
 import ToggleButton from "../toggleContainer/ToggleButton";
 import ToggleBody from "../toggleContainer/ToggleBody";
 
-const EditEpicForm = ({epic}) => {
+const EditEpicForm = ({epic, roadmapId}) => {
 	const [global,,] = useContext(Global);
 
 	if (epic === null || epic === undefined)
@@ -27,7 +27,7 @@ const EditEpicForm = ({epic}) => {
 
 	const saveChanges = async (formValues) => {
 		const reqBody = {startDate: formValues.startDate, endDate: formValues.endDate};
-		const url = `${settings.API_ROOT}/project/${global.project.id}/epic/${epic.id}`;
+		const url = `${settings.API_ROOT}/project/${global.project.id}/roadmap/${roadmapId}/epic/${epic.id}`;
 		const token = localStorage.getItem("token");
 
 		try {

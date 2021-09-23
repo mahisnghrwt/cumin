@@ -24,6 +24,8 @@ import sidebarContext from "../../sidebar2/sidebarContext";
 import CreateEpicForm from "../CreateEpicForm";
 import IssueItemList from "../../issueItem/IssueItemList";
 import EditEpicForm from "../EditEpicForm";
+import ColorPalette from "../ColorPalette";
+import epicColor from "../epicColor";
 
 
 const EPIC_DEFAULT_COLOR = "#f1c40f";
@@ -115,7 +117,8 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			startDate: add(roadmap.canvas.startDate, {days: pos.x}),
 			endDate: add(roadmap.canvas.startDate, {days: duration + pos.x}),
 			row: pos.y,
-			id: "intermediate"
+			id: "intermediate",
+			color: epicColor.MIDNIGHT_BLUE
 		}
 
 		stateDispatch({type: "updateIntermediateEpic", epic});
@@ -326,6 +329,23 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		}
 	}
 
+	const changeEpicColor = async (epicId, color) => {
+		if (epicId === "intermediate") {
+			stateDispatch({type: "patchIntermediateEpic", epic: {color}})
+			return;
+		}
+		
+		const reqBody = {color};
+		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/epic/${epicId}`;
+
+		try {
+			await Helper.http.request(url, "PATCH", localStorage.getItem("token"), reqBody, false);
+			roadmapDispatch({type: "patchEpic", roadmapId: roadmap.id, epic: {id: epicId, color}})
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
 	useEffect(() => {
 		if (roadmap === null || roadmap === undefined) return;
 
@@ -367,17 +387,28 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			sidebarDispatch({type: "remove", key: "issueItemList"});
 			sidebarDispatch({type: "remove", key: "editEpicForm"});
 			dispatchCanvasTools({type: "remove", id: "deleteEpic"});
+			dispatchCanvasTools({type: "remove", id: "selectColor"});
 			return;
 		}
+
+		const selectedEpic = state.selectedEpic === "intermediate" ? state.intermediate.epic : roadmap.epics[state.selectedEpic];
+		
+		dispatchCanvasTools({type: "add", id: "selectColor", tool: (
+			<ColorPalette 
+				selectColor={color => changeEpicColor(state.selectedEpic, color)} 
+				selectedColor={selectedEpic.color} 
+			/>
+		)});
+
+		if (state.selectedEpic === "intermediate") return
 
 		dispatchCanvasTools({type: "add", id: "deleteEpic", tool: (
 			<button onClick={() => deleteEpic(state.selectedEpic)} className="std-button x-sm-2 danger-background">Delete Epic</button>
 		)});
-
 		sidebarDispatch({type: "add", key: "issueItemList", item: 
 			(<IssueItemList selectedEpic={state.selectedEpic} />)});
 		sidebarDispatch({type: "add", key: "editEpicForm", item: 
-			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} />)});
+			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} roadmapId={roadmap.id} />)});
 	}, [state.selectedEpic])
 
 	useEffect(() => {
@@ -454,8 +485,6 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		return gridToPixelBasedPos__({x: differenceInCalendarDays(today, roadmap.canvas.startDate), y: 0}, BASE_NODE_DIMENSIONS);
 	}
 
-
-
 	// only render today marker, if today is within canvas interval.
 	const renderTodayMarker = isWithinInterval(new Date(), {start: roadmap.canvas.startDate, end: roadmap.canvas.endDate});
 
@@ -518,19 +547,6 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 							/>
 						})}
 					</svg>
-
-					{/* <InteractiveLayer 
-						epics={normalizeEpics()} 
-						ref={interactiveLayerRef} 
-						drawPath={drawPath} 
-						moveEpic={moveEpic} 
-						resizeEpic={resizeEpic} 
-						createIntermediatePath={createIntermediatePath} 
-						finaliseIntermediatePath={finaliseIntermediatePath}
-						createIntermediateEpic={createIntermediateEpic}
-						selectEpic={selectEpic}
-						patchEpicDuration={patchEpicDuration}
-					/> */}
 				</div>
 			</div>
 		</div>
