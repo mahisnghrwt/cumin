@@ -30,8 +30,8 @@
 ## Bugs
 - [x] Remove dragData, *child cannot update the prop even if it is a ref*
 
-## Performance Drops
-- [ ] Drag event handler in InteractiveLayer in Canvas.
+## Performance Issues
+- [ ] Performance drop in Drag event handler in InteractiveLayer inside Canvas.
 
 ### Sidebar in Roadmap
 - Default

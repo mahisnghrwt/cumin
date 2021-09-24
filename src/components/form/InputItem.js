@@ -27,6 +27,7 @@ const InputItem = ({kKey: key, label, size, validator = null, ...rest}) => {
 	}
 
 	useEffect(() => {
+		if (rest["disabled"]) return;
 		if (formState.isSubmitting) {
 			ref.current.disabled = true;
 		}
