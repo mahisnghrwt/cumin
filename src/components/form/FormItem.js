@@ -3,7 +3,7 @@ import FormContext from "./FormContext";
 
 const FormItem = ({kKey: key, label, size, children}) => {
 	const {formState} = useContext(FormContext);
-	const {[key]: {error}} = formState;
+	const {field: {[key]: {error}}} = formState;
 
 	return (
 		<div className={"form-item " + size}>

@@ -18,13 +18,13 @@
 
 ## Upcoming QoL
 - [x] Color palette for Epics
-- [ ] Disable form until submission-event finishes.
+- [x] Disable form until submission-event finishes.
 - [x] Indicate current day in Roadmap Canvas
 - [ ] Highlight current grid (row and current date) mouse is over.
-- [ ] Collapse empty rows in Roadmap.
+- ~[ ] Collapse empty rows in Roadmap.~
 - [ ] Show key points about Epic *on hover*. 
 - [ ] Subhighlight indirectly blocked Epics.
-- [ ] Highlight path *on hover*.
+- [x] Highlight path *on hover*.
 - [ ] Project selection in Navbar
 
 ## Bugs

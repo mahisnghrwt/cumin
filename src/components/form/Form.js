@@ -6,14 +6,18 @@ import formErrorType from "./formErrorType";
 /**
  * @param fields [...fieldKey] or {fieldKey: defaultValue}
  */
-const fieldsToState = fields => {
-	let state = {__LOG__: null};
+const fieldsToState = (fields, getClean) => {
+	let state = {
+		log: null,
+		isSubmitting: false,
+		field: {}
+	};
 	let hasDefaultValues = fields !== null && Array.isArray(fields) === false;
 	let fieldKeys = hasDefaultValues ? Object.keys(fields) : fields;
 
 	fieldKeys.map(field => {
-		state[field] = {
-			value: hasDefaultValues ? fields[field] : "",
+		state.field[field] = {
+			value: hasDefaultValues && !getClean ? fields[field] : "",
 			error: null
 		}
 	})
@@ -25,10 +29,10 @@ const mergeErrorsToState = (state, errors) => {
 	const statePatched = {...state};
 
 	Object.keys(errors).map(field => {
-		const hasFieldError = statePatched[field].error !== null && statePatched[field].error !== undefined;
-		if (!hasFieldError || statePatched[field].error.type !== formErrorType.LOCAL) {
-			statePatched[field] = {
-				...statePatched[field],
+		const hasFieldError = statePatched.field[field].error !== null && statePatched.field[field].error !== undefined;
+		if (!hasFieldError || statePatched.field[field].error.type !== formErrorType.LOCAL) {
+			statePatched.field[field] = {
+				...statePatched.field[field],
 				error: {
 					...errors[field]
 				}
@@ -40,7 +44,7 @@ const mergeErrorsToState = (state, errors) => {
 }
 
 const isStateValid = formState => {
-	let invalid = Object.values(formState).some(field => {
+	let invalid = Object.values(formState.field).some(field => {
 		if (field === null) return false;
 		return field.error !== null;
 	})
@@ -48,33 +52,37 @@ const isStateValid = formState => {
 	return !invalid;
 }
 
-/**
- * PATCH_FIELD		field, patch
- * MERGE_ERRORS		errors
- * REPLACE			state
- * SET_LOG			log
- */
-
 const reducer = (state, action) => {
 	switch(action.type) {
-		case "PATCH_FIELD":
+		case "patchField":
 			return {
 				...state,
-				[action.field]: {
-					...state[action.field],
-					...action.patch
-				},
-				__LOG__: null
+				field: {
+					...state.field,
+					[action.field]: {
+						...state.field[action.field],
+						...action.patch
+					}	
+				}
 			};
-		case "SET_LOG":
+		case "setLog":
 			return {
 				...state,
-				__LOG__: action.log
+				log: {
+					...action.log
+				}
 			}
-		case "MERGE_ERRORS":
+		case "mergeErrors":
 			return mergeErrorsToState(state, action.errors);
-		case "REPLACE":
-			return action.state;
+		case "setIsSubmitting":
+			return {
+				...state,
+				isSubmitting: action.isSubmitting
+			}
+		case "replace":
+			return {
+				...action.state
+			};
 	}
 }
 
@@ -89,7 +97,8 @@ const reducerWrapper = (state, action) => {
 }
 
 const Form = ({formFields = [], formValidators = {}, children}) => {
-	const defaultState = fieldsToState(formFields);
+	const defaultState = fieldsToState(formFields, false);
+	const cleanState = fieldsToState(formFields, true);
 	const [formState, setFormState] = useReducer(reducerWrapper, defaultState);
 
 	const validateForm = () => {
@@ -106,11 +115,11 @@ const Form = ({formFields = [], formValidators = {}, children}) => {
 			}
 		});
 
-		setFormState({type: "MERGE_ERRORS", errors});
+		setFormState({type: "mergeErrors", errors});
 	};
 
 	return (
-		<FormContext.Provider value={{formState, setFormState, validateForm, isStateValid, defaultState}}>
+		<FormContext.Provider value={{formState, setFormState, validateForm, isStateValid, cleanState}}>
 			<form onSubmit={e => e.preventDefault()}>
 				{children}
 			</form>

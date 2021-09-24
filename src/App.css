@@ -4,6 +4,7 @@
 	--default-width: 600px;
 	--border-color: #dfe4ea;
 	--danger-red: #e74c3c;
+	--warning-yellow: "#f1c40f";
 	--success-green: #27ae60;
 	--slate-grey: #34495e;
 	--nav-bar-height: 1.9rem;
@@ -177,12 +178,13 @@ form {
 	flex-direction: row;
 	flex-wrap: wrap;
 	align-items: baseline;
+	margin: 0.25rem 0;
 }
 
 .form-item {
 	display: flex;
 	flex-direction: column;
-	margin: 0 1rem 1rem 0;
+	margin: 0 1rem 0 0;
 }
 
 .form-item > label, .form-item-error {
@@ -202,7 +204,6 @@ form {
 	font-size: 0.75rem;
 	font-style: italic;
 	text-transform: uppercase;
-	width: 100%;
 	word-wrap: break-word;
 	padding: 0 0.75rem;
 	color: white;
@@ -390,5 +391,9 @@ button:disabled {
 
 .danger-background {
 	background-color: var(--danger-red);
+}
+
+.warning-background {
+	background-color: var(--warning-yellow);
 }
 

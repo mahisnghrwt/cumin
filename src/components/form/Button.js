@@ -1,22 +1,25 @@
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
+import Loader from "../loader/Loader";
 import FormContext from "./FormContext";
+import formLogType from "./formLogType";
 
 const Button = ({kKey, label, onClick: submit, doesSubmit = false, ...rest}) => {
-	const {formState, setFormState, validateForm, isStateValid, defaultState} = useContext(FormContext);
+	const {formState, setFormState, validateForm, isStateValid, cleanState} = useContext(FormContext);
+	const ref = useRef(null);
 	
 	const buttonClickHandler = e => {
-		
 		if (doesSubmit) {
+			setFormState({type: "setIsSubmitting", isSubmitting: true});
 			validateForm();
-			if (isStateValid(formState) === false)
+			if (isStateValid(formState) === false) {
+				setFormState({type: "setIsSubmitting", isSubmitting: false});
 				return;
+			}
 		}
 
-
 		let formValues = {};
-		Object.keys(formState).map(field => {
-			if (field !== "__LOG__")
-				formValues[field] = formState[field].value;
+		Object.keys(formState.field).map(field => {
+			formValues[field] = formState.field[field].value;
 		})
 
 		// perform action
@@ -24,21 +27,47 @@ const Button = ({kKey, label, onClick: submit, doesSubmit = false, ...rest}) => 
 		.then(message => {
 			const actions = [
 				{
-					type: "REPLACE",
-					state: defaultState
+					type: "replace",
+					state: cleanState
 				},
 				{
-					type: "SET_LOG",
-					log: message
+					type: "setLog",
+					log: {
+						message: message === undefined ? "Success!" : message,
+						type: formLogType.success
+					}
 				}
 			]
 			setFormState(actions);
 		})
-		.catch(e => console.error(e));
+		.catch(e => {
+			setFormState({type: "setLog", log: {
+				message: e,
+				type: formLogType.error
+			}});
+			console.error(e)
+		})
+		.finally(() => {
+			setFormState({type: "setIsSubmitting", isSubmitting: false});
+		});
 	}
 
+	useEffect(() => {
+		if (doesSubmit === false) return;
+		if (formState.isSubmitting) {
+			ref.current.disabled = true;
+		}
+		else {
+			ref.current.disabled = false;
+		}
+	}, [formState.isSubmitting])
+
 	return (
-		<button className="std-button" onClick={buttonClickHandler} {...rest}>{label}</button>
+		<button ref={ref} className="std-button" onClick={buttonClickHandler} {...rest}>
+			{(doesSubmit && formState.isSubmitting) 
+			? <>{label} <Loader /></>
+			: label}
+		</button>
 	)
 }
 
