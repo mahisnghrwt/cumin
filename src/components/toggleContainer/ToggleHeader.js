@@ -1,6 +1,6 @@
-const ToggleHeader = ({children}) => {
+const ToggleHeader = ({children, className=""}) => {
 	return (
-		<div className="toggle-header">
+		<div className={"toggle-header " + className}>
 			{children}
 		</div>
 	);

@@ -10,31 +10,6 @@
 
 .sidebar > * {
 	margin: 0 1rem;
-}
-
-.sidebar-tabs {
-	margin: 0;
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	width: 100%;
-	overflow-x: auto;
-	background-color: #dcdde1;
-	/* box-sizing: border-box; */
-}
-
-.sidebar-tabs > button {
-	all: revert;
-	background-color: #f5f6fa;
-	border: 0;
-	font-size: .75rem;
-	font-weight: bold;
-}
-
-.sidebar-tabs > button:hover {
-	background-color: white;
-}
-
-.sidebar-tabs > button.active {
-	background-color: white;
+	padding: 0 0 1rem 0;
+	border-bottom: 1px solid #bdc3c7;
 }

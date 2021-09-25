@@ -1,22 +1,5 @@
-
-.toggle-button {
-	all: revert;
-	width: fit-content;
-	border: 1px solid black; 
-	background-color: white;
-	padding: 0.5rem;
-	border-radius: 2px;
-	font-weight: bold;
-	margin: 0 1rem;
-}
-
-.toggle-button:hover {
-	background-color: #34495e;
-	color: white;
-}
-
 .toggle-header {
 	display: flex;
 	flex-direction: row;
-	align-items: baseline;
+	align-items: center;
 }

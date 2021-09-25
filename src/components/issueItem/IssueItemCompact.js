@@ -1,11 +1,16 @@
-import "./issueItem.css";
+import Helper from "../../Helper";
 
-const IssueItemDetailed = ({issue, actions = []}) => {
-	const {id, title, description, ...tags} = issue;
+const IssueItemCompact = ({issue, actions = []}) => {
+	const tags = {
+		"Type": issue.type,
+		"Status": issue.status,
+		"Created at": Helper.dateToInputString(issue.createdAt)
+	}
+
 	return (
-		<div className="issue-item">
+		<div className="issue-item-compact">
 			<div className="issue-item-header">
-		  		<span className="issue-item-title">{title}</span>
+		  		<span className="issue-item-title">{issue.title}</span>
 		  		<span className="issue-item-buttons">
 					{Object.keys(actions).map(action => { return (
 						<button 
@@ -15,9 +20,6 @@ const IssueItemDetailed = ({issue, actions = []}) => {
 						</button>
 					)})}
 		  		</span>
-			</div>
-			<div className="issue-item-description">
-				{description}
 			</div>
 			<div className="issue-item-tags">
 				{Object.keys(tags).map(tag => { return (
@@ -31,4 +33,4 @@ const IssueItemDetailed = ({issue, actions = []}) => {
 	);
   };
 
-export default IssueItemDetailed;
+export default IssueItemCompact;

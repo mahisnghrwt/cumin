@@ -2,11 +2,11 @@ import { useContext } from "react";
 import toggleContext from "./toggleContext";
 
 const ToggleBody = ({children}) => {
-	const [state,,] = useContext(toggleContext);
+	const {isExpanded} = useContext(toggleContext);
 
-	if (state.enabled === false) return null;
+	if (isExpanded === false) return null;
 
-	return (<>{children}</>);
+	return <>{children}</>;
 }
 
 export default ToggleBody;

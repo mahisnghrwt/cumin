@@ -1,22 +1,14 @@
-import { useContext } from "react"
+import { useContext } from "react";
 import toggleContext from "./toggleContext";
 
-/**
- * @desc on === undefined -> will work as a toggle button
- */
-const ToggleButton = ({children, on, ...restProps}) => {
-	const [state, dispatch] = useContext(toggleContext);
+const ToggleButton = ({expandText, collapseText, ...rest}) => {
+	const {isExpanded, dispatch} = useContext(toggleContext);
 
-	if (on === state.enabled) return null;
-
-	const toggleButton = () => {
-		if (on === undefined) dispatch({type: "TOGGLE"});
-		dispatch({type: on ? "ENABLE": "DISABLE"});
+	const toggle = e => {
+		dispatch({type: "toggle"});
 	}
 
-	return (
-		<button className="toggle-button" {...restProps} onClick={toggleButton}>{children}</button>
-	)
+	return <button {...rest} onClick={toggle}>{isExpanded ? collapseText : expandText}</button>
 }
 
 export default ToggleButton;

@@ -9,15 +9,12 @@ import settings from "../settings";
 import Global from "../GlobalContext";
 import CreateIssueForm from "./issue/CreateIssueForm";
 import Sidebar from "./sidebar2/Sidebar"
-import SidebarTabContent from "./sidebar/SidebarTabContent";
-import IssueItemList from "./issueItem/IssueItemList";
 import SidebarWrapper  from "./sidebar2/SidebarWrapper";
 import Canvas from "./roadmap/canvas-m/Canvas2";
 import RoadmapSelector from "./roadmap/RoadmapSelector";
 import { useEffect } from "react";
 import CanvasWrapper from "./roadmap/CanvasWrapper";
 import roadmapContext from "./roadmap/roadmapContext";
-import { startOfMinute } from "date-fns";
 
 const ACTIVE_PAGE = "Roadmap";
 

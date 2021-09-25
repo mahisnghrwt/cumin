@@ -4,7 +4,6 @@ import settings from "../../settings";
 import Helper from "../../Helper";
 import ToggleContainer from "../toggleContainer/ToggleContainer";
 import ToggleHeader from "../toggleContainer/ToggleHeader";
-import ToggleButton from "../toggleContainer/ToggleButton";
 import ToggleBody from "../toggleContainer/ToggleBody";
 import Form from "../form/Form";
 import InputItem from "../form/InputItem";
@@ -43,10 +42,6 @@ const CreateSprintForm = (props) => {
 	return (
 		<ToggleContainer enabled={false}>
 			<ToggleHeader>
-				<span>
-					<ToggleButton on={true}>[+]</ToggleButton>
-					<ToggleButton on={false}>[-]</ToggleButton>
-				</span>
 				<h3>Create Sprint</h3>
 			</ToggleHeader>
 			<ToggleBody>

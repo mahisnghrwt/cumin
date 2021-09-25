@@ -13,7 +13,6 @@ import LogItem from "../form/LogItem";
 import ToggleContainer from "../toggleContainer/ToggleContainer";
 import ToggleBody from "../toggleContainer/ToggleBody";
 import ToggleHeader from "../toggleContainer/ToggleHeader";
-import ToggleButton from "../toggleContainer/ToggleButton";
 
 
 const CreateIssueForm = ({formHidden = false}) => {
@@ -42,10 +41,6 @@ const CreateIssueForm = ({formHidden = false}) => {
 	return (
 		<ToggleContainer enabled={false}>
 			<ToggleHeader>
-				<span>
-					<ToggleButton on={true}>[+]</ToggleButton>
-					<ToggleButton on={false}>[-]</ToggleButton>
-				</span>
 				<h3>Create Issue</h3>
 			</ToggleHeader>
 			<ToggleBody>

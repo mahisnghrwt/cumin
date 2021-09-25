@@ -1,0 +1,13 @@
+.sidebar-item {
+	width: 100%;
+	box-sizing: border-box;
+	padding-bottom: 0.25rem;
+	border: 1px solid lightgrey;
+	margin-bottom: 0.5rem;
+}
+
+.sidebar-item-title {
+	text-transform: capitalize;
+	font-size: 0.9rem;
+	color: grey;
+}

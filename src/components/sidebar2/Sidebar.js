@@ -1,6 +1,7 @@
 import { useContext, useEffect, useReducer } from "react";
 import sidebarContext from "./sidebarContext";
 import "./sidebar.css";
+import "./sidebarItem.css";
 
 const reducer = (state, action) => {
 	switch(action.type) {

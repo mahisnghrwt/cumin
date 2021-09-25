@@ -4,29 +4,20 @@ import "./toggleContainer.css";
 
 const reducer = (state, action) => {
 	switch(action.type) {
-		case "ENABLE":
-			return {
-				...state,
-				enabled: true
-			}
-		case "DISABLE":
-			return {
-				...state,
-				enabled: false
-			}
-		case "TOGGLE":
-			return {
-				...state,
-				enabled: !state.enabled
-			}
+		case "expand":
+			return true;
+		case "collapse":
+			return false;
+		case "toggle":
+			return !state;
 	}
 }
 
-const ToggleContainer = ({enabled = true, children}) => {
-	const [state, dispatch] = useReducer(reducer, {enabled});
+const ToggleContainer = ({expanded = true, children}) => {
+	const [isExpanded, dispatch] = useReducer(reducer, {expanded});
 
 	return (
-		<toggleContext.Provider value={[state, dispatch]}>
+		<toggleContext.Provider value={{isExpanded, dispatch}}>
 			<div className="toggle-container">
 				{children}
 			</div>

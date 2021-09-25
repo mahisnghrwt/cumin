@@ -53,10 +53,12 @@ export const generatePathD = (head, tail, controlPoint) => {
 }
 
 export const epicPreprocessing = (epic) => {
-	let epic_ = {...epic };
-	epic_.startDate = new Date(epic.startDate);
-	epic_.endDate = new Date(epic.endDate);
-	return epic_;
+	return {
+		...epic,
+		startDate: new Date(epic.startDate),
+		endDate: new Date(epic.endDate),
+		issues: epic.issues.map(issue => issuePreprocessing(issue))
+	}
 }
 
 export const pathPreprocessing = path => {
@@ -68,6 +70,13 @@ export const pathPreprocessing = path => {
 	}
 
 	return finalPath;
+}
+
+export const issuePreprocessing = issue => {
+	return {
+		...issue,
+		createdAt: new Date(issue.createdAt)
+	}
 }
 
 

@@ -22,10 +22,11 @@ import VerticalLine from "./components/VerticalLine";
 import roadmapContext from "../roadmapContext";
 import sidebarContext from "../../sidebar2/sidebarContext";
 import CreateEpicForm from "../CreateEpicForm";
-import IssueItemList from "../../issueItem/IssueItemList";
 import EditEpicForm from "../EditEpicForm";
 import ColorPalette from "../ColorPalette";
 import epicColor from "../epicColor";
+import EpicInfoCard from "../../EpicInfoCard/EpicInfoCard";
+import IssueList from "../../issueItem/IssueList";
 
 
 const EPIC_DEFAULT_COLOR = "#f1c40f";
@@ -386,6 +387,8 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		if (state.selectedEpic === null) {
 			sidebarDispatch({type: "remove", key: "issueItemList"});
 			sidebarDispatch({type: "remove", key: "editEpicForm"});
+			sidebarDispatch({type: "remove", key: "epicInfoCard"});
+			sidebarDispatch({type: "remove", key: "epicIssues"});
 			dispatchCanvasTools({type: "remove", id: "deleteEpic"});
 			dispatchCanvasTools({type: "remove", id: "selectColor"});
 			return;
@@ -403,10 +406,12 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		if (state.selectedEpic === "intermediate") return
 
 		dispatchCanvasTools({type: "add", id: "deleteEpic", tool: (
-			<button onClick={() => deleteEpic(state.selectedEpic)} className="std-button x-sm-2 danger-background">Delete Epic</button>
+			<button onClick={() => deleteEpic(state.selectedEpic)} className="std-button sm-button danger-background">Delete Epic</button>
 		)});
-		sidebarDispatch({type: "add", key: "issueItemList", item: 
-			(<IssueItemList selectedEpic={state.selectedEpic} />)});
+		sidebarDispatch({type: "add", key: "epicInfoCard", item: 
+			(<EpicInfoCard epic={roadmap.epics[state.selectedEpic]} />)});
+		sidebarDispatch({type: "add", key: "epicIssues", item: 
+			(<IssueList issues={roadmap.epics[state.selectedEpic].issues} />)});
 		sidebarDispatch({type: "add", key: "editEpicForm", item: 
 			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} roadmapId={roadmap.id} />)});
 	}, [state.selectedEpic])
@@ -418,7 +423,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		}
 
 		dispatchCanvasTools({type: "add", id: "deletePath", tool: (
-			<button onClick={() => deletePath(state.selectedPath)} className="std-button x-sm-2 danger-background">Delete Path</button>
+			<button onClick={() => deletePath(state.selectedPath)} className="std-button sm-button danger-background">Delete Path</button>
 		)});
 	}, [state.selectedPath])
 

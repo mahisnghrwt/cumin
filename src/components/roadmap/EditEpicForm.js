@@ -9,8 +9,8 @@ import { useContext } from "react";
 import Global from "../../GlobalContext";
 import ToggleContainer from "../toggleContainer/ToggleContainer";
 import ToggleHeader from "../toggleContainer/ToggleHeader";
-import ToggleButton from "../toggleContainer/ToggleButton";
 import ToggleBody from "../toggleContainer/ToggleBody";
+import ToggleButton from "../toggleContainer/ToggleButton";
 
 const EditEpicForm = ({epic, roadmapId}) => {
 	const [global,,] = useContext(Global);
@@ -40,12 +40,9 @@ const EditEpicForm = ({epic, roadmapId}) => {
 	}
 
 	return (
-		<ToggleContainer enabled={false}>
-			<ToggleHeader>
-				<span>
-					<ToggleButton on={true}>[+]</ToggleButton>
-					<ToggleButton on={false}>[-]</ToggleButton>
-				</span>
+		<ToggleContainer expanded={false}>
+			<ToggleHeader className="flex-justify-start">
+				<ToggleButton expandText={<>&darr;</>} collapseText={<>&uarr;</>} className="std-button std-background sm-button" style={{fontWeight: "bold"}} />
 				<h3>Edit Epic</h3>
 			</ToggleHeader>
 			<ToggleBody>
