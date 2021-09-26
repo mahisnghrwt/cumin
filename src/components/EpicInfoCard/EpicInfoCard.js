@@ -5,7 +5,7 @@ import Helper from "../../Helper";
 
 const EpicInfoCard = ({epic}) => {
 	return (
-		<div className="epic-info-card">
+		<div className="epic-info-card sidebar-item">
 			<div className="row">
 				<span className="id">{epic.id}</span>
 				<span className="title">{epic.title}</span>

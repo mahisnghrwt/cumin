@@ -6,10 +6,5 @@
 	height: 100%;
 	width: 25%;
 	background-color: #f5f6fa;
-}
-
-.sidebar > * {
-	margin: 0 1rem;
-	padding: 0 0 1rem 0;
-	border-bottom: 1px solid #bdc3c7;
+	padding: 0 1rem;
 }

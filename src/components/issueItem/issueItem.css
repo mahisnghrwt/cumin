@@ -10,7 +10,13 @@
     border-bottom: 0;
     box-sizing: border-box;
     align-items: flex-start;
-    margin-bottom: 0.5rem;
+	border: 1px solid #bdc3c7;
+	border-bottom: 0;
+	padding: 0.25rem;
+}
+
+.issue-item-compact:last-child {
+	border-bottom: 1px solid #bdc3c7;
 }
 
 .issue-item {
@@ -37,13 +43,15 @@
 	border: 0;
 }
 
-.issue-item-header {
+.issue-item-header, .issue-item-header-only {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: center;
 	width: 100%;
 }
+
+
 
 .issue-item-buttons {
 	display: flex;
@@ -88,3 +96,13 @@
 	font-style: italic;
 }
 
+/* Inherited */
+
+.issue-item-header-only {
+	justify-content: flex-start;
+}
+
+.issue-item-header-only > .issue-item-tag {
+	margin-right: 0;
+	margin-left: 1rem;
+}

@@ -34,7 +34,6 @@ const http = {
 		const response = await fetch(url, fetchOptions);
 
 		if (!response.ok) {
-			debugger;
 			throw new Error(`[${response.status}] = ${response.statusText}`);
 		}
 

@@ -42,21 +42,17 @@ const EditEpicForm = ({epic, roadmapId}) => {
 	return (
 		<ToggleContainer expanded={false}>
 			<ToggleHeader className="flex-justify-start">
-				<ToggleButton expandText={<>&darr;</>} collapseText={<>&uarr;</>} className="std-button std-background sm-button" style={{fontWeight: "bold"}} />
-				<h3>Edit Epic</h3>
+				<ToggleButton expandText=">" collapseText="v" className="border-button" style={{fontWeight: "bold", fontSize: "0.75rem"}} />
+				<div className="sidebar-item-title">Edit Epic</div>
 			</ToggleHeader>
 			<ToggleBody>
 				<Form formFields={formFields}>
 					<div className="form-row">
-						<InputItem kKey="id" label="Id" size={formItemSize.SMALL} disabled={true} required={true} />
 						<InputItem kKey="title" label="Title" size={formItemSize.SMALL} required={true} />
 					</div>
 					<div className="form-row">
 						<InputItem kKey="startDate" label="Start date" size={formItemSize.SMALL} required={true} type="date" />
 						<InputItem kKey="endDate" label="End date" size={formItemSize.SMALL} required={true} type="date" />
-					</div>
-					<div className="form-row">						
-						<InputItem kKey="row" label="Row" size={formItemSize.SMALL} disabled={true} required={true} />
 					</div>
 					<div className="form-row">
 						<Button kKey="save" label="Save Changes" onClick={saveChanges} doesSubmit={true} />

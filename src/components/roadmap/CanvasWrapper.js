@@ -2,7 +2,7 @@ import { useContext, useEffect, useReducer} from "react";
 import Canvas from "./canvas-m/Canvas2";
 import settings from "../../settings";
 import Helper from "../../Helper";
-import {epicPreprocessing, pathPreprocessing} from "./canvas-m/canvasHelper";
+import {createGraph, epicPreprocessing, pathPreprocessing} from "./canvas-m/canvasHelper";
 import Global from "../../GlobalContext";
 import {add} from "date-fns";
 import { getSupersetCanvas } from "./canvas-m/canvasHelper";
@@ -198,7 +198,8 @@ const CanvasWrapper = ({selectedRoadmap}) => {
 			roadmapEpics: undefined,
 			roadmapPaths: undefined,
 			epics: {},
-			paths: {}
+			paths: {},
+			graph: {}
 		};
 
 		// preprocessing epics
@@ -211,6 +212,8 @@ const CanvasWrapper = ({selectedRoadmap}) => {
 		roadmap.paths.forEach(path => {
 			roadmapPatch.paths[path.id] = pathPreprocessing(path);
 		});
+
+		roadmapPatch.graph = createGraph(Object.keys(roadmapPatch.epics), roadmapPatch.paths);
 
 		roadmapPatch.canvas = getSupersetCanvas(defaultCanvas, Object.values(roadmapPatch.epics));
 		

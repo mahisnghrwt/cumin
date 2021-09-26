@@ -27,6 +27,7 @@ import ColorPalette from "../ColorPalette";
 import epicColor from "../epicColor";
 import EpicInfoCard from "../../EpicInfoCard/EpicInfoCard";
 import IssueList from "../../issueItem/IssueList";
+import DependencyList from "../../issueItem/DependencyList";
 
 
 const EPIC_DEFAULT_COLOR = "#f1c40f";
@@ -389,6 +390,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			sidebarDispatch({type: "remove", key: "editEpicForm"});
 			sidebarDispatch({type: "remove", key: "epicInfoCard"});
 			sidebarDispatch({type: "remove", key: "epicIssues"});
+			sidebarDispatch({type: "remove", key: "epicDependencies"});
 			dispatchCanvasTools({type: "remove", id: "deleteEpic"});
 			dispatchCanvasTools({type: "remove", id: "selectColor"});
 			return;
@@ -408,10 +410,16 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		dispatchCanvasTools({type: "add", id: "deleteEpic", tool: (
 			<button onClick={() => deleteEpic(state.selectedEpic)} className="std-button sm-button danger-background">Delete Epic</button>
 		)});
+
 		sidebarDispatch({type: "add", key: "epicInfoCard", item: 
 			(<EpicInfoCard epic={roadmap.epics[state.selectedEpic]} />)});
+
 		sidebarDispatch({type: "add", key: "epicIssues", item: 
 			(<IssueList issues={roadmap.epics[state.selectedEpic].issues} />)});
+
+		sidebarDispatch({type: "add", key: "epicDependencies", item: 
+			(<DependencyList dependencies={roadmap.graph[state.selectedEpic].dependencies.map(d => roadmap.epics[d.id])} />)});
+
 		sidebarDispatch({type: "add", key: "editEpicForm", item: 
 			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} roadmapId={roadmap.id} />)});
 	}, [state.selectedEpic])

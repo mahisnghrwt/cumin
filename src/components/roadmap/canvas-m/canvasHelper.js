@@ -115,23 +115,36 @@ export const gridToDate = (date, offset) => {
 	return add(date, {days: offset});
 }
 
-const createGraph = (epics, paths) => {
+/**
+ * Epics - array of epic Id
+ * Paths - {pathId: {head, tail}}
+ * 
+ * Graph - {
+ * 	[epicId]: {
+ * 		id: epicId,
+ * 		dependencies: []
+ * 	}
+ * }
+ */
+export const createGraph = (epics, paths) => {
 	let graph = {};
 	epics.forEach(epic => {
 		graph[epic] = {
 			id: parseInt(epic),
-			dependsOn: []
+			dependencies: []
 		}
 	});
 
 	Object.values(paths).forEach(path => {
+		// id - dependency epic id
+		// viaPath - path id that connects to dependency
 		const dependency = {
 			viaPath: path.id,
-			id: path.from
+			id: path.head
 		};
-		graph[path.to] = {
-			...graph[path.to],
-			dependsOn: [...graph[path.to].dependsOn, dependency]
+		graph[path.tail] = {
+			...graph[path.tail],
+			dependencies: [...graph[path.tail].dependencies, dependency]
 		}
 	})
 
@@ -155,7 +168,7 @@ const checkCycles = (node, arr, checked, cycles, graph) => {
 	let clear = true;
 
 	// what does the node depends on?
-	graph[node.id].dependsOn.forEach(dependency => {
+	graph[node.id].dependencies.forEach(dependency => {
 		// either dependency is already checked or not.
 		if (checked[dependency.id] !== undefined) {
 			clear = clear && checked[dependency.id];
