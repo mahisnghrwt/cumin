@@ -10,7 +10,7 @@ const RoadmapSelector = ({roadmap, notifyChange, defaultRoadmapId}) => {
 	}
 
 	return (
-		<select value={ selectedRoadmap } onChange={ selectChangeHandler }>
+		<select value={ selectedRoadmap } onChange={ selectChangeHandler } style={{marginLeft: "auto"}}>
 			{Object.values(roadmap).map(r => {
 				return <option value={ r.id }>{ r.title }</option>
 			})}

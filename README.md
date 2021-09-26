@@ -9,11 +9,11 @@
 	- ~[ ] Suggestions to resolve cycles~
 - ~[ ] Delete row~
 	- ~*Add a delete button next to row label*~
-- [ ] Show progress of Epic (Using progress bar)
+- [x] Show progress of Epic (Using progress bar)
 - [ ] Epic Page
 - [ ] Issue Page
 - [ ] Spinner
-- [ ] Highlight blocked Epics.
+- [x] Highlight blocked Epics.
 
 
 ## Upcoming QoL

@@ -28,9 +28,8 @@ import {epicColor, defaultColor} from "../epicColor";
 import EpicInfoCard from "../../EpicInfoCard/EpicInfoCard";
 import IssueList from "../../issueItem/IssueList";
 import DependencyList from "../../issueItem/DependencyList";
+import canvasTool from "../CanvasToolbar/canvasTool";
 
-
-const EPIC_DEFAULT_COLOR = "#f1c40f";
 const GRIDLINE_COLOR = "#bdc3c7";
 const GRIDLINE_SIZE_IN_PX = 1;
 const VERTICAL_SCALE_WIDTH = "100px";
@@ -38,7 +37,6 @@ const HORIZONTAL_SCALE_HEIGHT = "60px";
 const INTERMEDIATE_EPIC_COLOR = "#f1c40f";
 
 const defaultState = {selectedEpic: null, selectedPath: null, intermediate: {epic: null, path: null}};
-
 
 const stateReducer = (state, action) => {
 	switch(action.type) {
@@ -374,7 +372,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 
 		const addEpic = epic => {
 			const epic_ = epicPreprocessing(epic);
-			
+
 			roadmapDispatch({type: "addEpic", roadmapId: roadmap.id, epic: epic_});
 			usedRows.current.add(epic.row);
 			// always add an extra empty row at the bottom of canvas
@@ -401,25 +399,27 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			sidebarDispatch({type: "remove", key: "epicInfoCard"});
 			sidebarDispatch({type: "remove", key: "epicIssues"});
 			sidebarDispatch({type: "remove", key: "epicDependencies"});
-			dispatchCanvasTools({type: "remove", id: "deleteEpic"});
-			dispatchCanvasTools({type: "remove", id: "selectColor"});
+			dispatchCanvasTools({type: "remove", id: canvasTool.DELETE_EPIC_BUTTON});
+			dispatchCanvasTools({type: "remove", id: canvasTool.COLOR_PALETTE});
 			return;
 		}
 
 		const selectedEpic = state.selectedEpic === "intermediate" ? state.intermediate.epic : roadmap.epics[state.selectedEpic];
 		
-		dispatchCanvasTools({type: "add", id: "selectColor", tool: (
-			<ColorPalette 
-				selectColor={color => changeEpicColor(state.selectedEpic, color)} 
-				selectedColor={selectedEpic.color} 
-			/>
-		)});
+		dispatchCanvasTools({type: "add", id: canvasTool.COLOR_PALETTE, tool: {
+			enabled: true,
+			props: {
+				selectColor: color => changeEpicColor(state.selectedEpic, color) ,
+				selectedColor: selectedEpic.color
+			}}});
 
 		if (state.selectedEpic === "intermediate") return
 
-		dispatchCanvasTools({type: "add", id: "deleteEpic", tool: (
-			<button onClick={() => deleteEpic(state.selectedEpic)} className="std-button sm-button danger-background">Delete Epic</button>
-		)});
+		dispatchCanvasTools({type: "add", id: canvasTool.DELETE_EPIC_BUTTON, tool: {
+			enabled: true,
+			props: {
+				onClick: () => deleteEpic(state.selectedEpic)
+			}}});
 
 		sidebarDispatch({type: "add", key: "epicInfoCard", item: 
 			(<EpicInfoCard epic={roadmap.epics[state.selectedEpic]} />)});
@@ -437,13 +437,16 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 
 	useEffect(() => {
 		if (state.selectedPath === null) {
-			dispatchCanvasTools({type: "remove", id: "deletePath"});
+			dispatchCanvasTools({type: "remove", id: canvasTool.DELETE_PATH_BUTTON});
 			return;
 		}
 
-		dispatchCanvasTools({type: "add", id: "deletePath", tool: (
-			<button onClick={() => deletePath(state.selectedPath)} className="std-button sm-button danger-background">Delete Path</button>
-		)});
+		dispatchCanvasTools({type: "add", id: canvasTool.DELETE_PATH_BUTTON, tool: {
+			enabled: true,
+			props: {
+				onClick: () => deletePath(state.selectedPath)
+			}
+		}});
 	}, [state.selectedPath])
 
 	const getEpicPosInfo = epic => {

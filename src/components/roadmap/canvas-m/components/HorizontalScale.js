@@ -1,8 +1,7 @@
 import { add, differenceInCalendarDays, endOfMonth, nextSunday, sub } from "date-fns";
-import { useCallback, useEffect, useReducer, useState } from "react";
+import React, {useState} from "react";
 import { SCALE_UNIT } from "../canvasEnums";
 import Helper from "../../../../Helper";
-import usePixelToGrid from "../hooks/usePixelToGrid";
 
 const reducer__ = (labels, action) => {
 	switch(action.type) {
@@ -77,33 +76,10 @@ const highlightedLabelStyle = {
 	fontWeight: "bolder"
 }
 
-const HorizontalScale = ({startDate, endDate, unit, style, baseNodeDimensions, canvasRef, gridDimensions, canvasDimensions}) => {
-	// const [labels, dispatch] = useReducer(reducer__, []);
+const HorizontalScale = ({startDate, endDate, unit, style, baseNodeDimensions}) => {
 	const [highlightedLabel, setHighlightedLabel] = useState(-1);
-	// const pixelToGrid = usePixelToGrid(canvasDimensions, gridDimensions);
 
 	const labels = makeLabels(startDate, endDate, unit, baseNodeDimensions);
-
-
-	// useEffect(() => {
-	// 	const labels = makeLabels(startDate, endDate, unit, baseNodeDimensions);
-	// 	dispatch({type: "NEW", labels});
-
-	// }, [startDate, endDate, unit]);
-
-	// const highlightLabelAtPos = useCallback((pos) => {
-	// 	if (pos.x !== highlightedLabel)
-	// 		setHighlightedLabel(pos.x);
-	// }, [highlightedLabel, setHighlightedLabel])
-
-	// useEffect(() => {
-	// 	canvasRef.current.addEventListener("mousemove", e => {
-	// 		if (e.target.className !== "interactive-layer") return;
-	// 		const pos = pixelToGrid.current({x: e.offsetX, y: e.offsetY});
-	// 		highlightLabelAtPos(pos);
-	// 	})
-	// }, [canvasRef, pixelToGrid, highlightLabelAtPos])
-
 
 	const width = differenceInCalendarDays(endDate, startDate) * baseNodeDimensions.width;
 

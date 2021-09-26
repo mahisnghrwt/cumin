@@ -2,7 +2,7 @@ import NavBar from "./NavBar";
 import CreateEpicForm from "./roadmap/CreateEpicForm";
 import { useState, useReducer, useContext } from "react";
 import AlertBar from "./AlertBar";
-import CanvasToolbar from "./roadmap/CanvasToolbar";
+import CanvasToolbar from "./roadmap/CanvasToolbar/CanvasToolbar";
 import EditEpicForm from "./roadmap/EditEpicForm";
 import Helper from "../Helper";
 import settings from "../settings";
@@ -15,6 +15,7 @@ import RoadmapSelector from "./roadmap/RoadmapSelector";
 import { useEffect } from "react";
 import CanvasWrapper from "./roadmap/CanvasWrapper";
 import roadmapContext from "./roadmap/roadmapContext";
+import canvasTool from "./roadmap/CanvasToolbar/canvasTool";
 
 const ACTIVE_PAGE = "Roadmap";
 
@@ -128,6 +129,13 @@ const RoadmapPage = () => {
 			
 			// by default, select the main roadmap as active
 			dispatch({ type: "setSelectedRoadmap", roadmap: mainRoadmapId});
+			dispatchCanvasTools({type: "add", id: canvasTool.ROADMAP_SELECTOR, tool: {
+				enabled: true, 
+				props: {
+					roadmap: roadmapObj, 
+					defaultRoadmapId: mainRoadmapId, 
+					notifyChange: selectRoadmap
+			}}})
 		}()	
 	}, [])
 
@@ -139,10 +147,11 @@ const RoadmapPage = () => {
 				<SidebarWrapper>
 					<div className="roadmap-content">
 						<h1>Roadmap</h1>
-						<CanvasToolbar>
+						{/* <CanvasToolbar tools={canvasTools}> 
 							{ enableRoadmapSelector && <RoadmapSelector roadmap={roadmap} defaultRoadmapId={state.selectedRoadmap} notifyChange={selectRoadmap} /> }
 							{Object.values(canvasTools).map(tool => tool)}
-						</CanvasToolbar>
+						</CanvasToolbar> */}
+						<CanvasToolbar tools={canvasTools} /> 
 						<CanvasWrapper selectedRoadmap={state.selectedRoadmap} />
 					</div>
 					<Sidebar />
