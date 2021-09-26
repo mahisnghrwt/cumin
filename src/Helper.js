@@ -34,7 +34,11 @@ const http = {
 		const response = await fetch(url, fetchOptions);
 
 		if (!response.ok) {
-			throw new Error(`[${response.status}] = ${response.statusText}`);
+			response.text()
+			.then(e => {
+				throw new Error(e)
+			})
+			
 		}
 
 		let responseBody = null;

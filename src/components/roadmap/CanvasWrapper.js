@@ -17,8 +17,7 @@ const defaultCanvas = {
 	rows: DEFAULT_ROWS,
 };
 
-const addPath = (path, roadmapId, state) => {
-	const state_ = _.clone(state);
+const addPath = (path, roadmapId, state_) => {
 	// add path
 	state_[roadmapId].paths[path.id] = {
 		...path
@@ -36,11 +35,10 @@ const addPath = (path, roadmapId, state) => {
 	return state_;
 }
 
-const removePath = (pathId, roadmapId, state) => {
-	const state_ = _.cloneDeep(state);
+const removePath = (pathId, roadmapId, state_) => {
 
-	const headId = state[roadmapId].paths[pathId].head;
-	const tailId = state[roadmapId].paths[pathId].tail;
+	const headId = state_[roadmapId].paths[pathId].head;
+	const tailId = state_[roadmapId].paths[pathId].tail;
 
 	// for path head nothing changes, simply remove the path reference
 	state_[roadmapId].epics[headId].pathHeads = state_[roadmapId].epics[headId].pathHeads.filter(pid => pid !== pathId);
@@ -61,19 +59,18 @@ const removePath = (pathId, roadmapId, state) => {
 	return state_;
 }
 
-const removeEpic = (state, action) => {
-	const targetRow = state[action.roadmapId].epics[action.epicId].row;
-
-	const state_ =  _.cloneDeep(state);
+const removeEpic = (state_, action) => {
+	// pull all epics after targetRow up by one row 
+	const targetRow = state_[action.roadmapId].epics[action.epicId].row;
 
 	// remove path reference from all dependencies
-	state[action.roadmapId].epics[action.epicId].pathTails
+	state_[action.roadmapId].epics[action.epicId].pathTails
 	.forEach(pathId => {
 		state_ = removePath(pathId, action.roadmapId, state_);
 	});
 
 	// remove path reference form all dependees, re-evaluate epic blockage as well
-	state[action.roadmapId].epics[action.epicId].pathHeads
+	state_[action.roadmapId].epics[action.epicId].pathHeads
 	.forEach(pathId => {
 		state_ = removePath(pathId, action.roadmapId, state_);
 	});
@@ -86,13 +83,17 @@ const removeEpic = (state, action) => {
 			}	
 		}
 	});
+
+	// clear row along with the epic
+	state_[action.roadmapId].canvas.rows--;
+
+	// remove the epic
+	delete state_[action.roadmapId].epics[action.epicId];
 	
 	return state_;
 }
 
-const patchEpic = (state, action) => {
-	const state_ = _.cloneDeep(state);
-
+const patchEpic = (state_, action) => {
 	// patch epic
 	state_[action.roadmapId].epics[action.epic.id] = {
 		...state_[action.roadmapId].epics[action.epic.id],
@@ -146,29 +147,16 @@ const roadmapReducer = (state, action) => {
 			}
 		}
 		case "removeEpic": {
-			return removeEpic(state, action);
+			return removeEpic(_.cloneDeep(state), action);
 		}
 		case "addPath": {
-			return addPath(action.path, action.roadmapId, state);
-			// return {
-			// 	...state,
-			// 	[action.roadmapId]: {
-			// 		...state[action.roadmapId],
-			// 		paths: 
-			// 		{
-			// 			...state[action.roadmapId].paths,
-			// 			[action.path.id]: {
-			// 				...action.path
-			// 			}
-			// 		}
-			// 	}
-			// }
+			return addPath(action.path, action.roadmapId, _.cloneDeep(state));
 		}
 		case "removePath": {
-			return removePath(action.pathId, action.roadmapId, state);
+			return removePath(action.pathId, action.roadmapId, _.cloneDeep(state));
 		}
 		case "patchEpic": {
-			return patchEpic(state, action);
+			return patchEpic(_.cloneDeep(state), action);
 		}
 		case "patchCanvas": {
 			return {

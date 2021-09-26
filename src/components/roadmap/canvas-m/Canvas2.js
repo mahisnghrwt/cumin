@@ -24,7 +24,7 @@ import sidebarContext from "../../sidebar2/sidebarContext";
 import CreateEpicForm from "../CreateEpicForm";
 import EditEpicForm from "../EditEpicForm";
 import ColorPalette from "../ColorPalette";
-import epicColor from "../epicColor";
+import {epicColor, defaultColor} from "../epicColor";
 import EpicInfoCard from "../../EpicInfoCard/EpicInfoCard";
 import IssueList from "../../issueItem/IssueList";
 import DependencyList from "../../issueItem/DependencyList";
@@ -101,6 +101,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	const {state: {dispatch: sidebarDispatch}} = useContext(sidebarContext);
 	const [state, stateDispatch] = useReducer(stateReducer, defaultState)
 	const interactiveLayerRef = useRef(null);
+	const usedRows = useRef(new Set());
 
 	const gridSize = {
 		x: differenceInCalendarDays(roadmap.canvas.endDate, roadmap.canvas.startDate),
@@ -112,6 +113,9 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	}
 
 	const createIntermediateEpic = (pos) => {
+		// 1 row has only 1 epic.
+		if (usedRows.current.has(pos.y)) return;
+
 		const duration = 1;
 	
 		const epic = {
@@ -352,6 +356,10 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		if (roadmap === null || roadmap === undefined) return;
 
 		stateDispatch({type: "update", state: defaultState});
+
+		usedRows.current.clear();
+		Object.values(roadmap.epics).forEach(epic => usedRows.current.add(epic.row));
+
 		// Sample code to expose buttons from canvas
 		// dispatchCanvasTools({type: "clear"});
 		// dispatchCanvasTools({type: "add", id: "addRow", tool: (<button onClick={addRow} className="std-button x-sm-2">+ Add Row</button>)})
@@ -366,7 +374,9 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 
 		const addEpic = epic => {
 			const epic_ = epicPreprocessing(epic);
+			
 			roadmapDispatch({type: "addEpic", roadmapId: roadmap.id, epic: epic_});
+			usedRows.current.add(epic.row);
 			// always add an extra empty row at the bottom of canvas
 			roadmapDispatch({type: "addRowsToCanvas", roadmapId: roadmap.id, rows: 1});
 		}

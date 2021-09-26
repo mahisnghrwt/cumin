@@ -1,4 +1,4 @@
-import epicColor from "./epicColor"
+import {epicColor} from "./epicColor"
 const ColorDip = ({color, isSelected, selectColor}) => {
 	return <span 
 		className={isSelected ? "color-dip-selected" : "color-dip"}

@@ -64,7 +64,7 @@ const CreateEpicForm = ({roadmap, intermediateEpic, clearIntermediateEpic, addEp
 			startDate: intermediateEpic.startDate,
 			endDate: intermediateEpic.endDate,
 			row: intermediateEpic.row,
-			color: intermediateEpic.row
+			color: intermediateEpic.color
 		};
 
 		Helper.http.request(url, "POST", token, createEpicReq, true)
