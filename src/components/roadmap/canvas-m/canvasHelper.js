@@ -57,7 +57,9 @@ export const epicPreprocessing = (epic) => {
 		...epic,
 		startDate: new Date(epic.startDate),
 		endDate: new Date(epic.endDate),
-		issues: epic.issues.map(issue => issuePreprocessing(issue))
+		issues: epic.issues.map(issue => issuePreprocessing(issue)),
+		pathHeads: [],
+		pathTails: []
 	}
 }
 
@@ -240,6 +242,33 @@ export const createCyclePatch = cycles => {
 	})
 
 	return patch;
+}
+
+export const findBlockedEpics = (epics, paths) => {
+	const blockedEpics = [];
+
+	Object.keys(epics).forEach(epicId => {
+		if (isEpicBlocked(epicId, epics, paths)) {
+			blockedEpics.push(epicId);
+		}
+	})
+
+	return blockedEpics;
+}
+
+export const isEpicBlocked = (epicId, epics, paths) => {
+	let blocked = false;
+	const dependeeStartDate = epics[epicId].startDate;
+	for (const pathId of epics[epicId].pathTails) {
+		const dependecyEndDate = epics[paths[pathId].head].endDate;
+
+		if (differenceInCalendarDays(dependecyEndDate, dependeeStartDate) > 0) {
+			blocked = true;
+			break;
+		}
+	}
+
+	return blocked;
 }
 
 export const getSupersetCanvas = (canvas, nodes) => {

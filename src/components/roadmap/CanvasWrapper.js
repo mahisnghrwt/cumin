@@ -2,10 +2,11 @@ import { useContext, useEffect, useReducer} from "react";
 import Canvas from "./canvas-m/Canvas2";
 import settings from "../../settings";
 import Helper from "../../Helper";
-import {createGraph, epicPreprocessing, pathPreprocessing} from "./canvas-m/canvasHelper";
+import {epicPreprocessing, findBlockedEpics, isEpicBlocked, pathPreprocessing} from "./canvas-m/canvasHelper";
 import Global from "../../GlobalContext";
 import {add} from "date-fns";
 import { getSupersetCanvas } from "./canvas-m/canvasHelper";
+import _ from "lodash";
 
 const DEFAULT_ROWS = 1;
 const DEFAULT_ROADMAP_DURATION = 100;
@@ -16,40 +17,101 @@ const defaultCanvas = {
 	rows: DEFAULT_ROWS,
 };
 
+const addPath = (path, roadmapId, state) => {
+	const state_ = _.clone(state);
+	// add path
+	state_[roadmapId].paths[path.id] = {
+		...path
+	};
+
+	// add reference of path to path head and tail
+	state_[roadmapId].epics[path.head].pathHeads.push(path.id);
+	state_[roadmapId].epics[path.tail].pathTails.push(path.id);
+
+	// re-evaluate the path tail
+	if (isEpicBlocked(path.tail, state_[roadmapId].epics, state_[roadmapId].paths)) {
+		state_[roadmapId].epics[path.tail].blocked = true;
+	}
+
+	return state_;
+}
+
+const removePath = (pathId, roadmapId, state) => {
+	const state_ = _.cloneDeep(state);
+
+	const headId = state[roadmapId].paths[pathId].head;
+	const tailId = state[roadmapId].paths[pathId].tail;
+
+	// for path head nothing changes, simply remove the path reference
+	state_[roadmapId].epics[headId].pathHeads = state_[roadmapId].epics[headId].pathHeads.filter(pid => pid !== pathId);
+
+
+	// for path tail similarly remove the reference then re-evaluate the path tail for blockages
+	state_[roadmapId].epics[tailId].pathTails = state_[roadmapId].epics[tailId].pathTails.filter(pid => pid !== pathId);
+	if (isEpicBlocked(tailId, state_[roadmapId].epics, state_[roadmapId].paths)) {
+		state_[roadmapId].epics[tailId].blocked = true;
+	}
+	else {
+		state_[roadmapId].epics[tailId].blocked = false;
+	}
+
+	// delete the path object itself
+	delete state_[roadmapId].paths[pathId];
+
+	return state_;
+}
+
 const removeEpic = (state, action) => {
 	const targetRow = state[action.roadmapId].epics[action.epicId].row;
 
-	const state_ =  {
-		...state,
-		[action.roadmapId]: {
-			...state[action.roadmapId],
-			canvas: {
-				...state[action.roadmapId].canvas,
-				rows: state[action.roadmapId].canvas.rows - 1
-			},
-			epics: { },
-			paths: { }
-		}
-	}
+	const state_ =  _.cloneDeep(state);
+
+	// remove path reference from all dependencies
+	state[action.roadmapId].epics[action.epicId].pathTails
+	.forEach(pathId => {
+		state_ = removePath(pathId, action.roadmapId, state_);
+	});
+
+	// remove path reference form all dependees, re-evaluate epic blockage as well
+	state[action.roadmapId].epics[action.epicId].pathHeads
+	.forEach(pathId => {
+		state_ = removePath(pathId, action.roadmapId, state_);
+	});
 	
 	// decrement all the rows after target row
-	Object.values(state[action.roadmapId].epics).forEach(epic => {
+	Object.values(state_[action.roadmapId].epics).forEach(epic => {
 		if (epic.id !== action.epicId) {
-			state_[action.roadmapId].epics[epic.id] = {
-				...epic,
-				row: epic.row > targetRow ? epic.row - 1 : epic.row
-			}
+			if (epic.row > targetRow) {
+				state_[action.roadmapId].epics[epic.id].row--;
+			}	
 		}
 	});
+	
+	return state_;
+}
 
-	// delete all the paths connected to the target epic
-	Object.values(state[action.roadmapId].paths).forEach(path => {
-		if (path.head !== action.epicId && path.tail !== action.epicId) {
-			state_[action.roadmapId].paths[path.id] = path;
-		}
-	});
+const patchEpic = (state, action) => {
+	const state_ = _.cloneDeep(state);
 
+	// patch epic
+	state_[action.roadmapId].epics[action.epic.id] = {
+		...state_[action.roadmapId].epics[action.epic.id],
+		...action.epic
+	}
 
+	// re-evaluate self
+	const isBlocked = isEpicBlocked(action.epic.id, state_[action.roadmapId].epics, state_[action.roadmapId].paths);
+	state_[action.roadmapId].epics[action.epic.id].blocked = isBlocked;
+
+	// re-evaluate all dependee epics
+	state_[action.roadmapId].epics[action.epic.id].pathHeads
+	.forEach(pathId => {
+		const dependeeId = state_[action.roadmapId].paths[pathId].tail;
+		const isBlocked = isEpicBlocked(dependeeId, state_[action.roadmapId].epics, state_[action.roadmapId].paths);
+
+		state_[action.roadmapId].epics[dependeeId].blocked = isBlocked;
+	})
+	
 	return state_;
 }
 
@@ -87,49 +149,26 @@ const roadmapReducer = (state, action) => {
 			return removeEpic(state, action);
 		}
 		case "addPath": {
-			return {
-				...state,
-				[action.roadmapId]: {
-					...state[action.roadmapId],
-					paths: 
-					{
-						...state[action.roadmapId].paths,
-						[action.path.id]: {
-							...action.path
-						}
-					}
-				}
-			}
+			return addPath(action.path, action.roadmapId, state);
+			// return {
+			// 	...state,
+			// 	[action.roadmapId]: {
+			// 		...state[action.roadmapId],
+			// 		paths: 
+			// 		{
+			// 			...state[action.roadmapId].paths,
+			// 			[action.path.id]: {
+			// 				...action.path
+			// 			}
+			// 		}
+			// 	}
+			// }
 		}
 		case "removePath": {
-			const state_ = {
-				...state,
-				[action.roadmapId]: {
-					...state[action.roadmapId],
-					paths: 
-					{
-						...state[action.roadmapId].paths
-					}
-				}
-			}
-			delete state_[action.roadmapId].paths[action.pathId];
-			return state_;
+			return removePath(action.pathId, action.roadmapId, state);
 		}
 		case "patchEpic": {
-			return {
-				...state,
-				[action.roadmapId]: {
-					...state[action.roadmapId],
-					epics: 
-					{
-						...state[action.roadmapId].epics,
-						[action.epic.id]: {
-							...state[action.roadmapId].epics[action.epic.id],
-							...action.epic
-						}
-					}
-				}
-			}
+			return patchEpic(state, action);
 		}
 		case "patchCanvas": {
 			return {
@@ -213,7 +252,15 @@ const CanvasWrapper = ({selectedRoadmap}) => {
 			roadmapPatch.paths[path.id] = pathPreprocessing(path);
 		});
 
-		roadmapPatch.graph = createGraph(Object.keys(roadmapPatch.epics), roadmapPatch.paths);
+		Object.values(roadmapPatch.paths).forEach(path => {
+			roadmapPatch.epics[path.head].pathHeads.push(path.id);
+			roadmapPatch.epics[path.tail].pathTails.push(path.id);
+		})
+
+		findBlockedEpics(roadmapPatch.epics, roadmapPatch.paths)
+		.forEach(epicId => {
+			roadmapPatch.epics[epicId].blocked = true;
+		})
 
 		roadmapPatch.canvas = getSupersetCanvas(defaultCanvas, Object.values(roadmapPatch.epics));
 		

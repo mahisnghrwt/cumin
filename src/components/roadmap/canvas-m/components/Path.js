@@ -66,6 +66,7 @@ const Path = ({id, path, isSelected, selectPath, color="#34495e"}) => {
 
 	return (
 		<path d={pathD} 
+			key={id}
 			stroke={isSelected ? selectedColor : (state.isMouseOver ? highlightColor : color)}
 			strokeWidth={width}
 			pointerEvents="auto"

@@ -417,8 +417,9 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		sidebarDispatch({type: "add", key: "epicIssues", item: 
 			(<IssueList issues={roadmap.epics[state.selectedEpic].issues} />)});
 
+		const dependecies = roadmap.epics[state.selectedEpic].pathTails.map(pathId => roadmap.paths[pathId].head);
 		sidebarDispatch({type: "add", key: "epicDependencies", item: 
-			(<DependencyList dependencies={roadmap.graph[state.selectedEpic].dependencies.map(d => roadmap.epics[d.id])} />)});
+			(<DependencyList dependencies={dependecies.map(d => roadmap.epics[d])} />)});
 
 		sidebarDispatch({type: "add", key: "editEpicForm", item: 
 			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} roadmapId={roadmap.id} />)});
