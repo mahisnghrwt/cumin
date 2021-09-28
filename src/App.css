@@ -319,6 +319,18 @@ button:disabled {
 	align-items: center;
 	background-color: #f1f2f6;
 	padding: 0.25rem;
+	margin-bottom: 0.5rem;
+}
+
+.canvas-hint {
+	color: var(--slate-grey);
+	padding: 0.1rem 0.25rem;
+	width: fit-content;
+	margin-left: auto;
+	font-style: italic;
+	font-size: 0.8rem;
+	line-height: 0.8rem;
+	text-align: right;
 }
 
 .canvas-toolbar>* {

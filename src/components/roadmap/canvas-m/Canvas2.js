@@ -191,15 +191,16 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		};
 
 		// submit create path request
-		const createPathUrl = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/path`;
+		const createPathUrl = `${settings.API_ROOT}/project/${globalContext.project.id}/path`;
 		const body = {
 			fromEpicId: p.from,
 			toEpicId: p.to
 		};
 		try {
 			const path = await Helper.http.request(createPathUrl, "POST", localStorage.getItem("token"), body, true);
+			debugger;
 			const path_ = pathPreprocessing(path);
-			roadmapDispatch({type: "addPath", path: path_, roadmapId: roadmap.id});
+			roadmapDispatch({type: "addPath", path: path_});
 		} catch (e) {
 			console.error(e);
 		}
@@ -250,7 +251,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	const extendCanvasToFitEpic = epic => {
 		const superCanvas = shouldExtendCanvas(epic);
 		if (superCanvas !== null)
-			roadmapDispatch({type: "patchCanvas", roadmapId: roadmap.id, canvas: superCanvas});
+			roadmapDispatch({type: "patchCanvas", patch: superCanvas});
 	}
 
 	const moveEpic = (epicId, pos) => {
@@ -271,7 +272,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			stateDispatch({type: "patchIntermediateEpic", epic: epicPatch});
 		}
 		else {
-			let action = {type: "patchEpic", roadmapId: roadmap.id, epic: {id: epicId, startDate: targetDate, endDate: newEndDate}};
+			let action = {type: "patchEpic", epicId, patch: {startDate: targetDate, endDate: newEndDate}};
 			roadmapDispatch(action);
 		}
 	}
@@ -286,8 +287,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		if (differenceInCalendarDays(targetDate, epic.startDate) === 0 || differenceInCalendarDays(targetDate, epic.endDate) === 0)
 			return;
 
-		let action = {type: "patchEpic", roadmapId: roadmap.id, epic: {
-			id: epic.id,
+		let action = {type: "patchEpic", epicId: epic.id, patch: {
 			startDate: face === EPIC_FACE.START ? targetDate : epic.startDate,
 			endDate: face === EPIC_FACE.END ? targetDate : epic.endDate
 		}};
@@ -301,20 +301,20 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	}
 
 	const deleteEpic = async epicId => {
-		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/epic/${epicId}`;
+		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/epic/${epicId}`;
 		try {
 			await Helper.http.request(url, "DELETE", localStorage.getItem("token"), null, false);
-			roadmapDispatch({type: "removeEpic", roadmapId: roadmap.id, epicId});
+			roadmapDispatch({type: "removeEpic", epicId});
 		} catch (e) {
 			console.error(e);
 		}
 	}
 
 	const deletePath = async pathId => {
-		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/path/${pathId}`;
+		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/path/${pathId}`;
 		try {
 			await Helper.http.request(url, "DELETE", localStorage.getItem("token"), null, false);
-			roadmapDispatch({type: "removePath", roadmapId: roadmap.id, pathId});
+			roadmapDispatch({type: "removePath", pathId});
 		} catch (e) {
 			console.error(e);
 		}
@@ -324,7 +324,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		if (epicId === "intermediate") return;
 		
 		const reqBody = {startDate: roadmap.epics[epicId].startDate, endDate: roadmap.epics[epicId].endDate};
-		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/epic/${epicId}`;
+		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/epic/${epicId}`;
 
 		try {
 			await Helper.http.request(url, "PATCH", localStorage.getItem("token"), reqBody, true);
@@ -340,11 +340,11 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		}
 		
 		const reqBody = {color};
-		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/roadmap/${roadmap.id}/epic/${epicId}`;
+		const url = `${settings.API_ROOT}/project/${globalContext.project.id}/epic/${epicId}`;
 
 		try {
 			await Helper.http.request(url, "PATCH", localStorage.getItem("token"), reqBody, false);
-			roadmapDispatch({type: "patchEpic", roadmapId: roadmap.id, epic: {id: epicId, color}})
+			roadmapDispatch({type: "patchEpic", epicId, patch: {color}})
 		} catch (e) {
 			console.error(e);
 		}
@@ -371,12 +371,12 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		}
 
 		const addEpic = epic => {
+			debugger;
 			const epic_ = epicPreprocessing(epic);
-
-			roadmapDispatch({type: "addEpic", roadmapId: roadmap.id, epic: epic_});
+			roadmapDispatch({type: "addEpic", epicId: epic_.id, epic: epic_});
 			usedRows.current.add(epic.row);
 			// always add an extra empty row at the bottom of canvas
-			roadmapDispatch({type: "addRowsToCanvas", roadmapId: roadmap.id, rows: 1});
+			roadmapDispatch({type: "addRowsToCanvas", rows: 1});
 		}
 
 		const clearIntermediateEpic = () => {
@@ -385,7 +385,6 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 
 		sidebarDispatch({type: "add", key: "createEpicForm", item: 
 			(<CreateEpicForm 
-				roadmap={roadmap.id} 
 				intermediateEpic={state.intermediate.epic} 
 				clearIntermediateEpic={clearIntermediateEpic}
 				addEpic={addEpic}
@@ -432,7 +431,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			(<DependencyList dependencies={dependecies.map(d => roadmap.epics[d])} />)});
 
 		sidebarDispatch({type: "add", key: "editEpicForm", item: 
-			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} roadmapId={roadmap.id} />)});
+			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} />)});
 	}, [state.selectedEpic])
 
 	useEffect(() => {

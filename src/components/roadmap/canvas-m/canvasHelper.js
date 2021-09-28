@@ -57,7 +57,7 @@ export const epicPreprocessing = (epic) => {
 		...epic,
 		startDate: new Date(epic.startDate),
 		endDate: new Date(epic.endDate),
-		issues: epic.issues.map(issue => issuePreprocessing(issue)),
+		issues: !epic.issues ? [] : epic.issues.map(issue => issuePreprocessing(issue)),
 		pathHeads: [],
 		pathTails: []
 	}

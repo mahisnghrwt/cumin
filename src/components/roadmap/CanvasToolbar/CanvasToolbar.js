@@ -1,5 +1,4 @@
 import ColorPalette from "../ColorPalette";
-import RoadmapSelector from "../RoadmapSelector";
 import canvasTool from "./canvasTool";
 
 /**
@@ -28,7 +27,6 @@ const CanvasToolbar = ({tools}) => {
 			(isToolEnabled(canvasTool.DELETE_EPIC_BUTTON) || isToolEnabled(canvasTool.DELETE_PATH_BUTTON)))
 			&& <span>|</span>}
 			{isToolEnabled(canvasTool.COLOR_PALETTE) && <ColorPalette {...tools[canvasTool.COLOR_PALETTE].props} />}
-			{isToolEnabled(canvasTool.ROADMAP_SELECTOR) && <RoadmapSelector {...tools[canvasTool.ROADMAP_SELECTOR].props} />}
 		</div>
 	);
 }
