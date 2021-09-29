@@ -416,6 +416,9 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		sidebarDispatch({type: "add", key: "epicInfoCard", item: 
 			(<EpicInfoCard epic={roadmap.epics[state.selectedEpic]} />)});
 
+		sidebarDispatch({type: "add", key: "editEpicForm", item: 
+			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} />)});
+			
 		sidebarDispatch({type: "add", key: "epicIssues", item: 
 			(<IssueList issues={roadmap.epics[state.selectedEpic].issues} />)});
 
@@ -423,8 +426,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		sidebarDispatch({type: "add", key: "epicDependencies", item: 
 			(<DependencyList dependencies={dependecies.map(d => roadmap.epics[d])} />)});
 
-		sidebarDispatch({type: "add", key: "editEpicForm", item: 
-			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} />)});
+		
 	}, [state.selectedEpic])
 
 	useEffect(() => {

@@ -13,12 +13,12 @@ const reducer = (state, action) => {
 	}
 }
 
-const ToggleContainer = ({expanded, children}) => {
+const ToggleContainer = ({expanded, children, ...restProps}) => {
 	const [isExpanded, dispatch] = useReducer(reducer, expanded);
 
 	return (
 		<toggleContext.Provider value={{isExpanded, dispatch}}>
-			<div className="toggle-container">
+			<div className="toggle-container" {...restProps}>
 				{children}
 			</div>
 		</toggleContext.Provider>
