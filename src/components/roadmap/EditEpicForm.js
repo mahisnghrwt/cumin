@@ -42,7 +42,7 @@ const EditEpicForm = ({epic}) => {
 	return (
 		<ToggleContainer expanded={false}>
 			<ToggleHeader className="flex-justify-start">
-				<ToggleButton expandText=">" collapseText="v" className="border-button" style={{fontWeight: "bold", fontSize: "0.75rem"}} />
+				<ToggleButton expandText={<>&#11166;</>} collapseText={<>&#11167;</>} className="border-button" style={{fontWeight: "bold", fontSize: "0.75rem"}} />
 				<div className="sidebar-item-title">Edit Epic</div>
 			</ToggleHeader>
 			<ToggleBody>

@@ -202,7 +202,11 @@ const CanvasWrapper = () => {
 		let roadmapPatch = {
 			projectId: roadmap.projectId,
 			processed: true,
+			roadmapEpics: undefined,
+			roadmapPaths: undefined,
 			epics: {},
+			paths: {},
+			graph: {}
 		};
 
 		// preprocessing epics
