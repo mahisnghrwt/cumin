@@ -202,11 +202,7 @@ const CanvasWrapper = () => {
 		let roadmapPatch = {
 			projectId: roadmap.projectId,
 			processed: true,
-			roadmapEpics: undefined,
-			roadmapPaths: undefined,
 			epics: {},
-			paths: {},
-			graph: {}
 		};
 
 		// preprocessing epics
@@ -245,9 +241,7 @@ const CanvasWrapper = () => {
 			const roadmap = await fetchRoadmap();
 			if (roadmap === null) return;
 			
-			debugger;
 			let roadmap_ = roadmapPreprocessing(roadmap);
-			
 
 			roadmapDispatch({type: "replace", state: roadmap_});
 		}()	

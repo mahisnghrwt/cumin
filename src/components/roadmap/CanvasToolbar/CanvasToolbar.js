@@ -1,3 +1,4 @@
+import { ButtonWithPlaceholder } from "../../Button";
 import ColorPalette from "../ColorPalette";
 import canvasTool from "./canvasTool";
 
@@ -10,23 +11,31 @@ const CanvasToolbar = ({tools}) => {
 		return tools[tool] && tools[tool].enabled;
 	}
 
+	const getProps = tool => {
+		return tools[tool] ? 
+			tools[tool].props
+			: {}
+	}
+
 	return (
 		<div
 		 className="canvas-toolbar">
-			 {isToolEnabled(canvasTool.DELETE_PATH_BUTTON) && 
-				<button {...tools[canvasTool.DELETE_PATH_BUTTON].props} className="std-button sm-button danger-background">
-					Delete Path
-				</button>
-			}
-			{isToolEnabled(canvasTool.DELETE_EPIC_BUTTON) && 
-				<button {...tools[canvasTool.DELETE_EPIC_BUTTON].props} className="std-button sm-button danger-background">
-					Delete Epic
-				</button>
-			}
-			{(isToolEnabled(canvasTool.COLOR_PALETTE) && 
-			(isToolEnabled(canvasTool.DELETE_EPIC_BUTTON) || isToolEnabled(canvasTool.DELETE_PATH_BUTTON)))
-			&& <span>|</span>}
-			{isToolEnabled(canvasTool.COLOR_PALETTE) && <ColorPalette {...tools[canvasTool.COLOR_PALETTE].props} />}
+			<ButtonWithPlaceholder 
+				disabled={!isToolEnabled(canvasTool.DELETE_PATH_BUTTON)}
+				className="std-button sm-button danger-background"
+				{...getProps(canvasTool.DELETE_PATH_BUTTON)}
+			>
+				Delete Path
+			</ButtonWithPlaceholder>
+			<ButtonWithPlaceholder 
+				disabled={!isToolEnabled(canvasTool.DELETE_EPIC_BUTTON)}
+				className="std-button sm-button danger-background"
+				{...getProps(canvasTool.DELETE_EPIC_BUTTON)}
+			>
+				Delete Epic
+			</ButtonWithPlaceholder>
+			<span>|</span>
+			<ColorPalette {...getProps(canvasTool.COLOR_PALETTE)} disabled={!isToolEnabled(canvasTool.COLOR_PALETTE)} />
 		</div>
 	);
 }

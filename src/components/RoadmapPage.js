@@ -1,21 +1,11 @@
 import NavBar from "./NavBar";
-import CreateEpicForm from "./roadmap/CreateEpicForm";
-import { useState, useReducer, useContext } from "react";
+import { useState, useReducer } from "react";
 import AlertBar from "./AlertBar";
 import CanvasToolbar from "./roadmap/CanvasToolbar/CanvasToolbar";
-import EditEpicForm from "./roadmap/EditEpicForm";
-import Helper from "../Helper";
-import settings from "../settings";
-import Global from "../GlobalContext";
-import CreateIssueForm from "./issue/CreateIssueForm";
 import Sidebar from "./sidebar2/Sidebar"
 import SidebarWrapper  from "./sidebar2/SidebarWrapper";
-import Canvas from "./roadmap/canvas-m/Canvas2";
-import RoadmapSelector from "./roadmap/RoadmapSelector";
-import { useEffect } from "react";
 import CanvasWrapper from "./roadmap/CanvasWrapper";
 import roadmapContext from "./roadmap/roadmapContext";
-import canvasTool from "./roadmap/CanvasToolbar/canvasTool";
 
 const ACTIVE_PAGE = "Roadmap";
 

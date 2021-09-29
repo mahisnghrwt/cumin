@@ -1,15 +1,16 @@
+import { ButtonWithPlaceholder } from "../Button";
 import {epicColor} from "./epicColor"
-const ColorDip = ({color, isSelected, selectColor}) => {
-	return <span 
-		className={isSelected ? "color-dip-selected" : "color-dip"}
-		onClick={e => selectColor(color)}
-		style={{backgroundColor: color}} />
-}
 
-const ColorPalette = ({selectedColor, selectColor}) => {
+const ColorPalette = ({selectedColor, selectColor, disabled}) => {
 	return <span className="color-palette">
 		{Object.values(epicColor).map(color => {
-			return <ColorDip color={color} isSelected={selectedColor === color} selectColor={selectColor} />
+			const isSelected = selectedColor === color;
+			return <ButtonWithPlaceholder 
+				disabled={disabled} 
+				className={"color-dip" + (isSelected ? " color-dip-selected" : "")}
+				style={{backgroundColor: color}}
+				onClick={_ => selectColor(color)}
+			/>
 		})}
 	</span>
 };

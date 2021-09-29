@@ -198,7 +198,6 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		};
 		try {
 			const path = await Helper.http.request(createPathUrl, "POST", localStorage.getItem("token"), body, true);
-			debugger;
 			const path_ = pathPreprocessing(path);
 			roadmapDispatch({type: "addPath", path: path_});
 		} catch (e) {

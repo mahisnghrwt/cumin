@@ -23,7 +23,7 @@ const Epic2 = ({id, color, isSelected, width, pos, setMouseEventData, mouseDataT
 
 	const epicHeight = 20; //px
 
-	const backgroundColor = blocked ? blockedEpicColor : (isSelected ? EPIC_SELECTED_COLOR : color);
+	const backgroundColor = isSelected ? EPIC_SELECTED_COLOR : (blocked ? blockedEpicColor : color);
 	
 	const resizeHandleStyle = {
 		width: Math.min(parseInt(width / 5), BASE_NODE_DIMENSIONS.width / 5),
