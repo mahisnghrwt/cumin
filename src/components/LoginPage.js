@@ -4,7 +4,7 @@ import Helper from '../Helper';
 import socket from '../webSocket';
 import settings from "../settings";
 import Global from '../GlobalContext';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 const userLoginApiUrl = settings.API_ROOT + "/auth/login";
 const userTokenValidateApiUrl = settings.API_ROOT + "/auth";
@@ -51,6 +51,11 @@ const LoginPage = ({location: location_}) => {
 	})
 
 	const history_ = useHistory();
+	const location__ = useLocation();
+	const params = new URLSearchParams(location__.search);
+	const redirectTo = params.get("redirect-to");
+
+	debugger;
 
 	const setUserAndProject = (user, project) => {
 		globalDispatch({type: "PATCH", patch: {user, project}});
@@ -59,16 +64,12 @@ const LoginPage = ({location: location_}) => {
 	const startSession = (user, project, token) => {
 		// save token
 		localStorage.setItem("token", token);
-		// esablish websocket connection
-		socket.connect(settings.WEBSOCKET_HOST, {token: token}, false);
 		// save user and project in context
-
 		setUserAndProject(user, project);
 	}
 
 	const redirectOnSuccess = () => {
-		let url = (location_ && location_.state.referrer) ? location_.state.referrer : "/";
-		history_.push(url);
+		history_.push(`/${redirectTo === null ? "" : redirectTo}`)
 	}
 
 	const login = (e) => {

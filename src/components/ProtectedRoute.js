@@ -6,16 +6,12 @@ export const ProtectedRoute = ({children, ...rest}) => {
 	const [global,,] = useContext(Global);
 	var hasUser = global.user != null || global.user != undefined;
 
+	const redirectPath = "/login" + ((rest.path === "" || rest.path === "/") ? "" : "?redirect-to=" + rest.path.substr(1));
 	return (
 		<Route exact {...rest}>
 			{hasUser
 			? children
-			: <Redirect to={{
-				pathname: "/login",
-				state: {
-					referrer: rest.path
-				}
-			}} />
+			: <Redirect to={redirectPath} />
 			}
 		</Route>
 	)
