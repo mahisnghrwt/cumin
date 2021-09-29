@@ -1,8 +1,8 @@
 import { BASE_NODE_DIMENSIONS, EPIC_FACE, PATH_ENDPOINT, canvasEvent, pathEndpoint } from "../canvasEnums";
-import { useContext, useReducer } from "react";
+import { useContext, useReducer, useState } from "react";
 import canvasContext from "../canvasContext";
 
-const EPIC_SELECTED_COLOR = "#2ecc71";
+const highlightColor = "#f1c40f";
 
 const reducer = (state, action) => {
 	switch(action.type) {
@@ -19,16 +19,16 @@ const blockedEpicColor = "#e84118";
 const Epic2 = ({id, color, isSelected, width, pos, setMouseEventData, mouseDataTransferRef, blocked}) => {
 	const {selectEpic} = useContext(canvasContext);
 
-	const [state, dispatch] = useReducer(reducer, {dropMode: false});
+	// const [state, dispatch] = useReducer(reducer, {dropMode: false});
+	const [showHandles, setShowHandles] = useState(false);
 
 	const epicHeight = 20; //px
 
-	const backgroundColor = isSelected ? EPIC_SELECTED_COLOR : (blocked ? blockedEpicColor : color);
+	const backgroundColor = isSelected ? highlightColor : (blocked ? blockedEpicColor : color);
 	
 	const resizeHandleStyle = {
-		width: Math.min(parseInt(width / 5), BASE_NODE_DIMENSIONS.width / 5),
-		height: epicHeight,
-		borderRadius: "5px"
+		width: Math.min(parseInt(width / 2), BASE_NODE_DIMENSIONS.width / 2),
+		height: epicHeight
 	}
 
 	const modifiedPos = {
@@ -93,12 +93,20 @@ const Epic2 = ({id, color, isSelected, width, pos, setMouseEventData, mouseDataT
 
 	const epicDragEnterHandler = e => {
 		if (mouseDataTransferRef.current.type !== canvasEvent.DRAW_PATH) return;
-		dispatch({type: "setDropMode", dropMode: true});
+		if (showHandles === true)
+			setShowHandles(false);
+		// dispatch({type: "setDropMode", dropMode: true});
+	}
+
+	const epicMouseEnterHandler = e => {
+		if (showHandles) return;
+		setShowHandles(true);
+		// dispatch({type: "setDropMode", dropMode: false});
 	}
 
 	const epicMouseLeaveHandler = e => {
-		if (state.dropMode === false) return;
-		dispatch({type: "setDropMode", dropMode: false});
+		if (showHandles === false) return;
+		setShowHandles(false);
 	}
 
 	return (
@@ -111,6 +119,7 @@ const Epic2 = ({id, color, isSelected, width, pos, setMouseEventData, mouseDataT
 			onDragOver={e => e.preventDefault()}
 			onDrop={epicDropHandler}
 			onDragEnter={epicDragEnterHandler}
+			onMouseEnter={epicMouseEnterHandler}
 			onMouseLeave={epicMouseLeaveHandler}
 			style={{
 				position: "absolute",
@@ -121,14 +130,15 @@ const Epic2 = ({id, color, isSelected, width, pos, setMouseEventData, mouseDataT
 				backgroundColor: backgroundColor
 			}}	
 		>
-			{state.dropMode === false && <>
-				<div 
-					className="epic-left-tip"
-					draggable />
+			{showHandles && <>
+				
 				<div 
 					className="epic-resize-left-handle"
 					draggable 
 					style={resizeHandleStyle} />
+				<div 
+					className="epic-left-tip"
+					draggable />
 				<div 
 					className="epic-resize-right-handle" 
 					draggable
