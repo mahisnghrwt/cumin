@@ -6,6 +6,7 @@
 	
 	--slate-grey: #34495e;
 	--border-color: #dfe4ea;
+	--whisper-color: #57606f;
 
 	--danger-red: #e74c3c;
 	--warning-yellow: #f1c40f;
@@ -368,6 +369,7 @@ button:disabled {
 
 .content {
 	width: 60%;
+	box-sizing: border-box;
 	position: relative;
 	left: 10%;
 }

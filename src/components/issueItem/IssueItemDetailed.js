@@ -1,9 +1,23 @@
+import Helper from "../../Helper";
 import "./issueItem.css";
 
 const IssueItemDetailed = ({issue, actions = []}) => {
-	const {id, title, description, ...tags} = issue;
+	const {id, title, description} = issue;
+	const tags = {
+		type: issue.type,
+		createdAt: Helper.dateToInputString(new Date(issue.createdAt)),
+		epicId: issue.epicId,
+		assignedToId: issue.assignedToId
+	}
+	
+	const dragStartHandler = e => {
+		e.stopPropagation();
+		const data = JSON.stringify({id: issue.id, oldStatus: issue.status});
+		e.dataTransfer.setData("issue", data);
+	}
+
 	return (
-		<div className="issue-item">
+		<div className="issue-item" draggable onDragStart={dragStartHandler}>
 			<div className="issue-item-header">
 		  		<span className="issue-item-title">{title}</span>
 		  		<span className="issue-item-buttons">
