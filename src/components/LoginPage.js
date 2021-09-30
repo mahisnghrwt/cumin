@@ -54,9 +54,7 @@ const LoginPage = ({location: location_}) => {
 	const location__ = useLocation();
 	const params = new URLSearchParams(location__.search);
 	const redirectTo = params.get("redirect-to");
-
-	debugger;
-
+	
 	const setUserAndProject = (user, project) => {
 		globalDispatch({type: "PATCH", patch: {user, project}});
 	}
@@ -85,6 +83,7 @@ const LoginPage = ({location: location_}) => {
 		try {
 			Helper.http.request(userLoginApiUrl, "POST", null, body, true)
 			.then(response => {
+				debugger;
 				startSession(response.user, response.user.activeProject, response.token);
 				//redirectOnSuccess();
 			})
