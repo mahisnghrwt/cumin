@@ -198,6 +198,16 @@ const BacklogPage = (props) => {
 		return await Helper.fetch(url, "GET", null, true);
 	}
 
+	const joinIssue = (issue, members, epics, sprints) => {
+		return {
+			...issue,
+			...((issue.sprintId && sprints[issue.sprintId]) && {sprint: sprints[issue.sprintId].title}),
+			...((issue.epicId && epics[issue.epicId]) && {epic: epics[issue.epicId].title}),
+			...((issue.reporterId && members[issue.reporterId]) && {reporter: members[issue.reporterId].username}),
+			...((issue.assignedToId && members[issue.assignedToId]) && {assignedTo: members[issue.assignedToId].username})
+		}
+	}
+
 	useEffect(() => {
 		void async function() {
 			try {
@@ -209,12 +219,23 @@ const BacklogPage = (props) => {
 					nextState.activeSprint.id = activeSprint.id;
 				}
 
+				const arrToObj = (result, current) => {
+					return {
+						...result,
+						[current.id]: current
+					}
+				}
+
+				const memberObj = members.reduce(arrToObj, {});
+				const epicObj = epics.reduce(arrToObj, {});
+				const sprintObj = sprints.reduce(arrToObj, {});
+
 				sprints && sprints.forEach(sprint_ => {
 					let sprintProcessed = sprintPreprocessing(sprint_);
 					sprintProcessed.active = activeSprint.id === sprintProcessed.id;
 					let issueProcessed = {};
 					for(const issue of sprintProcessed.issues) {
-						issueProcessed[issue.id] = issuePreprocessing(issue);
+						issueProcessed[issue.id] = joinIssue(issuePreprocessing(issue), memberObj, epicObj, sprintObj);
 					}
 					delete sprintProcessed.issues;
 					sprintProcessed.issue = issueProcessed;
@@ -222,7 +243,7 @@ const BacklogPage = (props) => {
 				})
 
 				issues && issues.forEach(issue_ => {
-					nextState.unassignedIssue[issue_.id] = issuePreprocessing(issue_);
+					nextState.unassignedIssue[issue_.id] = joinIssue(issuePreprocessing(issue_), memberObj, epicObj, sprintObj);
 				})
 
 				nextState.epics = epics.map(epic => epicPreprocessing(epic));

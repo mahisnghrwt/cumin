@@ -1,10 +1,19 @@
+import { useState } from "react";
 import Helper from "../../Helper";
 
 const IssueItemCompact = ({issue, actions = []}) => {
+	const [isExpanded, setExpanded] = useState(false);
+
 	const tags = {
 		"Type": issue.type,
 		"Status": issue.status,
-		"Created at": Helper.dateToInputString(issue.createdAt)
+		"Created at": Helper.dateToInputString(issue.createdAt),
+		...(isExpanded && {
+			"Assigned to": issue.assignedTo,
+			"Reporter": issue.reporter,
+			"Epic": issue.epic,
+			"Sprint": issue.sprint
+		})
 	}
 
 	const dragStartHandler = e => {
@@ -13,7 +22,7 @@ const IssueItemCompact = ({issue, actions = []}) => {
 	}
 
 	return (
-		<div className="issue-item-compact" draggable onDragStart={dragStartHandler}>
+		<div className="issue-item"/*{isExpanded ? "issue-item" : "issue-item-compact"}*/ draggable onDragStart={dragStartHandler} onClick={e => setExpanded(!isExpanded)}>
 			<div className="issue-item-header">
 		  		<span className="issue-item-title">{issue.title}</span>
 		  		<span className="issue-item-buttons">
@@ -26,6 +35,9 @@ const IssueItemCompact = ({issue, actions = []}) => {
 					)})}
 		  		</span>
 			</div>
+			{(isExpanded && issue.description) && <div className="issue-item-description">
+				{issue.description}
+			</div> }
 			<div className="issue-item-tags">
 				{Object.keys(tags).map(tag => { return (
 					<span className="issue-item-tag">
