@@ -25,8 +25,25 @@ const calcProgress = issues => {
 const Sprint = ({sprint, bubbleMouseEvent, updateIssueSprint}) => {
 	const progress = (!sprint.issue || Object.keys(sprint.issue).length === 0) ? 0 : calcProgress(Object.values(sprint.issue));
 
+	const dragOverHandler = e => {
+		e.preventDefault();
+		e.stopPropagation();
+	}
+
+	const dropHandler = e => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		const data = JSON.parse(e.dataTransfer.getData("issue"));
+
+		// ignore if issue dropped on sprint it was picked from
+		if (data.oldSprintId === sprint.id) return;
+
+		updateIssueSprint(data.issueId, data.oldSprintId, sprint.id);
+	}
+
 	return (
-		<div className="sprint">
+		<div className="sprint" onDragOver={dragOverHandler} onDrop={dropHandler}>
 			<div className="sprint-header">
 				<span className="sprint-id">
 					{sprint.id}

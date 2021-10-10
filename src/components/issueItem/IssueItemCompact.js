@@ -7,8 +7,13 @@ const IssueItemCompact = ({issue, actions = []}) => {
 		"Created at": Helper.dateToInputString(issue.createdAt)
 	}
 
+	const dragStartHandler = e => {
+		e.stopPropagation();
+		e.dataTransfer.setData("issue", JSON.stringify({issueId: issue.id, oldSprintId: issue.sprintId}));
+	}
+
 	return (
-		<div className="issue-item-compact">
+		<div className="issue-item-compact" draggable onDragStart={dragStartHandler}>
 			<div className="issue-item-header">
 		  		<span className="issue-item-title">{issue.title}</span>
 		  		<span className="issue-item-buttons">

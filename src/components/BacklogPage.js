@@ -108,6 +108,44 @@ const reducer = (state, action) => {
 				}
 			}
 			return nextState;
+		case "patchIssueSprint": {
+			// copy issue
+			const issue = action.oldSprintId === null ? {...state.unassignedIssue[action.issueId]} : {...state.sprint[action.oldSprintId].issue[action.issueId]};
+			issue.sprintId = action.sprintId;
+			// add to new sprint
+			const nextState = {
+				...state,
+				sprint: {
+					...state.sprint,
+					...(action.oldSprintId && {[action.oldSprintId]: {
+						...state.sprint[action.oldSprintId],
+						issue: {
+							...state.sprint[action.oldSprintId].issue
+						}
+					}}),
+					...(action.sprintId && {[action.sprintId]: {
+						...state.sprint[action.sprintId],
+						issue: {
+							...state.sprint[action.sprintId].issue,
+							[action.issueId]: issue
+						}
+					}})
+				},
+				...((!action.oldSprintId || !action.sprintId) && {unassignedIssue: {
+					...state.unassignedIssue,
+					...(!action.sprintId && {[action.issueId]: issue}) // if sprint Id is null
+				}}),
+			}
+
+			debugger;
+
+			if (!action.oldSprintId)
+				delete nextState.unassignedIssue[action.issueId]; // if is was an unassigned issue
+			else
+				delete nextState.sprint[action.oldSprintId].issue[action.issueId];
+
+			return nextState;
+		}
 	}
 }
 
@@ -268,6 +306,20 @@ const BacklogPage = (props) => {
 		setModal({title: "Create Issue", body: <CreateIssueForm sprints={Object.values(state.sprint)} epics={state.epics} members={state.members} successCallback={addIssue} />})
 	}
 
+	const updateIssueSprint = async (issueId, oldSprintId, sprintId) => {	
+		const url = settings.API_ROOT + "/project/" + global.project.id + "/issue/" + issueId;
+		const body = {sprintId};
+		try {
+			const issue = await Helper.fetch(url, "PATCH", body, true);
+			if (issue.sprintId === sprintId) {
+				dispatch({type: "patchIssueSprint", issueId, oldSprintId, sprintId});
+			}
+		} catch (e) {
+			throw e;
+		}
+
+	}
+
 	return (
 	<>
 		<NavBar loggedIn={true} activePage={ACTIVE_PAGE} />
@@ -280,9 +332,9 @@ const BacklogPage = (props) => {
 						<button className="std-button sm-button" onClick={createIssueForm}>+ Issue</button>
 					</div>
 					{state.unassignedIssue && 
-						<UnassignedIssuesContainer issues={Object.values(state.unassignedIssue)} />}
+						<UnassignedIssuesContainer issues={Object.values(state.unassignedIssue)} updateIssueSprint={updateIssueSprint} />}
 					{state.sprint && 
-						Object.values(state.sprint).map(sprint => <Sprint sprint={sprint} bubbleMouseEvent={sprintEventHandler} />)}
+						Object.values(state.sprint).map(sprint => <Sprint sprint={sprint} bubbleMouseEvent={sprintEventHandler} updateIssueSprint={updateIssueSprint} />)}
 				</div>
 				<Sidebar />
 			</SidebarWrapper>

@@ -39,7 +39,6 @@ const reducer = (state, action) => {
 			return _.cloneDeep(action.state);
 		case "patchIssueStatus":
 			const nextState = _.cloneDeep(state);
-			debugger;
 			// so we can attach this issue to new status
 			const issue = {...nextState.sortedIssues[action.oldStatus][action.issueId]};
 			issue.status = action.status;
@@ -65,7 +64,6 @@ const BoardPage = props => {
 		const url = settings.API_ROOT + "/project/" + global.project.id + "/issue/" + issueId;
 		try {
 			await Helper.http.request(url, "PATCH", localStorage.getItem("token"), patch, false);
-			debugger;
 			dispatch({type: "patchIssueStatus", issueId, status, oldStatus});
 		} catch (e) {
 			throw e;
