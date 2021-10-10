@@ -8,19 +8,23 @@ const Button = ({kKey, label, onClick: submit, doesSubmit = false, ...rest}) => 
 	const ref = useRef(null);
 	
 	const buttonClickHandler = e => {
-		if (doesSubmit) {
-			setFormState({type: "setIsSubmitting", isSubmitting: true});
-			validateForm();
-			if (isStateValid(formState) === false) {
-				setFormState({type: "setIsSubmitting", isSubmitting: false});
-				return;
-			}
-		}
-
 		let formValues = {};
 		Object.keys(formState.field).map(field => {
 			formValues[field] = formState.field[field].value;
 		})
+		
+		if (doesSubmit) {
+			setFormState({type: "setIsSubmitting", isSubmitting: true});
+			const error = validateForm(formValues);
+			if (error !== null) {
+				setFormState({type: "setIsSubmitting", isSubmitting: false});
+				setFormState({type: "setLog", log: {
+					message: error,
+					type: formLogType.error
+				}});
+				return;
+			}
+		}	
 
 		// perform action
 		submit(formValues)

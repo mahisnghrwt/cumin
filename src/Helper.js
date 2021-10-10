@@ -113,7 +113,52 @@ const Helper = {
 		if (d.length < 2)
 		  d = "0" + d;
 		return `${date.getFullYear()}-${m}-${d}`
-	  }
+	  },
+	  fetch: async (url, method, body, getResponseBody, token = localStorage.getItem("token")) => {
+		let fetchOptions = {
+			mode: "cors",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		};
+
+		if (typeof url !== "string" || typeof method !== "string") {
+			throw new Error("url and body must be string.");
+		}
+
+		fetchOptions.method = method;
+
+		if (typeof body === "object" && body != null) {
+			fetchOptions.body = JSON.stringify(body)
+		}
+
+		if (typeof token === "string") {
+			fetchOptions.credentials = "include";
+			fetchOptions.headers.Authorization = "Bearer " + token;
+		}
+
+		const response = await fetch(url, fetchOptions);
+
+		if (!response.ok) {
+			response.text()
+			.then(e => {
+				throw new Error(e)
+			})
+			
+		}
+
+		let responseBody = null;
+		try {
+			responseBody = await response.json();
+		}
+		catch {
+			if (getResponseBody) {
+				throw new Error("No response body as requested.");
+			}
+		}
+
+		return responseBody;
+	}
 }
 
 

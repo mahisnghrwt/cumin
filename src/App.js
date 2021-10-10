@@ -1,4 +1,4 @@
-import React, {useReducer, useState } from 'react';
+import React, {useReducer, useRef, useState } from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import BacklogPage from './components/BacklogPage';
 import DashboardPage from './components/DashboardPage';

@@ -83,7 +83,6 @@ const LoginPage = ({location: location_}) => {
 		try {
 			Helper.http.request(userLoginApiUrl, "POST", null, body, true)
 			.then(response => {
-				debugger;
 				startSession(response.user, response.user.activeProject, response.token);
 				//redirectOnSuccess();
 			})

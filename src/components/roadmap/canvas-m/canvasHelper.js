@@ -81,6 +81,15 @@ export const issuePreprocessing = issue => {
 	}
 }
 
+export const sprintPreprocessing = sprint => {
+	return {
+		...sprint,
+		createdAt: new Date(sprint.createdAt),
+		startDate: new Date(sprint.startDate),
+		endDate: new Date(sprint.endDate)
+	}
+}
+
 
 export const getStartEndDates = (dates, epic) => {
 	// dates[0] == startDate

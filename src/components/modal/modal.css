@@ -1,0 +1,26 @@
+.modal-wrapper {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(236, 240, 241, 0.7);
+}
+
+.modal {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	background-color: rgba(255, 255, 255, 1);
+	padding: 0.25rem;
+}
+
+.modal-header {
+	display: flex;
+	flex-direction: row;
+}
+
+.modal-close-button {
+	margin-left: auto;
+}

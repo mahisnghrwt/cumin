@@ -14,7 +14,7 @@ const LogItem = (props) => {
 			? " success-background"
 			: (log.type === formLogType.warning
 				? " warning-background"
-				: " error-background"))}>
+				: " danger-background"))}>
 			{log.message}
 		</div>
 	)

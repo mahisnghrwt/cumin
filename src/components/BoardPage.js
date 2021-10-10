@@ -9,7 +9,6 @@ import _ from "lodash";
 import { sprintPreprocessing } from "./preprocessing";
 import Board from "./board/Board";
 import "./board/board.css";
-import { differenceInCalendarDays } from "date-fns";
 
 const status = ["Todo", "In Progress", "Done"];
 
@@ -93,12 +92,6 @@ const BoardPage = props => {
 				<SidebarWrapper>
 					<div className="content">
 						<h1>Board</h1>
-						{state.endDate && 
-						<p>
-							Sprint - {state.title}. <br />
-							Due in {differenceInCalendarDays(new Date(), state.endDate)} days.
-						</p>
-						}
 						<div className="board-container">
 							{Object.keys(state.sortedIssues).map(statusType => {
 								return <Board 

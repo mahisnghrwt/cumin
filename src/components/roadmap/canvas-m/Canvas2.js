@@ -104,6 +104,10 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		width: BASE_NODE_DIMENSIONS.width * gridSize.x
 	}
 
+	const horizontalScaleStyle = {
+		height: HORIZONTAL_SCALE_HEIGHT
+	}
+
 	const createIntermediateEpic = (pos) => {
 		// 1 row has only 1 epic.
 		if (usedRows.current.has(pos.y)) return;
@@ -521,7 +525,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 						width: VERTICAL_SCALE_WIDTH
 					}} />
 				<HorizontalScale 
-					style={{height: HORIZONTAL_SCALE_HEIGHT}} 
+					style={horizontalScaleStyle} 
 					startDate={roadmap.canvas.startDate} 
 					endDate={roadmap.canvas.endDate} 
 					baseNodeDimensions={BASE_NODE_DIMENSIONS} 

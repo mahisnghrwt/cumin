@@ -1,4 +1,4 @@
 export default {
-	BUG: "BUG",
-	TODO: "TODO"
+	BUG: "Bug",
+	TODO: "Todo"
 }

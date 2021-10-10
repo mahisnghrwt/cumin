@@ -5,7 +5,7 @@
 	--nav-bar-height: 1.9rem;
 	
 	--slate-grey: #34495e;
-	--border-color: #dfe4ea;
+	--border-color: rgba(236, 240, 241, 1.0);
 	--whisper-color: #57606f;
 
 	--danger-red: #e74c3c;
@@ -172,6 +172,7 @@ form {
 	display: flex;
 	flex-direction: column;
 	flex-wrap: nowrap;
+	width: fit-content;
 }
 
 .form-row {
@@ -254,7 +255,7 @@ button:disabled {
 .sm-button {
 	font-size: 0.85rem;
 	padding: 0.25rem 0.5rem;
-	margin: 0 0.5rem;
+	margin: 0 0.5rem 0 0;
 }
 /* ======================ALERT-M======================================= */
 .alert-m {

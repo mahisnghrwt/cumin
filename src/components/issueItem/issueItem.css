@@ -10,19 +10,19 @@
     border-bottom: 0;
     box-sizing: border-box;
     align-items: flex-start;
-	border: 1px solid #bdc3c7;
+	border: 1px dotted #bdc3c7;
 	border-bottom: 0;
 	padding: 0.25rem;
 }
 
 .issue-item-compact:last-child {
-	border-bottom: 1px solid #bdc3c7;
+	border-bottom: 1px dotted #bdc3c7;
 }
 
 .issue-item {
 	display: flex;
 	flex-direction: column;
-	border: 1px solid #bdc3c7;
+	border: 1px dotted #bdc3c7;
 	border-bottom: 0;
 	padding: 0.25rem 1rem;
 	box-sizing: border-box;
@@ -30,7 +30,7 @@
 }
 
 .issue-item:last-of-type {
-	border-bottom: 1px solid #bdc3c7;
+	border-bottom: 1px dotted #bdc3c7;
 }
 
 .issue-item>* {

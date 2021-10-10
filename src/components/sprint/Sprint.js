@@ -1,74 +1,53 @@
-import React from "react";
-import settings from "../../settings";
-import DraggableIssueLabel from "../issue/DraggableIssueLabel";
-import Helper from "../../Helper";
-import Placeholder from "../Placeholder";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import {faCircle, faCheckCircle, faTrashAlt} from "@fortawesome/free-regular-svg-icons";
+import "./sprint.css";
+import ProgressBar from "../progressBar/ProgressBar";
+import IssueItemCompact from "../issueItem/IssueItemCompact";
+import issueStatus from "../issue/issueStatus";
 
-const deleteSprint__ = async (id) => {
-	const URL = settings.API_ROOT + "/sprint/" + id;
-
-	const response = await fetch(URL, {
-		method: "DELETE",
-		mode: "cors",
-		credentials: "include",
-		headers: {
-			"Authorization": "Bearer " + localStorage.getItem("token")
-		}
-	})
-
-	return response.ok;
+const issueStatusKey = {
+	"Todo": "TODO",
+	"In Progress": "IN_PROGRESS",
+	"Done": "DONE"
 }
 
-const Sprint = ({sprint, dropIssuePropagate}) => {
+const calcProgress = issues => {
+	if (!issues || issues.length === 0) return 0;
 
-	const dropIssue = ev => {
-		ev.preventDefault();
-		const data = JSON.parse(ev.dataTransfer.getData("data"));
-		dropIssuePropagate(parseInt(data.issueId), parseInt(data.sprintId), parseInt(sprint.id));
+	const reducer = (prev, current) => {
+		const key = issueStatusKey[current.status];
+		if (key !== undefined)
+			return prev + (issueStatus[key] ? issueStatus[key].progress : 0)
+		return 0;
 	}
 
-	const deleteSprint = (e) => {
-		e.preventDefault();
+	return issues.reduce(reducer, 0) / issues.length;
+}
 
-		if (!deleteSprint__(sprint.id)) {
-			console.error("Could not delete the sprint");
-		}
-	}
-
-	const activateSprint = (e) => {
-		e.preventDefault();
-
-		const URL = settings.API_ROOT + "/project/" + sprint.projectId + "/active-sprint/" + sprint.id;
-		Helper.httpRequest(URL, "PUT", null)
-		.then(activeSprint => console.log(activeSprint))
-		.catch(e => console.error(e));
-	}
+const Sprint = ({sprint, bubbleMouseEvent, updateIssueSprint}) => {
+	const progress = (!sprint.issue || Object.keys(sprint.issue).length === 0) ? 0 : calcProgress(Object.values(sprint.issue));
 
 	return (
-		<>
-			<div className="list"
-				onDragOver={ev => ev.preventDefault()}
-				onDrop={dropIssue}
-			>
-				<div className="list-header">
-					<div className="list-title">{sprint.title}</div>
-					<div className="list-item-buttons">
-						<a href="" onClick={deleteSprint}>Delete</a>  
-						{
-							sprint.active !== undefined 
-							? "Active"
-							: <a href="" onClick={activateSprint}>Activate</a> 
-						}
-					</div>
-				</div>
-				{!Array.isArray(sprint.issues) || sprint.issues.length === 0 
-					? <Placeholder><span style={{color: "white"}}>&#128528; No issues yet.</span></Placeholder>
-					: sprint.issues.map(x => <DraggableIssueLabel issue={x} />)
-				}
+		<div className="sprint">
+			<div className="sprint-header">
+				<span className="sprint-id">
+					{sprint.id}
+				</span>
+				<span className="sprint-title">
+					{sprint.title}
+				</span>
+				<span className="sprint-progress">
+					<ProgressBar progress={progress} />
+				</span>
+				<span className="sprint-buttons">
+					<button onClick={e => bubbleMouseEvent({type: "editSprint", sprintId: sprint.id})} className="sm-button border-button">Edit</button>
+					<button onClick={e => bubbleMouseEvent({type: "deleteSprint", sprintId: sprint.id})} className="sm-button border-button">Delete</button>
+					<span>|</span>
+					<button onClick={e => bubbleMouseEvent({type: "toggleActiveSprint", sprintId: sprint.id})} className="sm-button border-button">{sprint.active ? "End" : "Start"}</button>
+				</span>
 			</div>
-		</>
+			<div className="sprint-body">
+				{Object.values(sprint.issue).map(issue => <IssueItemCompact key={issue.id} issue={issue} />)}
+			</div>
+		</div>
 	)
 }
 

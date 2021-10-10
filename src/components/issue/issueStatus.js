@@ -1,5 +1,14 @@
 export default {
-	TODO: "Todo", 
-	IN_PROGRESS: "In Progress", 
-	COMPLETE: "Complete"
+	TODO: {
+		value: "Todo",
+		progress: 0
+	},
+	IN_PROGRESS: {
+		value: "In Progress",
+		progress: 66
+	}, 
+	DONE: {
+		value: "Done",
+		progress: 100
+	}
 }

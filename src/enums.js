@@ -23,6 +23,28 @@ export const ISSUE_STATUS = {
 	complete: "Complete"
 };
 
+export const issueStatus = {
+	todo: {
+		value: "Todo",
+		progress: 33
+	},
+	inProgress: {
+		value: "In Progress",
+		progress: 66
+	},
+	done: {
+		value: "Done",
+		progress: 100
+	}
+}
+
+export const issueStatusKey = {
+	"Todo": "todo",
+	"In Progress": "inProgress",
+	"Done": "done"
+}
+
+
 export const ISSUE_STATUS_TO_ENUM = (normalStr) => {
 	let result = "";
 	Object.entries(ISSUE_STATUS).forEach(([key, val]) => {

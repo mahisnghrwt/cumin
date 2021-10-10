@@ -96,26 +96,16 @@ const reducerWrapper = (state, action) => {
 	return finalState;
 }
 
-const Form = ({formFields = [], formValidators = {}, children}) => {
+const Form = ({formFields = [], validator = null, children}) => {
 	const defaultState = fieldsToState(formFields, false);
 	const cleanState = fieldsToState(formFields, true);
 	const [formState, setFormState] = useReducer(reducerWrapper, defaultState);
 
-	const validateForm = () => {
-		let errors = {};
-
-		Object.keys(formValidators).map(field => {
-			const err = formValidators[field](formState);
-			errors[field] = null;
-			if (err !== null) {
-				errors[field] = {
-					value: err,
-					type: formErrorType.GLOBAL
-				}
-			}
-		});
-
-		setFormState({type: "mergeErrors", errors});
+	const validateForm = (formValues) => {
+		if (typeof validator === "function") {
+			return validator(formValues);
+		}
+		return null;
 	};
 
 	return (
