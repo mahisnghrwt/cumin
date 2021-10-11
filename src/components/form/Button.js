@@ -46,7 +46,7 @@ const Button = ({kKey, label, onClick: submit, doesSubmit = false, ...rest}) => 
 		})
 		.catch(e => {
 			setFormState({type: "setLog", log: {
-				message: e,
+				message: e.message,
 				type: formLogType.error
 			}});
 			console.error(e)

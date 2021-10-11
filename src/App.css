@@ -401,6 +401,16 @@ button:disabled {
 	border: 1px solid black;
 }
 
+.header {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.header > * {
+	margin-right: 1rem;
+}
+
 .success-background {
 	background-color: var(--success-green);
 }
@@ -411,6 +421,10 @@ button:disabled {
 
 .warning-background {
 	background-color: var(--warning-yellow);
+}
+
+.std-background {
+	background-color: var(--std-blue);
 }
 
 .std-background {

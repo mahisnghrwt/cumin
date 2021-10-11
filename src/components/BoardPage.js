@@ -6,7 +6,7 @@ import Global from "../GlobalContext";
 import Helper from "../Helper";
 import settings from "../settings";
 import _ from "lodash";
-import { sprintPreprocessing } from "./preprocessing";
+import { sprintPreprocessing } from "./roadmap/canvas-m/canvasHelper";
 import Board from "./board/Board";
 import "./board/board.css";
 

@@ -158,6 +158,18 @@ const Helper = {
 		}
 
 		return responseBody;
+	},
+	projectPreprocessing: project => {
+		return {
+			...project,
+			createdAt: new Date(project.startDate)
+		}
+	},
+	detailedIssuePreprocessing: issue => {
+		return {
+			...issue,
+			createdAt: new Date(issue.createdAt)
+		}
 	}
 }
 

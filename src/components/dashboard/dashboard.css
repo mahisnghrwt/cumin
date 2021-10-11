@@ -1,0 +1,69 @@
+.project-item {
+	width: 200px;
+	min-width: 200px;
+	height: fit-content;
+
+	padding: 0.5rem;
+	border-radius: 5px;
+	background-color: #ecf0f1;
+
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+}
+
+.project-item > * {
+	margin-bottom: 0.2rem;
+
+}
+
+.project-item-title {
+	font-weight: bold;
+	font-size: 0.9rem;
+}
+
+.project-item-tag {
+	font-size: 0.8rem;
+	color: #34495e;
+}
+
+.project-item-active-tag {
+	text-transform: lowercase;
+	font-style: italic;
+	font-size: 0.8rem;
+	padding: 0 0.3rem;
+	width: fit-content;
+	color: white;
+	background-color: var(--success-green);
+}
+
+/*==============================*/
+
+.project-list {
+	margin-bottom: 1rem;
+	width: 100%;
+	
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	border: 1px dotted silver;
+	padding: 0.1rem;
+}
+
+.project-list > * {
+	margin-right: 1rem;
+}
+
+.project-list > *:last-child {
+	margin-right: 0;
+}
+
+/*==============================*/
+
+.dashboard-issue-list {
+	display: flex;
+	flex-direction: column;
+	width: 600px;
+	border: 1px dotted silver;
+}
