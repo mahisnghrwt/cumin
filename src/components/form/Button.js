@@ -4,7 +4,7 @@ import FormContext from "./FormContext";
 import formLogType from "./formLogType";
 
 const Button = ({kKey, label, onClick: submit, doesSubmit = false, ...rest}) => {
-	const {formState, setFormState, validateForm, isStateValid, cleanState} = useContext(FormContext);
+	const {formState, setFormState, validateForm, cleanState} = useContext(FormContext);
 	const ref = useRef(null);
 	
 	const buttonClickHandler = e => {
