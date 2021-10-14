@@ -1,5 +1,8 @@
 import {NavItem, LOGGED_IN, LOGGED_OUT, ALWAYS} from "../components/classes/NavItem";
 import { useHistory } from "react-router";
+import { useState } from "react";
+import Modal from "./modal/Modal";
+import InviteForm from "./inviteForm/InviteForm";
 
 const items_ = [
 	new NavItem("CUMIN", "/", false, ALWAYS),
@@ -15,6 +18,8 @@ const items_ = [
 
 const NavBar = ({loggedIn, activePage, extraItems = []}) => {
 	const history_ = useHistory();
+	const [modal, setModal] = useState(null);
+
 	const sortAndFilter = items => {
 		let left = [];
 		let right = [];
@@ -52,29 +57,48 @@ const NavBar = ({loggedIn, activePage, extraItems = []}) => {
 	const itemsWithExtra = [].concat((Array.isArray(extraItems) ? extraItems : []), items_)
 	const sortedItems = sortAndFilter([].concat(itemsWithExtra, ));
 
+	const enableInvitationForm = e => {
+		e.preventDefault();
+		setModal({title: "Invite", body: <InviteForm />})
+	}
+
 	return (
-		<div className="navbar">
-			<div className="left-nav-item-group">
-				{sortedItems.left.map(x => {
-					return <a 
-						href={x.link} 
-						className={x.text === activePage ? "nav-link active-nav-link" : "nav-link"}
-						onClick={e => {e.preventDefault(); history_.push(x.link)}}>
-							{x.text}
+		<>
+			<div className="navbar">
+				<div className="left-nav-item-group">
+					{sortedItems.left.map(x => {
+						return <a 
+							href={x.link} 
+							className={x.text === activePage ? "nav-link active-nav-link" : "nav-link"}
+							onClick={e => {e.preventDefault(); history_.push(x.link)}}>
+								{x.text}
+							</a>
+					})}
+				</div>
+				<div className="right-nav-item-group">
+					<a 
+						key={"invite"}
+						href=""
+						className={"nav-link"}
+						onClick={enableInvitationForm}>
+							+ Member
 						</a>
-				})}
+					{sortedItems.right.map(x => {
+						return <a 
+							key={x.text}
+							href={x.link} 
+							className={x.text === activePage ? "nav-link active-nav-link" : "nav-link"}
+							onClick={e => {e.preventDefault(); history_.push(x.link)}}>
+								{x.text}
+							</a>
+					})}
+				</div>
+				
 			</div>
-			<div className="right-nav-item-group">
-				{sortedItems.right.map(x => {
-					return <a 
-						href={x.link} 
-						className={x.text === activePage ? "nav-link active-nav-link" : "nav-link"}
-						onClick={e => {e.preventDefault(); history_.push(x.link)}}>
-							{x.text}
-						</a>
-				})}
-			</div>
-		</div>
+			{modal && <Modal title={modal.title} close={_ => setModal(null)}>
+				{modal.body}
+			</Modal>}
+		</>
 	);
 }
 

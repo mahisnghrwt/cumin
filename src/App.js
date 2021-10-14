@@ -1,4 +1,4 @@
-import React, {useReducer, useRef, useState } from 'react';
+import React, {useReducer, useEffect, useState } from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import BacklogPage from './components/BacklogPage';
 import DashboardPage from './components/DashboardPage';
@@ -10,6 +10,7 @@ import AlertBar from './components/AlertBar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import BoardPage from './components/BoardPage';
 import RoadmapPage from './components/RoadmapPage';
+import { HttpTransportType, HubConnectionBuilder } from "@microsoft/signalr";
 
 const reducer = (state, action) => {
 	switch(action.type) {
@@ -44,6 +45,31 @@ const defaultGlobal = {
 function App() {
 	const [global, globalDispatch] = useReducer(reducer, defaultGlobal);
 	const [alert_, setAlert_] = useState(null);
+	const [connection, setConnection] = useState(null);
+
+	useEffect(() => {
+		if (!global.user) return;
+
+		const connect = new HubConnectionBuilder()
+		  .withUrl("https://localhost:44370/notification", {transport: HttpTransportType.LongPolling, accessTokenFactory: () => localStorage.getItem("token")})
+		  .withAutomaticReconnect()
+		  .build();
+	
+		setConnection(connect);
+	  }, [global]);
+	
+	  useEffect(() => {
+		if (connection) {
+		  connection
+			.start()
+			.then(() => {
+			  connection.on("ReceiveMessage", (message) => {
+				console.log(message);
+			  });
+			})
+			.catch((error) => console.log(error));
+		}
+	  }, [connection]);
 
 	return (
 		<div className="App">

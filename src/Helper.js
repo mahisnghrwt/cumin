@@ -140,11 +140,8 @@ const Helper = {
 		const response = await fetch(url, fetchOptions);
 
 		if (!response.ok) {
-			response.text()
-			.then(e => {
-				throw new Error(e)
-			})
-			
+			const e = await response.text();
+			throw new Error(JSON.parse(e).message);
 		}
 
 		let responseBody = null;
