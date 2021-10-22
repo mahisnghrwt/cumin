@@ -1,17 +1,11 @@
 import Helper from "../../Helper";
-import Form from "../form/Form";
-import InputItem from "../form/InputItem";
-import LogItem from "../form/LogItem";
-import formItemSize from "../form/formItemSize";
-import Button from "../form/Button";
 import settings from "../../settings"
 import { useContext } from "react";
 import Global from "../../GlobalContext"
+import Form, {SubmitButton, Input} from "../form/v2/Form";
 
-const InviteForm = (props) => {
-	const [global,,] = useContext(Global);
-
-	const formFields = ["username"];
+const InviteForm = () => {
+	const [{project: {id: projectId}},,] = useContext(Global);
 
 	const sendInvitation = async formValues => {
 		try {
@@ -19,25 +13,32 @@ const InviteForm = (props) => {
 				username: formValues.username,
 			};
 
-			const url = `${settings.API_ROOT}/project/${global.project.id}/invitation`;
+			const url = settings.getInvitationUrl(projectId);
 			await Helper.fetch(url, "POST", body, false);
 		} catch (e) {
 			throw e;
 		}
+	}	
+
+	const formFields = {
+		username: {
+			value: "",
+			validate: (username) => {
+				if (!username)
+					return "Username is required.";
+			}
+		}
 	}
 
 	return (
-		<div className="form-wrapper" style={{width: "600px"}}>
+		<>
 			<Form formFields={formFields}>
-				<div className="form-row">
-					<InputItem kKey="username" label="Username" size={formItemSize.SMALL} />
-				</div>
-				<div className="form-row">
-					<Button kKey="save" label="Invite" onClick={sendInvitation} doesSubmit={true} />
-					<LogItem />
+				<Input label="Username" kKey="username" key="username" type="text" />
+				<div class="form-actions">
+					<SubmitButton label="Invite" onClick={sendInvitation} />
 				</div>
 			</Form>
-		</div>
+		</>
 	)
 }
 

@@ -49,9 +49,8 @@ function App() {
 
 	useEffect(() => {
 		if (!global.user) return;
-
 		const connect = new HubConnectionBuilder()
-		  .withUrl("https://localhost:44370/notification", {transport: HttpTransportType.LongPolling, accessTokenFactory: () => localStorage.getItem("token")})
+		  .withUrl("https://localhost:44343/notification", {transport: HttpTransportType.LongPolling, accessTokenFactory: () => localStorage.getItem("token")})
 		  .withAutomaticReconnect()
 		  .build();
 	
