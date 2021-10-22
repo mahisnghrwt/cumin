@@ -1,103 +1,51 @@
-import {NavItem, LOGGED_IN, LOGGED_OUT, ALWAYS} from "../components/classes/NavItem";
-import { useHistory } from "react-router";
 import { useState } from "react";
-import Modal from "./modal/Modal";
 import InviteForm from "./inviteForm/InviteForm";
-
-const items_ = [
-	new NavItem("CUMIN", "/", false, ALWAYS),
-	new NavItem("Roadmap", "/roadmap", false, LOGGED_IN),
-	new NavItem("Board", "/board", false, LOGGED_IN),
-	new NavItem("Backlog", "/backlog", false, LOGGED_IN),
-	new NavItem("Account", "/account", true, LOGGED_IN),
-	new NavItem("Logout", "/logout", true, LOGGED_IN),
-	new NavItem("Login", "/login", true, LOGGED_OUT),
-	new NavItem("Register", "/register", true, LOGGED_OUT)
-];
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import {Dialog} from "@primer/components";
 
 
-const NavBar = ({loggedIn, activePage, extraItems = []}) => {
-	const history_ = useHistory();
-	const [modal, setModal] = useState(null);
-
-	const sortAndFilter = items => {
-		let left = [];
-		let right = [];
-
-		const isNeeded = x => {
-			if (x.displayWhen === ALWAYS) {
-				return true;
-			}
-			else if (x.displayWhen === LOGGED_IN && loggedIn) {
-				return true;
-			}
-			else if (x.displayWhen === LOGGED_OUT && !loggedIn) {
-				return true;
-			}
-			return false;
-		}
-
-		for (let i = 0; i < items.length; i++) {
-			if (isNeeded(items[i])) {
-				if (items[i].isRightAligned) {
-					right.push(items[i]);
-				}
-				else {
-					left.push(items[i]);
-				}
-			}
-		}
-
-		return {
-			left,
-			right
-		}
-	}
-
-	const itemsWithExtra = [].concat((Array.isArray(extraItems) ? extraItems : []), items_)
-	const sortedItems = sortAndFilter([].concat(itemsWithExtra, ));
-
-	const enableInvitationForm = e => {
-		e.preventDefault();
-		setModal({title: "Invite", body: <InviteForm />})
-	}
+const NavBar = ({loggedIn}) => {
+	const [isOpen, setIsOpen] = useState(false);
 
 	return (
 		<>
-			<div className="navbar">
-				<div className="left-nav-item-group">
-					{sortedItems.left.map(x => {
-						return <a 
-							href={x.link} 
-							className={x.text === activePage ? "nav-link active-nav-link" : "nav-link"}
-							onClick={e => {e.preventDefault(); history_.push(x.link)}}>
-								{x.text}
-							</a>
-					})}
+			<div class="Header">
+				<div class="Header-item f4">
+					<a className="Header-link" href="/">Cumin</a>
 				</div>
-				<div className="right-nav-item-group">
-					<a 
-						key={"invite"}
-						href=""
-						className={"nav-link"}
-						onClick={enableInvitationForm}>
-							+ Member
-						</a>
-					{sortedItems.right.map(x => {
-						return <a 
-							key={x.text}
-							href={x.link} 
-							className={x.text === activePage ? "nav-link active-nav-link" : "nav-link"}
-							onClick={e => {e.preventDefault(); history_.push(x.link)}}>
-								{x.text}
-							</a>
-					})}
-				</div>
-				
+				{loggedIn && <div class="Header-item">
+					<a className="Header-link" href="/roadmap">Roadmap</a>
+				</div>}
+				{loggedIn && <div class="Header-item">
+					<a className="Header-link" href="/board">Board</a>
+				</div>}
+				{loggedIn && <div class="Header-item">
+					<a className="Header-link" href="/backlog">Backlog</a>
+				</div>}
+				<div className="Header-item Header-item--full" />
+				{loggedIn && <div class="Header-item">
+					<button className="btn-octicon color-fg-on-emphasis" type="button" onClick={() => setIsOpen(true)}>
+						<FontAwesomeIcon icon={faUserPlus} />
+					</button>
+				</div>}
+				{loggedIn && <div class="Header-item">
+					<a className="Header-link" href="/logout">Logout</a>
+				</div>}
+				{!loggedIn && <div class="Header-item">
+					<a className="Header-link" href="/login">Login</a>
+				</div>}
+				{!loggedIn && <div class="Header-item">
+					<a className="Header-link" href="/register">Register</a>
+				</div>}
 			</div>
-			{modal && <Modal title={modal.title} close={_ => setModal(null)}>
-				{modal.body}
-			</Modal>}
+
+			<Dialog isOpen={isOpen} onDismiss={() => setIsOpen(false)}>
+				<Dialog.Header>Add Member</Dialog.Header>
+				<div className="Box p-3 border-0">
+					<InviteForm />
+				</div>
+			</Dialog>
 		</>
 	);
 }
