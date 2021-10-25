@@ -1,44 +1,27 @@
 # Cumin
-![!](https://i.imgur.com/TZ9xQWd.jpeg "Roadmap Page screenshot")
 
-
-## Upcoming features
-- [x] ~"Add row" button on last canvas row.~
-- [x] Sync path between Epics
-- [x] Detect cycles in Roadmap
-	- ~[ ] Suggestions to resolve cycles~
-- ~[ ] Delete row~
-	- ~*Add a delete button next to row label*~
-- [x] Show progress of Epic (Using progress bar)
-- [ ] Epic Page
-- [ ] Issue Page
-- [ ] Spinner
-- [x] Highlight blocked Epics.
-
-
-## Upcoming QoL
-- [x] Color palette for Epics
-- [x] Disable form until submission-event finishes.
-- [x] Indicate current day in Roadmap Canvas
-- [ ] Highlight current grid (row and current date) mouse is over.
-- ~[ ] Collapse empty rows in Roadmap.~
-- [ ] Show key points about Epic *on hover*. 
-- [ ] Subhighlight indirectly blocked Epics.
-- [x] Highlight path *on hover*.
-- [ ] Project selection in Navbar
+## Thoughts!?
+- Merge all the enums into 1 file.
+	- Or group enums into 1 file.
+- Sidebar
+	- Transfrom `Sidebar` to use context for props only, prelayout the components.
+	- Rename folder 'Sidebar2' to 'Sidebar'.
+- Merge 'issueItem' and 'issue' folder.
 
 ## Bugs
-- [x] Remove dragData, *child cannot update the prop even if it is a ref*
+- ~~'EditSprintForm' does update value, but throw error on doing so~~.
+- importing 'primer' from npm as well as CDN !!?
+- 'BacklogPage' crashed if no requested items are returned.
+- Board
+	- Entire page is dragging instead of 'Issue'.
 
-## Performance Issues
-- [ ] Performance drop in Drag event handler in InteractiveLayer inside Canvas.
-
-### Sidebar in Roadmap
-- Default
-	- Create Epic
-- Epic
-	- Intermediate (Epic | Issue)
-	- Create Issue
-	- Update Epic
-	- Epic Details
-		- List of Issues
+## Todo
+- Dashboard
+	- ~~Option to leave project.~~
+	- ~~Option to delete project.~~
+- Roadmap
+	- `EpicInfoCard` has no progress to indicate.
+- Board
+	- ~~Option to Update and Delete issue.~~
+- Backlog
+	- ~~Option to Update and Delete issue.~~

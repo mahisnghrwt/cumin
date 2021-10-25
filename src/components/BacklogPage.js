@@ -9,9 +9,11 @@ import settings from '../settings';
 import Helper from '../Helper';
 import Sprint from './sprint/Sprint';
 import UnassignedIssuesContainer from './sprint/UnassignedIssuesContainer';
-import Modal from "./modal/Modal";
 import EditSprintForm from './sprint/EditSprintForm';
 import _ from "lodash";
+import { Dialog } from '@primer/components';
+import { faHeartBroken, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const ACTIVE_PAGE = "Backlog";
 const defaultState = {activeSprint: null, sprint: null, unassignedIssue: null};
@@ -70,6 +72,38 @@ const reducer = (state, action) => {
 						}
 					}})
 			};
+		case "patchIssue":
+			return  {
+				...state,
+				...(!action.sprintId && 
+					{unassignedIssue: {
+						...(state.unassignedIssue && state.unassignedIssue),
+						[action.issueId]: {
+							...(state.unassignedIssue[action.issueId]),
+							...action.patch
+						}
+					}}),
+					...(action.sprintId && {sprint: {
+						...state.sprint,
+						[action.sprintId]: {
+							...state.sprint[action.sprintId],
+							issue: {
+								...state.sprint[action.sprintId].issue,
+								[action.issueId]: {
+									...(state.sprint[action.sprintId].issue[action.issueId]),
+									...action.patch
+								}
+							}
+						}
+					}})
+			};
+		case "deleteIssue":
+			const state_ = _.cloneDeep(state);
+			if (!action.sprintId)
+				delete state.unassignedIssue[action.issueId];
+			else
+				delete state.sprint[action.sprintId].issue[action.issueId];
+			return state_
 		case "addSprint":
 			return {
 				...state,
@@ -137,8 +171,6 @@ const reducer = (state, action) => {
 				}}),
 			}
 
-			debugger;
-
 			if (!action.oldSprintId)
 				delete nextState.unassignedIssue[action.issueId]; // if is was an unassigned issue
 			else
@@ -152,17 +184,17 @@ const reducer = (state, action) => {
 const BacklogPage = (props) => {
 	const [global,,] = useContext(Global);
 	const [state, dispatch] = useReducer(reducer, defaultState);
-
 	const [modal, setModal] = useState(null);
 
 	const fetchSprints = async () => {
 		const url = settings.API_ROOT + "/project/" + global.project.id + "/sprint";
 		const token = localStorage.getItem("token");
 		try {
-			const sprints = await Helper.http.request(url, "GET", token, null, true);
+			const sprints = await Helper.fetch(url, "GET", token, null, true);
 			return sprints;
 		} catch (e) {
-			throw e;
+			// throw e;
+			return [];
 		}
 	}
 
@@ -170,10 +202,11 @@ const BacklogPage = (props) => {
 		const url = settings.API_ROOT + "/project/" + global.project.id + "/issue/sprint";
 		const token = localStorage.getItem("token");
 		try {
-			const issues = await Helper.http.request(url, "GET", token, null, true);
+			const issues = await Helper.fetch(url, "GET", token, null, true);
 			return issues;
 		} catch (e) {
-			throw e;
+			// throw e;
+			return [];
 		}
 	}
 
@@ -181,10 +214,11 @@ const BacklogPage = (props) => {
 		const url = settings.API_ROOT + "/project/" + global.project.id + "/active-sprint";
 		const token = localStorage.getItem("token");
 		try {
-			const activeSprint = await Helper.http.request(url, "GET", token, null, true);
+			const activeSprint = await Helper.fetch(url, "GET", token, null, true);
 			return activeSprint;
 		} catch (e) {
-			throw e;
+			// throw e;
+			return [];
 		}
 	}
 
@@ -209,6 +243,8 @@ const BacklogPage = (props) => {
 	}
 
 	useEffect(() => {
+		if (!global.project) return;
+	
 		void async function() {
 			try {
 				const [activeSprint, sprints, issues, epics, members] = await Promise.all([fetchActiveSprint(), fetchSprints(), fetchUnassingedIssues(), fetchEpics(), fetchMembers()]);
@@ -254,7 +290,7 @@ const BacklogPage = (props) => {
 				throw e;
 			}
 		}()
-	}, [])
+	}, []);
 
 	const createSprint = e => {
 		setModal({title: "Create Sprint", body: <EditSprintForm successCallback={addSprint} />})
@@ -308,6 +344,24 @@ const BacklogPage = (props) => {
 		
 	}
 
+	const updateIssue = (staleIssue, issue) => {
+		const issue_ = issuePreprocessing(issue);
+		if (issue_.sprintId !== staleIssue.sprintId)
+			dispatch({type: "patchIssueSprint", issueId: issue_.id, oldSprintId: staleIssue.sprintId, sprintId: issue_.sprintId});
+		dispatch({type: "patchIssue", issueId: issue_.id, patch: issue_, ...(issue_.sprintId && {sprintId: issue_.sprintId})});
+		
+	}
+
+	const deleteIssue = async (issueId, sprintId = null) => {
+		const url = `${settings.API_ROOT}/project/${global.project.id}/issue/${issueId}`;
+		try {
+			await Helper.fetch(url, "DELETE", null, false);
+			dispatch({type: "deleteIssue", issueId, sprintId});
+		} catch (e) {
+			throw e;
+		}
+	}
+
 	const addSprint = (sprint, isPatched) => {
 		var sprint_ = sprintPreprocessing(sprint);
 		// patch request's response does not include issues, so by default they will be null, and we do not want it to overwrite issues we have fetched already
@@ -343,26 +397,85 @@ const BacklogPage = (props) => {
 
 	return (
 	<>
-		<NavBar loggedIn={true} activePage={ACTIVE_PAGE} />
-		<div className="container">
-			<SidebarWrapper>
-				<div className="content">
-					<h1 style={{marginBottom: "0rem"}}>Backlog</h1>
-					<div style={{display: "flex", flexDirection: "row", marginBottom: "2rem"}}>
-						<button className="std-button sm-button" onClick={createSprint}>+ Sprint</button>
-						<button className="std-button sm-button" onClick={createIssueForm}>+ Issue</button>
+		<NavBar />
+		<div className="Layout container-lg">
+			<div className="Layout-main">
+				<SidebarWrapper>
+					<div className="mb-4">
+						<h1 className="h1 d-inline-block">Backlog</h1>
+						{ global.project
+						&& <span className="float-right">
+							<button className="btn btn-primary" onClick={createIssueForm} type="button">+ Issue</button>
+							<button className="btn btn-primary ml-2" onClick={createSprint} type="button">+ Sprint</button>
+						</span> }
 					</div>
+					{!global.project 
+						&& <div className="Box">
+							<div class="blankslate">
+								<FontAwesomeIcon className="f1" icon={faHeartBroken} />
+								<h3 className="mb-1">You don’t seem to have any active project.</h3>
+								<p>Select a project to work with backlog.</p>
+							</div>
+						</div>}
 					{state.unassignedIssue && 
-						<UnassignedIssuesContainer issues={Object.values(state.unassignedIssue)} updateIssueSprint={updateIssueSprint} />}
+						<UnassignedIssuesContainer 
+							issues={Object.values(state.unassignedIssue)} 
+							updateIssueSprint={updateIssueSprint}
+							issueEditHandler={(issueId) => 
+								setModal({title: state.unassignedIssue[issueId].title, body: 
+									<CreateIssueForm 
+										sprints={Object.values(state.sprint)} 
+										epics={state.epics} 
+										members={state.members} 
+										successCallback={updateIssue} 
+										originalIssue={state.unassignedIssue[issueId]} 
+									/>,
+									actions: 
+									<button className="btn btn-sm btn-danger ml-2" onClick={() => deleteIssue(issueId)} type="button">
+										<FontAwesomeIcon icon={faTrashAlt} />
+									</button>
+								})
+							}
+						/>
+					}
 					{state.sprint && 
-						Object.values(state.sprint).map(sprint => <Sprint sprint={sprint} bubbleMouseEvent={sprintEventHandler} updateIssueSprint={updateIssueSprint} />)}
-				</div>
-				<Sidebar />
-			</SidebarWrapper>
-			{modal && <Modal title={modal.title} close={_ => setModal(null)}>
-				{modal.body}
-			</Modal>}
+						Object.values(state.sprint).map(sprint => 
+							<Sprint 
+								sprint={sprint} 
+								isActive={sprint.id === state.activeSprint.id} 
+								bubbleMouseEvent={sprintEventHandler} 
+								updateIssueSprint={updateIssueSprint}
+								issueEditHandler={(issueId) => 
+									setModal({title: state.sprint[sprint.id].issue[issueId].title, body: 
+										<CreateIssueForm 
+											sprints={Object.values(state.sprint)} 
+											epics={state.epics} 
+											members={state.members} 
+											successCallback={updateIssue} 
+											originalIssue={state.sprint[sprint.id].issue[issueId]} 
+										/>,
+										actions: 
+										<button className="btn btn-sm btn-danger ml-2" onClick={() => deleteIssue(issueId, sprint.id)} type="button">
+											<FontAwesomeIcon icon={faTrashAlt} />
+										</button>
+									})
+								} />
+						)}
+				</SidebarWrapper>
+			</div>
 		</div>
+		<Dialog isOpen={modal !== null} onDismiss={() => setModal(null)}>
+			{modal && 
+			<><Dialog.Header>
+				<div className="d-flex flex-items-center">
+					<span>{modal.title}</span>
+					{modal.actions}
+				</div>
+			</Dialog.Header>
+			<div className="Box p-3 border-0">
+				{modal.body}
+			</div></>}
+		</Dialog>
 	</>
 	);
 };

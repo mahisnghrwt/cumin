@@ -1,10 +1,6 @@
-import { ButtonWithPlaceholder } from "../../Button";
 import ColorPalette from "../ColorPalette";
 import canvasTool from "./canvasTool";
 
-/**
- * @desc Right now, children are expected to be buttons. "sm"-button class for perfect small button.
- */
 const CanvasToolbar = ({tools}) => {
 
 	const isToolEnabled = tool => {
@@ -18,26 +14,38 @@ const CanvasToolbar = ({tools}) => {
 	}
 
 	return (
-		<div
-		 className="canvas-toolbar">
-			<ButtonWithPlaceholder 
-				disabled={!isToolEnabled(canvasTool.DELETE_PATH_BUTTON)}
-				className="std-button sm-button danger-background"
-				{...getProps(canvasTool.DELETE_PATH_BUTTON)}
+		<div className="Box d-flex border-0 flex-row color-bg-subtle p-1 px-2 mb-2">
+			<button 
+				disabled={!isToolEnabled(canvasTool.EDIT_EPIC_BUTTON)}
+				className="btn btn-sm btn-outline mr-2"
+				{...getProps(canvasTool.EDIT_EPIC_BUTTON)}
 			>
-				Delete Path
-			</ButtonWithPlaceholder>
-			<ButtonWithPlaceholder 
+				Edit Epic
+			</button>
+
+			<button 
 				disabled={!isToolEnabled(canvasTool.DELETE_EPIC_BUTTON)}
-				className="std-button sm-button danger-background"
+				className="btn btn-sm btn-danger"
 				{...getProps(canvasTool.DELETE_EPIC_BUTTON)}
 			>
 				Delete Epic
-			</ButtonWithPlaceholder>
-			<span>|</span>
+			</button>
+
+			<span className="color-fg-subtle text-bold mx-3">|</span>
+
 			<ColorPalette {...getProps(canvasTool.COLOR_PALETTE)} disabled={!isToolEnabled(canvasTool.COLOR_PALETTE)} />
+
+			<span className="color-fg-subtle text-bold mx-3">|</span>
+
+			<button 
+				className="btn btn-sm btn-danger" 
+				disabled={!isToolEnabled(canvasTool.DELETE_PATH_BUTTON)} 
+				{...getProps(canvasTool.DELETE_PATH_BUTTON)}
+			>
+				Delete Path
+			</button>
 		</div>
-	);
+	)
 }
 
 export default CanvasToolbar;

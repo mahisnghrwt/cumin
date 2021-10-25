@@ -1,14 +1,17 @@
-import { useContext, useEffect, useReducer } from "react";
+import { useContext, useEffect, useReducer, useState } from "react";
 import NavBar from "./NavBar";
-import SidebarWrapper from "./sidebar2/SidebarWrapper"
-import Sidebar from "./sidebar2/Sidebar";
 import Global from "../GlobalContext";
 import Helper from "../Helper";
 import settings from "../settings";
 import _ from "lodash";
-import { sprintPreprocessing } from "./roadmap/canvas-m/canvasHelper";
+import { issuePreprocessing, sprintPreprocessing } from "./roadmap/canvas-m/canvasHelper";
 import Board from "./board/Board";
-import "./board/board.css";
+import { faHeartBroken } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Dialog } from "@primer/components";
+import CreateIssueForm from "./issue/CreateIssueForm";
+import { faTrashAlt } from "@fortawesome/free-regular-svg-icons";
+import connectToModels, { model } from "./hoc/connectToModels";
 
 const status = ["Todo", "In Progress", "Done"];
 
@@ -46,12 +49,43 @@ const reducer = (state, action) => {
 			delete nextState.sortedIssues[action.oldStatus][action.issueId];
 			nextState.sortedIssues[action.status][action.issueId] = issue;
 			return nextState;
+		case "patchIssue":
+			return {
+				...state,
+				sortedIssues: {
+					...state.sortedIssues,
+					[action.issueStatus]: {
+						...state.sortedIssues[action.issueStatus],
+						[action.issueId]: {
+							...state.sortedIssues[action.issueStatus][action.issueId],
+							...action.patch
+						}
+					}
+				}
+			}
+		case "deleteIssue": {
+			const nextState = {
+				...state,
+				sortedIssues: {
+					...state.sortedIssues,
+					[action.issueStatus]: {
+						...state.sortedIssues[action.issueStatus]
+					}
+				}
+			}
+			delete nextState.sortedIssues[action.issueStatus][action.issueId];
+			return nextState;
+		}
+		default:
+			throw new Error(`Unknown case ${action.type}!`)
 	}
 }
 
-const BoardPage = props => {
+const BoardPage = ({data, dataDispatch}) => {
 	const [global,,] = useContext(Global);
-	const [state, dispatch] = useReducer(reducer, {sortedIssues: getStatusObject(status)});
+	const [state, dispatch] = useReducer(reducer, null);
+	const [modal, setModal] = useState(null);
+
 
 	const fetchActiveSprint = async () => {
 		const url = settings.API_ROOT + "/project/" + global.project.id + "/active-sprint";
@@ -65,6 +99,23 @@ const BoardPage = props => {
 		try {
 			await Helper.http.request(url, "PATCH", localStorage.getItem("token"), patch, false);
 			dispatch({type: "patchIssueStatus", issueId, status, oldStatus});
+		} catch (e) {
+			throw e;
+		}
+	}
+
+	const updateIssue = (staleIssue, issue) => {
+		const issue_ = issuePreprocessing(issue);
+		if (issue_.status !== staleIssue.status)
+			dispatch({type: "patchIssueStatus", oldStatus: staleIssue.status, status: issue_.status, issueId: issue_.id});
+		dispatch({type: "patchIssue", issueStatus: issue_.status, issueId: issue_.id, patch: issue_});
+	}
+
+	const deleteIssue = async (issueId, issueStatus) => {
+		const url = `${settings.API_ROOT}/project/${global.project.id}/issue/${issueId}`;
+		try {
+			await Helper.fetch(url, "DELETE", null, false);
+			dispatch({type: "deleteIssue", issueId, issueStatus});
 		} catch (e) {
 			throw e;
 		}
@@ -85,26 +136,64 @@ const BoardPage = props => {
 
 	return (
 		<>
-			<NavBar loggedIn={true} activePage="Board" />
-			<div className="container">
-				<SidebarWrapper>
-					<div className="content">
-						<h1>Board</h1>
-						<div className="board-container">
+			<NavBar />
+			<div className="Layout container-xl">
+				<div className="Layout-main">
+					<h1 className="h1 mb-4">Board</h1>
+					{!state ?
+						<div className="Box">
+							<div class="blankslate">
+								<FontAwesomeIcon className="f1" icon={faHeartBroken} />
+								<h3 className="mb-1">You don’t seem to have any active sprint.</h3>
+								<p>Select a project <span>&#8594;</span> Start a sprint to continue.</p>
+								<a className="btn btn-primary my-3" href="/backlog">Go to Backlog</a>
+							</div>
+						</div>
+					:
+						<div className="d-flex flex-row flex-nowrap flex-justify-between flex-items-start">
 							{Object.keys(state.sortedIssues).map(statusType => {
 								return <Board 
 									title={statusType} 
 									issues={Object.values(state.sortedIssues[statusType])}
 									patchIssueStatus={patchIssueStatus} 
+									issueEditHandler={(issueId) => 
+										setModal({title: state.sortedIssues[statusType][issueId].title, body: 
+											<CreateIssueForm 
+												sprints={data.SPRINT} 
+												epics={data.EPIC} 
+												members={data.MEMBER} 
+												successCallback={updateIssue} 
+												originalIssue={state.sortedIssues[statusType][issueId]} 
+											/>,
+											actions: 
+											<button className="btn btn-sm btn-danger ml-2" onClick={() => deleteIssue(issueId, statusType)} type="button">
+												<FontAwesomeIcon icon={faTrashAlt} />
+											</button>
+										})
+									}
 								/>
 							})}
 						</div>
-					</div>
-					<Sidebar />
-				</SidebarWrapper>
+					}
+				</div>
 			</div>
+			<Dialog isOpen={modal !== null} onDismiss={() => setModal(null)}>
+				{modal && 
+				<><Dialog.Header>
+					<div className="d-flex flex-items-center">
+						<span>{modal.title}</span>
+						{modal.actions}
+					</div>
+				</Dialog.Header>
+				<div className="Box p-3 border-0">
+					{modal.body}
+				</div></>}
+			</Dialog>
 		</>
 	)
 }
 
-export default BoardPage;
+const BoardPageWithModels = connectToModels(BoardPage, [model.SPRINT, model.EPIC, model.MEMBER]);
+BoardPageWithModels.displayName = "BoardPageWithModels";
+
+export default BoardPageWithModels;

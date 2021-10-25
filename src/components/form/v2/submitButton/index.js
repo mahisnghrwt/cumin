@@ -95,8 +95,8 @@ export default ({kKey, label, onClick: submit, ...rest}) => {
 	}, [formState.isSubmitting])
 
 	return (
-		<button ref={ref} type="submit" className="btn btn-primary"  onClick={buttonClickHandler} {...rest}>
-			{label}
+		<button ref={ ref } type="submit" className="btn btn-primary"  onClick={ buttonClickHandler } { ...rest }>
+			{ label }
 			{formState.isSubmitting && <span class="AnimatedEllipsis" />}
 		</button>
 	)

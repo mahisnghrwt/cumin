@@ -1,23 +1,17 @@
-import Helper from "../../Helper";
-import settings from "../../settings"
+import Helper from "../Helper";
+import settings from "../settings"
 import { useContext } from "react";
-import Global from "../../GlobalContext"
-import Form, {SubmitButton, Input} from "../form/v2/Form";
-
+import Global from "../GlobalContext"
+import Form, {SubmitButton, Input} from "./form/v2/Form";
 const InviteForm = () => {
 	const [{project: {id: projectId}},,] = useContext(Global);
 
 	const sendInvitation = async formValues => {
-		try {
-			let body = {
-				username: formValues.username,
-			};
-
-			const url = settings.getInvitationUrl(projectId);
-			await Helper.fetch(url, "POST", body, false);
-		} catch (e) {
-			throw e;
-		}
+		let body = {
+			username: formValues.username,
+		};
+		const url = `${settings.API_ROOT}/project/${projectId}/invitation`;
+		await Helper.fetch(url, "POST", body, false);
 	}	
 
 	const formFields = {

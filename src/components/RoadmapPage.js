@@ -1,11 +1,12 @@
 import NavBar from "./NavBar";
 import { useState, useReducer } from "react";
-import AlertBar from "./AlertBar";
 import CanvasToolbar from "./roadmap/CanvasToolbar/CanvasToolbar";
 import Sidebar from "./sidebar2/Sidebar"
 import SidebarWrapper  from "./sidebar2/SidebarWrapper";
 import CanvasWrapper from "./roadmap/CanvasWrapper";
 import roadmapContext from "./roadmap/roadmapContext";
+import "../App.css";
+
 
 const ACTIVE_PAGE = "Roadmap";
 
@@ -40,8 +41,28 @@ const RoadmapPage = () => {
 
 	return (
 		<roadmapContext.Provider value={{setAlert, dispatchCanvasTools}}>
+			<SidebarWrapper>
+			<div className="d-flex flex-column height-full">
+				<NavBar />
+				<div className="flex-1">
+					<div className="Layout Layout--sidebarPosition-end Layout--sidebar-wide Layout--gutter-none height-full">
+						<div className="Layout-main ml-6">
+							<h1 className="h1 mb-4">Roadmap</h1>
+							<CanvasToolbar tools={canvasTools} /> 
+							<CanvasWrapper />
+						</div>
+						<Sidebar />
+					</div>
+				</div>
+			</div>
+			</SidebarWrapper>
+			
+		</roadmapContext.Provider>
+	)
+
+	return (
+		<roadmapContext.Provider value={{setAlert, dispatchCanvasTools}}>
 			<NavBar loggedIn={true} activePage={ACTIVE_PAGE} />
-			{alert && <AlertBar message={alert} />}
 			<div className="container">
 				<SidebarWrapper>
 					<div className="roadmap-content">

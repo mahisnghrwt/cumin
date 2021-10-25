@@ -114,7 +114,7 @@ const Helper = {
 		  d = "0" + d;
 		return `${date.getFullYear()}-${m}-${d}`
 	  },
-	  fetch: async (url, method, body, getResponseBody, token = localStorage.getItem("token")) => {
+	  fetch: async (url, method, body, getResponseBody = null, token = localStorage.getItem("token")) => {
 		let fetchOptions = {
 			mode: "cors",
 			headers: {
@@ -149,9 +149,10 @@ const Helper = {
 			responseBody = await response.json();
 		}
 		catch {
-			if (getResponseBody) {
-				throw new Error("No response body as requested.");
-			}
+			console.error("No response body as requested.");
+			// if (getResponseBody) {
+			// 	throw new Error("No response body as requested.");
+			// }
 		}
 
 		return responseBody;

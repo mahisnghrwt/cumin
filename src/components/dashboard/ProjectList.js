@@ -1,9 +1,11 @@
 import ProjectItem from "./ProjectItem";
 
-const ProjectList = ({projects, selectProject}) => {
+const ProjectList = ({ projects, selectProject }) => {
 	return (
-		<div className="project-list">
-			{projects.map(project => <ProjectItem project={project} selectProject={selectProject} />)}
+		<div className="d-flex flex-row flex-nowrap overflow-x-auto mb-4">
+			{ projects.map(project => (
+				<ProjectItem project={ project } selectProject={ selectProject } />))
+			}
 		</div>
 	)
 }

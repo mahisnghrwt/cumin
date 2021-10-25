@@ -1,105 +1,51 @@
-import React, { useEffect, useCallback, useReducer, useContext } from 'react';
+import React, { useEffect, useCallback, useContext } from 'react';
 import NavBar from './NavBar';
 import Helper from '../Helper';
-import socket from '../webSocket';
 import settings from "../settings";
 import Global from '../GlobalContext';
 import { useHistory, useLocation } from 'react-router-dom';
+import Form, {Input, SubmitButton} from "./form/v2/Form";
 
-const userLoginApiUrl = settings.API_ROOT + "/auth/login";
-const userTokenValidateApiUrl = settings.API_ROOT + "/auth";
-
-const FIELDS = {
-	username: "username",
-	password: "password"
-};
-
-const reducer = (state, action) => {
-	switch(action.type) {
-		case "UPDATE_USERNAME":
-			return {
-				...state,
-				username: {
-					...state.username,
-					value: action.value
-				}
-			}
-		case "UPDATE_PASSWORD":
-			return {
-				...state,
-				password: {
-					...state.password,
-					value: action.value
-				}
-			}
-		default:
-			throw new Error("Unknown action.type: " + action.type);
-	}
-}
-
-const LoginPage = ({location: location_}) => {
-	const [global, globalDispatch] = useContext(Global);
-	const [state, dispatch] = useReducer(reducer, {
-		[FIELDS.username]: {
-			value: "",
-			error: ""
-		},
-		[FIELDS.password]: {
-			value: "",
-			error: ""
-		}
-	})
+const LoginPage = () => {
+	const [, globalDispatch] = useContext(Global);
 
 	const history_ = useHistory();
 	const location__ = useLocation();
 	const params = new URLSearchParams(location__.search);
 	const redirectTo = params.get("redirect-to");
 	
-	const setUserAndProject = (user, project) => {
-		globalDispatch({type: "PATCH", patch: {user, project}});
-	}
-
 	const startSession = (user, project, token) => {
 		// save token
 		localStorage.setItem("token", token);
 		// save user and project in context
-		setUserAndProject(user, project);
+		globalDispatch({type: "PATCH", patch: {user, project}});
+		redirectOnSuccess();
 	}
 
 	const redirectOnSuccess = () => {
-		history_.push(`/${redirectTo === null ? "" : redirectTo}`)
+		history_.push(`/${(redirectTo === null) ? "" : redirectTo}`)
 	}
 
-	const login = (e) => {
-		e.preventDefault();
-		if (state.username.value === "" || state.password.value === "") {
-			// perform input validation here
-			// set the relevant error
-			return;
-		}
-
-		const body = { username: state.username.value, password: state.password.value }
+	const login = async (formValues) => {
+		const url = settings.API_ROOT + "/auth/login";
+		const body = { username: formValues.username, password: formValues.password }
 
 		try {
-			Helper.http.request(userLoginApiUrl, "POST", null, body, true)
-			.then(response => {
-				startSession(response.user, response.user.activeProject, response.token);
-				//redirectOnSuccess();
-			})
-			.catch(e => console.error(e));
-			
+			const response = await Helper.fetch(url, "POST", body);
+			startSession(response.user, response.project, response.token);			
 		} catch (e) {
 			console.error(e);
 		}
 	}
 
 	const authWithLocalToken = useCallback(async () => {
+		const userTokenValidateApiUrl = settings.API_ROOT + "/auth";
 		const token = localStorage.getItem("token");
 		// if has token, check whether it is valid
 		if (token != null) {
 			try {
-				const response =  await Helper.http.request(userTokenValidateApiUrl, "GET", token, null, true);
-				startSession(response, response.activeProject, token);
+				const response =  await Helper.fetch(userTokenValidateApiUrl, "GET", null);
+				startSession(response.user, response.project, token);
 				//redirectOnSuccess();
 			} catch (e) {
 				localStorage.removeItem("token");
@@ -110,55 +56,42 @@ const LoginPage = ({location: location_}) => {
 
 	useEffect(() => {
 		authWithLocalToken();
-	}, [])
+	}, []);
 
-	useEffect(() => {
-		if (global.user !== null && global.project !== null) {
-			redirectOnSuccess();
-		}
-	}, [global.user, global.project]);
-
-
-	const updateFieldValue = (field, value) => {
-		dispatch({
-				type: "UPDATE_" + field.toUpperCase(),
-				value: value
-			})
+	const formFields = {
+		username: {
+			value: "",
+			validate: username => {
+				if (!username || username.trim().length === 0)
+					return "Username is required.";
+			}
+		},
+		password: {
+			value: "",
+			validate: password => {
+				if (!password || password.trim().length === 0)
+					return "Username is required.";
+			}
+		},
 	}
 
 	return (
 		<>
-			<NavBar loggedIn={false} activePage={"Login"} />
-			<div className="content">
-				<h1>Login</h1>
-				<form onSubmit={e => e.preventDefault()}>
-					<div className="form-row">
-						<div className="form-item sm">
-							<label>Username</label>
-							<input 
-								type="text" 
-								id="username-input-field" 
-								value={state.username.value} 
-								onChange={(e) => updateFieldValue(FIELDS.username, e.target.value)}>
-							</input>
+		<NavBar />
+		<div className="Layout container-sm">
+			<div className="Layout-main">
+				<div className="Box p-2" style={{width: "50%"}}>
+					<h1 className="h1 mb-4">Login</h1>
+					<Form formFields={formFields}>
+						<Input key="username" kKey="username" label="Username" type="text" />
+						<Input key="password" kKey="password" label="Password" type="password" />
+						<div className="form-actions">
+							<SubmitButton label="Login" kKey="login" onClick={login} />
 						</div>
-					</div>
-					<div className="form-row">
-						<div className="form-item sm">
-							<label>Password</label>
-							<input 
-								type="password" 
-								id="password-input-field" 
-								value={state.password.value} 
-								onChange={(e) => updateFieldValue(FIELDS.password, e.target.value)} 
-							/>
-						</div>
-					</div>
-					<div className="form-row">
-						<button className="std-button sm" onClick={login}>Login</button>
-					</div>
-				</form>
+					</Form>
+				</div>
 			</div>
+		</div>
 		</>
 	);
 };

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useReducer} from "react";
+import { useContext, useEffect, useRef, useReducer, useState} from "react";
 import "./canvas.css";
 import { BASE_NODE_DIMENSIONS, PATH_ENDPOINT, SCALE_UNIT, pathEndpoint } from "./canvasEnums";
 import HorizontalScale from "./components/HorizontalScale";
@@ -23,6 +23,7 @@ import EpicInfoCard from "../../EpicInfoCard/EpicInfoCard";
 import IssueList from "../../issueItem/IssueList";
 import DependencyList from "../../issueItem/DependencyList";
 import canvasTool from "../CanvasToolbar/canvasTool";
+import { Dialog } from "@primer/components";
 
 const GRIDLINE_COLOR = "#bdc3c7";
 const GRIDLINE_SIZE_IN_PX = 1;
@@ -87,6 +88,23 @@ const stateReducer = (state, action) => {
 	}
 };
 
+const dialogReducer = (state, action) => {
+	switch(action.type) {
+		case "toggle":
+			return {
+				...state,
+				isOpen: !state.isOpen
+			}
+		
+		case "update": {
+			return {
+				...state,
+				...action.update
+			}
+		}
+	}
+}
+
 const Canvas = ({roadmap, roadmapDispatch}) => {
 	const [globalContext,,] = useContext(Global);
 	const {dispatchCanvasTools} = useContext(roadmapContext);
@@ -94,6 +112,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 	const [state, stateDispatch] = useReducer(stateReducer, defaultState)
 	const interactiveLayerRef = useRef(null);
 	const usedRows = useRef(new Set());
+	const [dialog, dialogDispatch] = useReducer(dialogReducer, {isOpen: false});
 
 	const gridSize = {
 		x: differenceInCalendarDays(roadmap.canvas.endDate, roadmap.canvas.startDate),
@@ -397,6 +416,7 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 			sidebarDispatch({type: "remove", key: "epicDependencies"});
 			dispatchCanvasTools({type: "remove", id: canvasTool.DELETE_EPIC_BUTTON});
 			dispatchCanvasTools({type: "remove", id: canvasTool.COLOR_PALETTE});
+			dispatchCanvasTools({type: "remove", id: canvasTool.EDIT_EPIC_BUTTON});
 			return;
 		}
 
@@ -420,8 +440,17 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 		sidebarDispatch({type: "add", key: "epicInfoCard", item: 
 			(<EpicInfoCard epic={roadmap.epics[state.selectedEpic]} />)});
 
-		sidebarDispatch({type: "add", key: "editEpicForm", item: 
-			(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} />)});
+		// sidebarDispatch({type: "add", key: "editEpicForm", item: 
+		// 	(<EditEpicForm epic={roadmap.epics[state.selectedEpic]} />)});
+
+		dispatchCanvasTools({type: "add", id: canvasTool.EDIT_EPIC_BUTTON, tool: {
+			enabled: true,
+			props: {
+				onClick: () => {
+					dialogDispatch({type: "update", update: {isOpen: true, title: "Edit Epic", body: <EditEpicForm epic={roadmap.epics[state.selectedEpic]} />}})
+				}
+			}
+		}});
 			
 		sidebarDispatch({type: "add", key: "epicIssues", item: 
 			(<IssueList issues={roadmap.epics[state.selectedEpic].issues} />)});
@@ -575,6 +604,12 @@ const Canvas = ({roadmap, roadmapDispatch}) => {
 				</div>
 			</div>
 		</div>
+			<Dialog isOpen={ dialog.isOpen } onDismiss={() => dialogDispatch({type: "toggle"})}>
+				<Dialog.Header>{ dialog.title && dialog.title }</Dialog.Header>
+				<div className="Box p-3 border-0">
+					{ dialog.body && dialog.body}
+				</div>
+			</Dialog>
 		</canvasContext.Provider>
   );
 }

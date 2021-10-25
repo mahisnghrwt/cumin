@@ -1,7 +1,5 @@
 import { useContext, useEffect, useReducer } from "react";
 import sidebarContext from "./sidebarContext";
-import "./sidebar.css";
-import "./sidebarItem.css";
 
 const reducer = (state, action) => {
 	switch(action.type) {
@@ -30,9 +28,11 @@ const Sidebar2 = ({children}) => {
 	if (children === undefined && (!state || Object.keys(state).length === 0)) return null;
 
 	return (
-		<div className="sidebar">
-			{children}
-			{Object.values(state).map(item => item)}
+		<div className="Layout-sidebar color-bg-subtle mb-4 mx-4">
+			<div className="box p-1">
+				{ children }
+				{Object.values(state).map(item => item)}
+			</div>
 		</div>
 	)
 }

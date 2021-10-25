@@ -1,103 +1,62 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import NavBar from './NavBar';
-import AlertBar from './AlertBar';
 import Helper from '../Helper';
 import settings from "../settings";
+import Form, { Input, SubmitButton } from './form/v2/Form';
 
-const apiUserRegistrationUrl = settings.API_ROOT + "/auth/register";
-const apiUserLoginUrl = settings.API_ROOT + "/auth/login";
+const RegisterPage = () => {
+	const history = useHistory();
 
-const RegisterPage = (props) => {
-	const [state, setState] = useState({ username: "", password: "" });
-	const [alert, setAlert] = useState({enabled: false, message: "", type: ""});
-	const history_ = useHistory();
-
-	const usernameChanged = e => {
-		setState(prev => {
-			return {
-				...prev,
-				username: e.target.value
-			}
-		});
-	}
-
-	const passwordChanged = e => {
-		setState(prev => {
-			return {
-				...prev,
-				password: e.target.value
-			}
-		});
-	}
-
-	const register = () => {
-		if (state.username === "" || state.password === "") {
-			throwAlert(<span>username or password is missing!</span>, "danger");
-			return;
-		}
-
-		var ok = true;
-		// make a call to the api and register the user
-		const options = {
-			method: "POST",
-			mode: "cors",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-				Username: state.username,
-				Password: state.password
-			})
+	const register = async (formValues) => {
+		const url = settings.API_ROOT + "/auth/register";
+		const body = {
+			username: formValues.username,
+			password: formValues.password
 		};
-		fetch(apiUserRegistrationUrl, options)
-		.then(response => {
-			if (response.ok === false) {
-				ok = false;
-				throwAlert(<span>Something went wrong in the backend!</span>, "danger");
-				return;
+
+		const response = await Helper.fetch(url, "POST", body);
+
+		localStorage.setItem("token", response.token);
+
+		return <>Success! <Link to="/login">login</Link> to continue!</>
+	}
+	
+	const formFields = {
+		username: {
+			value: "",
+			validate: username => {
+				if (!username || username.trim().length === 0)
+					return "Username is required.";
 			}
-
-			throwAlert(<span>Successfully registered! Please <a href="/login">login</a> to continue!</span>, "success");
-		})
-		.catch(error => console.error(error));
-	}
-
-	const throwAlert = (message, type) => {
-		setAlert(_ => ({
-			message,
-			type,
-			enabled: true
-		}));
-	}
-
-	const AlertBarI = () => {
-		if (alert.enabled === false)
-			return null;
-		
-		return <AlertBar message={alert.message} type={alert.type} /> 
+		},
+		password: {
+			value: "",
+			validate: password => {
+				if (!password || password.trim().length === 0)
+					return "Username is required.";
+			}
+		},
 	}
 
 	return (
-		<div className="wrapper">
-			<AlertBarI />
-			<NavBar loggedIn={false} />
-			<div className="wrapper flex justify-content-center align-items-center">
-				<div className="login-form">
-					<div className="input-group">
-						<label for="username-input-field">Username</label>
-						<input type="text" id="username-input-field" value={state.username} onChange={usernameChanged}></input>
-					</div>
-					<div className="input-group">
-						<label for="password-input-field">Password</label>
-						<input type="password" id="password-input-field" value={state.password} onChange={passwordChanged} />
-					</div>
-					<div className="form-button-group">
-						<button onClick={register}>Register</button>
-					</div>
+		<>
+		<NavBar />
+		<div className="Layout container-sm">
+			<div className="Layout-main">
+				<div className="Box p-2" style={{width: "50%"}}>
+					<h1 className="h1 mb-4">Register</h1>
+					<Form formFields={formFields}>
+						<Input key="username" kKey="username" label="Username" type="text" />
+						<Input key="password" kKey="password" label="Password" type="password" />
+						<div className="form-actions">
+							<SubmitButton label="Register" kKey="register" onClick={register} />
+						</div>
+					</Form>
 				</div>
 			</div>
 		</div>
+		</>
 	);
 };
 

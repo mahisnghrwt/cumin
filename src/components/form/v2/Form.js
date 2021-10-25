@@ -1,7 +1,7 @@
-// import { startOfMinute } from "date-fns";
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useReducer } from "react";
 import FormContext from "./FormContext";
 import Input from "./input/index";
+import Textarea from "./textarea/index";
 import Select from "./select/index";
 import SubmitButton from "./submitButton/index";
 import logType from "./logType";
@@ -75,10 +75,11 @@ const reducerWrapper = (state, action) => {
 
 const Form = ({formFields = [], children}) => {
 	const defaultState = fieldsToState(formFields, false);
+	const cleanState = fieldsToState(formFields, true);
 	const [formState, setFormState] = useReducer(reducerWrapper, defaultState);
 
 	return (
-		<FormContext.Provider value={{formState, setFormState}}>
+		<FormContext.Provider value={{formState, setFormState, cleanState}}>
 			{formState.log && 
 			(<div class={"flash p-2 " + (formState.log.type === logType.success ? "flash-success" : "flash-error")}>
 				{formState.log.message}
@@ -95,6 +96,6 @@ const Form = ({formFields = [], children}) => {
 }
 
 export {
-	Input, SubmitButton, Select, logType
+	Input, SubmitButton, Select, Textarea
 }
 export default Form;

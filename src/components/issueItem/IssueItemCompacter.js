@@ -1,28 +1,13 @@
-import Helper from "../../Helper";
+import IssueTypeLabel from "../issue/IssueTypeLabel";
 
 const IssueItemCompacter = ({issue}) => {
-	const tags = {
-		"Type": issue.type,
-		"Status": issue.status,
-	}
-
-	const tagWidth = (1 / Object.keys(tags).length) * 70;
-
 	return (
-		<div className="issue-item-compact" style={{border: "0", borderBottom: "1px dashed var(--border-color)"}}>
-			<div className="issue-item-header">
-		  		<span className="issue-item-title" style={{width: "30%"}}>{issue.title}</span>
-				<div className="issue-item-tags" style={{width: "50%", flexWrap: "nowrap"}}>
-					{Object.keys(tags).map(tag => { return (
-						<span className="issue-item-tag" style={{width: "50%"}}>
-							<span className="issue-item-tag-key">{tag}:</span>
-							<span className="issue-item-tag-value">{tags[tag]}</span>
-						</span>
-					)})}
-				</div>
-			</div>
-	  </div>
-	);
+		<div className="Box-row Box--condensed p-3">
+			<strong className="ml-1">{issue.title}</strong>
+			<span className="Label Label--info ml-2 mr-2">{issue.status}</span>
+			<IssueTypeLabel type={issue.type} />
+		</div>
+	)
   };
 
 export default IssueItemCompacter;

@@ -1,6 +1,8 @@
-import IssueItemCompact from "../issueItem/IssueItemCompact";
+import { faHeartBroken } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import IssueItemDetailed from "../issueItem/IssueItemDetailed";
 
-const UnassignedIssuesContainer = ({issues, updateIssueSprint}) => {
+const UnassignedIssuesContainer = ({issues, updateIssueSprint, issueEditHandler}) => {
 	const dragOverHandler = e => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -19,15 +21,17 @@ const UnassignedIssuesContainer = ({issues, updateIssueSprint}) => {
 	}
 
 	return (
-		<div className="sprint" onDragOver={dragOverHandler} onDrop={dropHandler}>
-			<div className="sprint-header">
-				<span className="sprint-title">
-					Unassigned issues
-				</span>
+		<div className="Box Box--condensed mb-4" onDragOver={dragOverHandler} onDrop={dropHandler}>
+			<div className="Box-header">
+				<h3 className="Box-title d-inline-block">Open Issues </h3>
+				<span className="Counter ml-2">{issues.length}</span>
 			</div>
-			<div className="sprint-body">
-				{issues.map(issue => <IssueItemCompact key={issue.id} issue={issue} />)}
-			</div>
+			{Object.keys(issues).length === 0
+			&& <div class="blankslate">
+				<FontAwesomeIcon className="h4" icon={ faHeartBroken } />
+				<p>No open issues.</p>
+			</div>}
+			{ issues.map(issue => <IssueItemDetailed key={issue.id} forPage="backlog" issue={issue} omit={{assignedToId: true}} editHandler={ issueEditHandler } />) }
 		</div>
 	)
 }

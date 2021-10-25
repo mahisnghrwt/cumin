@@ -255,7 +255,7 @@ const CanvasWrapper = () => {
 		return <h1>Could not fetch roadmap.</h1>;
 
 	return (
-		<div className="canvas-wrapper">
+		<div className="overflow-x-scroll" style={{height: "fit-content", maxHeight: "100%", boxSizing: "border-box"}}>
 			<Canvas roadmap={roadmap} roadmapDispatch={roadmapDispatch} />
 		</div>
 	);

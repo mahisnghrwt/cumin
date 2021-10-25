@@ -2,6 +2,7 @@ import { useContext, useEffect, useReducer, useRef } from "react";
 import Global from "../../GlobalContext";
 import Helper from "../../Helper";
 import settings from "../../settings";
+import Form, {Input, Textarea, Select, SubmitButton} from "../form/v2/Form";
 
 const defaultEpicColor = "#7ed6df";
 
@@ -54,35 +55,86 @@ const CreateEpicForm = ({intermediateEpic, clearIntermediateEpic, addEpic}) => {
 
 	const submitButtonRef = useRef(null);
 
-	const createEpic = (e) => {
-		const url = `${settings.API_ROOT}/project/${global.project.id}/epic`;
-		const token = localStorage.getItem("token");
-
-
-		let createEpicReq = {
-			title: state.values.title,
-			startDate: intermediateEpic.startDate,
-			endDate: intermediateEpic.endDate,
-			row: intermediateEpic.row,
-			color: intermediateEpic.color
-		};
-
-		Helper.http.request(url, "POST", token, createEpicReq, true)
-		.then(epicCreated => {
-			addEpic(epicCreated);
-			clearIntermediateEpic();
-		})
-		.catch(e => console.error(e));
+	const formFields = {
+		title: {
+			value: "",
+			validate: title => {
+				if (!title || title.trim().length === 0)
+					return "Title is required.";
+			}
+		},
+		row: {
+			value: intermediateEpic.row,
+			validate: row => {
+				if (!row)
+					return "Row is required.";
+			}
+		},
+		startDate: {
+			value: Helper.dateToInputString(intermediateEpic.startDate),
+			validate: startDate => {
+				if (!startDate)
+					return "Start Date is required.";
+			}
+		},
+		endDate: {
+			value: Helper.dateToInputString(intermediateEpic.endDate),
+			validate: endDate => {
+				if (!endDate)
+					return "End Date is required.";
+			}
+		},
+		color: {
+			value: intermediateEpic.color,
+			validate: color => {
+				if (!color || color.trim().length === 0)
+					return "Color is required.";
+			}
+		}
 	}
 
-	useEffect(() => {
-		if (intermediateEpic === undefined) {
-			submitButtonRef.current.disabled = true;
-		}
-		else {
-			submitButtonRef.current.disabled = false;
-		}
-	}, [intermediateEpic])
+	const createEpic = async (formValues) => {
+		const url = `${settings.API_ROOT}/project/${global.project.id}/epic`;
+		const token = localStorage.getItem("token");
+		
+		let createEpicReq = {
+			title: formValues.title,
+			startDate: new Date(formValues.startDate),
+			endDate: new Date(formValues.endDate),
+			row: parseInt(formValues.row),
+			color: formValues.color
+		};
+
+		const epicCreated = await Helper.http.request(url, "POST", token, createEpicReq, true);
+		addEpic(epicCreated);
+		clearIntermediateEpic();
+	}
+
+	// useEffect(() => {
+	// 	if (intermediateEpic === undefined) {
+	// 		submitButtonRef.current.disabled = true;
+	// 	}
+	// 	else {
+	// 		submitButtonRef.current.disabled = false;
+	// 	}
+	// }, [intermediateEpic])
+
+	return (
+		<div className="Box Box--condensed border-0 color-bg-subtle p-2">
+			<h4 className="h4">Create Epic</h4>
+			<Form formFields={formFields}>
+				<Input kKey="title" label="Title" key="title" type="text" classNameAppend="input-sm" />
+				<Input kKey="startDate" label="Start Date" key="startDate" type="date" classNameAppend="input-sm" />
+				<Input kKey="endDate" label="End Date" key="endDate" type="date" classNameAppend="input-sm" />
+				<Input kKey="row" label="Row" key="row" type="number" classNameAppend="width-auto input-sm" disabled />
+				<Input kKey="color" label="Color" key="color" type="text" classNameAppend="width-auto input-sm" disabled />
+				<div class="form-actions">
+					<SubmitButton label="Create" onClick={createEpic} />
+					<button onClick={clearIntermediateEpic} className="btn btn-danger" type="button">Cancel</button>
+				</div>
+			</Form>
+		</div>
+	)
 
 	return (
 		<>

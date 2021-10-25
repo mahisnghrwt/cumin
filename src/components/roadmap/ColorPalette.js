@@ -1,14 +1,13 @@
-import { ButtonWithPlaceholder } from "../Button";
-import {epicColor} from "./epicColor"
+import { epicColor } from "./epicColor"
 
 const ColorPalette = ({selectedColor, selectColor, disabled}) => {
-	return <span className="color-palette">
+	return <span className="d-flex">
 		{Object.values(epicColor).map(color => {
 			const isSelected = selectedColor === color;
-			return <ButtonWithPlaceholder 
+			return <button 
 				disabled={disabled} 
-				className={"color-dip" + (isSelected ? " color-dip-selected" : "")}
-				style={{backgroundColor: color}}
+				className={"mr-1 rounded mt-1" + (isSelected ? " border color-border-attention" : "")}
+				style={{backgroundColor: color, width: "1.25rem", height: "1.25rem"}}
 				onClick={_ => selectColor(color)}
 			/>
 		})}

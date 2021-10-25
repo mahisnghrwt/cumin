@@ -1,48 +1,43 @@
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Helper from "../../Helper";
-import "./issueItem.css";
+import IssueTypeLabel from "../issue/IssueTypeLabel";
 
-const IssueItemDetailed = ({issue, actions = []}) => {
-	const {id, title, description} = issue;
-	const tags = {
-		type: issue.type,
-		createdAt: Helper.dateToInputString(new Date(issue.createdAt)),
-		epicId: issue.epicId,
-		assignedToId: issue.assignedToId
-	}
-	
+const IssueItemDetailed = ({issue, forPage, omit = {}, editHandler = null}) => {	
 	const dragStartHandler = e => {
 		e.stopPropagation();
-		const data = JSON.stringify({id: issue.id, oldStatus: issue.status});
+		let data = null;
+		if (forPage === "board")
+			data = JSON.stringify({id: issue.id, oldStatus: issue.status});
+		else if (forPage === "backlog")
+			data = JSON.stringify({issueId: issue.id, oldSprintId: issue.sprintId});
+
 		e.dataTransfer.setData("issue", data);
 	}
 
 	return (
-		<div className="issue-item" draggable onDragStart={dragStartHandler}>
-			<div className="issue-item-header">
-		  		<span className="issue-item-title">{title}</span>
-		  		<span className="issue-item-buttons">
-					{Object.keys(actions).map(action => { return (
-						<button 
-							className="border-button" 
-							onClick={e => actions[action](issue.id)}>
-							{action}
-						</button>
-					)})}
-		  		</span>
-			</div>
-			<div className="issue-item-description">
-				{description}
-			</div>
-			<div className="issue-item-tags">
-				{Object.keys(tags).map(tag => { return (
-					<span className="issue-item-tag">
-						<span className="issue-item-tag-key">{tag}:</span>
-						<span className="issue-item-tag-value">{tags[tag]}</span>
-					</span>
-				)})}
-			</div>
-	  </div>
-	);
+		<div className="Box-row" draggable onDragStart={dragStartHandler}>
+			<span className="text-small text-italic mr-2">{issue.id}</span>
+			<strong>{issue.title}</strong>
+			<IssueTypeLabel className="ml-2" type={issue.type} />
+			{ !omit['status'] && <span className="Label Label--info ml-2">{issue.status}</span> }
+			<span class="Label ml-2 color-border-sponsors">{issue.epicId ? issue.epicId : "Not in epic"}</span>
+			{ !omit['assignedToId'] && <span class="Label Label--info ml-2">{issue.assignedToId ? issue.assignedToId : "Not assigned"}</span> }
+			<span className="float-right">
+				{ editHandler 
+				&& <button className="btn-octicon" type="button" onClick={ () => editHandler(issue.id) }><FontAwesomeIcon icon={faPencilAlt} /></button> }
+			</span>
+			<details class="details-overlay">
+				<summary class="btn-link">More</summary>
+				<div>
+					{issue.description && <p className="color-fg-subtle">{issue.description}</p>}
+					<p className="color-fg-subtle">
+						Created on <span className="color-fg-default">{Helper.dateToInputString(new Date(issue.createdAt))}</span>
+					</p>
+				</div>
+			</details>
+		</div>
+	)
   };
 
 export default IssueItemDetailed;
