@@ -10,7 +10,7 @@
 
 ## Bugs
 - ~~'EditSprintForm' does update value, but throw error on doing so~~.
-- importing 'primer' from npm as well as CDN !!?
+- ~~importing 'primer' from npm as well as CDN !!?~~
 - 'BacklogPage' crashed if no requested items are returned.
 - Board
 	- Entire page is dragging instead of 'Issue'.

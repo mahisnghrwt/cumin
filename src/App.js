@@ -1,4 +1,4 @@
-import React, {useReducer, useEffect, useState } from 'react';
+import React, { useReducer, useEffect, useState } from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import BacklogPage from './components/BacklogPage';
 import DashboardPage from './components/DashboardPage';
@@ -56,7 +56,6 @@ const defaultGlobal = {
 
 function App() {
 	const [global, globalDispatch] = useReducer(reducer, defaultGlobal);
-	const [alert_, setAlert_] = useState(null);
 	const [connection, setConnection] = useState(null);
 
 	useEffect(() => {
