@@ -19,6 +19,7 @@
     "dotenv": "^10.0.0",
     "loadash": "^1.0.0",
     "node-sass": "^6.0.1",
+    "node-wget": "^0.4.3",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.0",
     "react-dom": "^17.0.2",
@@ -30,7 +31,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "node fetch-primer-images.json && react-scripts build",
+    "build": "node fetch-primer-images.js && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
