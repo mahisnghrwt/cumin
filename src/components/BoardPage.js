@@ -123,7 +123,7 @@ const BoardPage = ({data, dataDispatch}) => {
 
 	useEffect(() => {
 		if (!global.project) return;
-		
+
 		void async function() {
 			try {
 				const activeSprint = await fetchActiveSprint();
@@ -142,7 +142,7 @@ const BoardPage = ({data, dataDispatch}) => {
 			<div className="Layout container-xl">
 				<div className="Layout-main">
 					<h1 className="h1 mb-4">Board</h1>
-					{!state ?
+					{!global.project ?
 						<div className="Box">
 							<div class="blankslate">
 								<FontAwesomeIcon className="f1" icon={faHeartBroken} />
