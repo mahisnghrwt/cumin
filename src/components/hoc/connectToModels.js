@@ -62,11 +62,13 @@ const reducer = (state, action) => {
 export default (ComposedComponent, models) => {
 	return (props) => {
 		const [data, dataDispatch] = useReducer(reducer, null);
-		const [{project: {id: projectId}},,] = useContext(Global);
+		const [global,,] = useContext(Global);
 
 		useEffect(() => {
+			if (!global.project) return;
+
 			void async function() {
-				const results = await Promise.allSettled(Object.values(models).map(x => x.fetch(projectId)));
+				const results = await Promise.allSettled(Object.values(models).map(x => x.fetch(global.project.id)));
 
 				let nextState = {};
 				// so we can map results' index to the model
