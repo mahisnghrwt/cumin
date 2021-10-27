@@ -11,6 +11,7 @@ import BoardPage from './components/BoardPage';
 import RoadmapPage from './components/RoadmapPage';
 import { HttpTransportType, HubConnectionBuilder } from "@microsoft/signalr";
 import { ThemeProvider } from '@primer/components';
+import settings from './settings';
 
 const reducer = (state, action) => {
 	switch(action.type) {
@@ -61,7 +62,7 @@ function App() {
 	useEffect(() => {
 		if (!global.user) return;
 		const connect = new HubConnectionBuilder()
-		  .withUrl("https://localhost:44343/notification", {transport: HttpTransportType.LongPolling, accessTokenFactory: () => localStorage.getItem("token")})
+		  .withUrl(settings.SIGNAL_R_URL, {transport: HttpTransportType.LongPolling, accessTokenFactory: () => localStorage.getItem("token")})
 		  .withAutomaticReconnect()
 		  .build();
 	

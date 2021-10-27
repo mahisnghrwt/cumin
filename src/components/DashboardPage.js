@@ -223,7 +223,7 @@ const DashboardPage = () => {
 					</SidebarWrapper>
 				</div>
 				<Dialog isOpen={isOpen} onDismiss={() => setIsOpen(false)}>
-					<Dialog.Header>Add Member</Dialog.Header>
+					<Dialog.Header>Create Project</Dialog.Header>
 					<div className="Box p-3 border-0">
 						<CreateProjectForm successCallback={addProject} />
 					</div>

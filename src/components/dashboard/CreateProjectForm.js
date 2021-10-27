@@ -24,7 +24,7 @@ const CreateProjectForm = ({ successCallback }) => {
 		<Form formFields={formFields}>
 			<Input label="Name" kKey="name" key="name" type="text" />
 			<div class="form-actions">
-				<SubmitButton label="Invite" onClick={createProject} />
+				<SubmitButton label="Create" onClick={createProject} />
 			</div>
 		</Form>
 	);

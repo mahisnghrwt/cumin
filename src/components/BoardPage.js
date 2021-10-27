@@ -122,6 +122,8 @@ const BoardPage = ({data, dataDispatch}) => {
 	}
 
 	useEffect(() => {
+		if (!global.project) return;
+		
 		void async function() {
 			try {
 				const activeSprint = await fetchActiveSprint();
